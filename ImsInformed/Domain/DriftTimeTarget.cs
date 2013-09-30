@@ -9,5 +9,11 @@ namespace ImsInformed.Domain
 	{
 		public int ChargeState { get; set; }
 		public double DriftTime { get; set; }
+
+		public DriftTimeTarget(int chargeState, double driftTime)
+		{
+			this.ChargeState = chargeState;
+			this.DriftTime = driftTime;
+		}
 	}
 }

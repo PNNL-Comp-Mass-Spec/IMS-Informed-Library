@@ -66,18 +66,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\ChargeStateCorrelationResult.cs" />
     <Compile Include="Domain\DriftTimeTarget.cs" />
     <Compile Include="Domain\ImsTarget.cs" />
     <Compile Include="Domain\ImsTargetResult.cs" />
+    <Compile Include="IO\MassTagImporter.cs" />
     <Compile Include="Parameters\InformedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\InformedWorkflow.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
     <Compile Include="Util\PeptideUtil.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="IO\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="PNNLOmicsElementData.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

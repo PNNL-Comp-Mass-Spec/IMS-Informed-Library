@@ -9,18 +9,20 @@ namespace ImsInformed.Domain
 {
 	public class ImsTarget
 	{
-		public ImsTarget(string peptide, double normalizedElutionTime)
+		public ImsTarget(int id, string peptide, double normalizedElutionTime)
 		{
+			this.Id = id;
 			this.Peptide = peptide;
-			this.NormalizedElutionTime = normalizedElutionTime;
 			this.Composition = PeptideUtil.GetCompositionOfPeptide(peptide);
+			this.Mass = this.Composition.GetMass();
+			this.NormalizedElutionTime = normalizedElutionTime;
 			this.EmpiricalFormula = this.Composition.ToPlainString();
 			this.DriftTimeTargetList = new List<DriftTimeTarget>();
 			this.ResultList = new List<ImsTargetResult>();
 			this.ModificationList = new List<Modification>();
 		}
 
-		public ImsTarget(string peptide, double normalizedElutionTime, IList<Modification> modificationList)
+		public ImsTarget(int id, string peptide, double normalizedElutionTime, IList<Modification> modificationList)
 		{
 			Composition composition = PeptideUtil.GetCompositionOfPeptide(peptide);
 			foreach (var modification in modificationList)
@@ -28,7 +30,9 @@ namespace ImsInformed.Domain
 				composition += modification.Composition;
 			}
 
+			this.Id = id;
 			this.Peptide = peptide;
+			this.Mass = composition.GetMass();
 			this.NormalizedElutionTime = normalizedElutionTime;
 			this.Composition = composition;
 			this.EmpiricalFormula = this.Composition.ToPlainString();
@@ -37,9 +41,11 @@ namespace ImsInformed.Domain
 			this.ModificationList = modificationList;
 		}
 
+		public int Id { get; private set; }
 		public string EmpiricalFormula { get; private set; }
 		public Composition Composition { get; private set; }
 		public string Peptide { get; private set; }
+		public double Mass { get; private set; }
 		public double NormalizedElutionTime { get; private set; }
 		public IList<DriftTimeTarget> DriftTimeTargetList { get; set; }
 		public IList<ImsTargetResult> ResultList { get; set; }

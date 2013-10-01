@@ -47,6 +47,7 @@ namespace ImsInformed.IO
 
 					while (reader.Read())
 					{
+						int massTagId = Convert.ToInt32(reader["Mass_Tag_ID"]);
 						string peptide = Convert.ToString(reader["Peptide"]);
 						double normalizedElutionTime = Convert.ToDouble(reader["Avg_GANET"]);
 						int modCount = Convert.ToInt16(reader["Mod_Count"]);
@@ -63,7 +64,7 @@ namespace ImsInformed.IO
 
 						if(!isSameTarget)
 						{
-							currentImsTarget = new ImsTarget(peptide, normalizedElutionTime, modificationList);
+							currentImsTarget = new ImsTarget(massTagId, peptide, normalizedElutionTime, modificationList);
 							targetList.Add(currentImsTarget);
 						}
 

@@ -7,11 +7,16 @@ namespace ImsInformed.Domain
 {
 	public class ChargeStateCorrelationResult
 	{
+		public ImsTarget ImsTarget { get; private set; }
 		public ImsTargetResult ReferenceImsTargetResult { get; private set; }
-		public Dictionary<ImsTargetResult, double> CorrelationMap { get; set; }
+		public Dictionary<ImsTargetResult, double> CorrelationMap { get; private set; }
 
-		public ChargeStateCorrelationResult(ImsTargetResult referenceImsTargetResult)
+		public List<ImsTargetResult> CorrelatedResults { get; private set; }
+		public double CorrelationSum { get; private set; }
+
+		public ChargeStateCorrelationResult(ImsTarget imsTarget, ImsTargetResult referenceImsTargetResult)
 		{
+			this.ImsTarget = imsTarget;
 			this.ReferenceImsTargetResult = referenceImsTargetResult;
 			this.CorrelationMap = new Dictionary<ImsTargetResult, double>();
 		}
@@ -33,11 +38,17 @@ namespace ImsInformed.Domain
 				var highestMatch = group.OrderByDescending(x => x.Value).First();
 				ImsTargetResult highestCorrelatedFeature = highestMatch.Key;
 				double correlationValue = highestMatch.Value;
+
+				// Do not consider any low correlations
+				if (correlationValue < 0.8) continue;
 				
 				// Add to list and add to correlation total
 				correlatedResults.Add(highestCorrelatedFeature);
 				correlationSum += correlationValue;
 			}
+
+			this.CorrelatedResults = correlatedResults;
+			this.CorrelationSum = correlationSum;
 
 			return correlationSum;
 		}

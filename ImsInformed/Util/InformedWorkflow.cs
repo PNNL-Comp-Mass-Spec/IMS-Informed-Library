@@ -53,12 +53,12 @@ namespace ImsInformed.Util
 			_msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
 		}
 
-		public void RunInformedWorkflow(ImsTarget target)
+		public ChargeStateCorrelationResult RunInformedWorkflow(ImsTarget target)
 		{
 			// Get empirical formula
 			Composition targetComposition = target.Composition;
-			double targetMass = targetComposition.GetMass();
-			string empiricalFormula = targetComposition.ToPlainString();
+			double targetMass = target.Mass;
+			string empiricalFormula = target.EmpiricalFormula;
 
 			for (int chargeState = 1; chargeState <= _parameters.ChargeStateMax; chargeState++)
 			{
@@ -68,7 +68,7 @@ namespace ImsInformed.Util
 				double minMzForSpectrum = targetMz - 2;
 				double maxMzForSpectrum = targetMz + 5;
 
-				Console.WriteLine("Targeting " + targetMz);
+				//Console.WriteLine("Targeting " + targetMz);
 
 				// Generate Theoretical Isotopic Profile
 				IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
@@ -161,6 +161,9 @@ namespace ImsInformed.Util
 					// No need to move on if the isotopic profile is not found
 					if (observedIsotopicProfile == null) continue;
 
+					// If not enough peaks to reach unsaturated isotope, no need to move on
+					if (observedIsotopicProfile.Peaklist.Count <= unsaturatedIsotope) continue;
+
 					// Correct for Saturation if needed
 					if (unsaturatedIsotope > 0)
 					{
@@ -190,7 +193,6 @@ namespace ImsInformed.Util
 							// Use the saturated profile
 							isotopicFitScore = _isotopicPeakFitScoreCalculator.GetFit(theoreticalIsotopicProfilePeakList, massSpectrumPeakList, 0.15, _parameters.MassToleranceInPpm);
 						}
-
 					}
 					else
 					{
@@ -219,13 +221,17 @@ namespace ImsInformed.Util
 
 					target.ResultList.Add(result);
 
-					Console.WriteLine(chargeState + "\t" + unsaturatedIsotope + "\t" + statistics.ScanLcMin + "\t" + statistics.ScanLcMax + "\t" + statistics.ScanLcRep + "\t" + statistics.ScanImsMin + "\t" + statistics.ScanImsMax + "\t" + statistics.ScanImsRep + "\t" + isotopicFitScore.ToString("0.0000") + "\t" + result.NormalizedElutionTime.ToString("0.0000") + "\t" + result.DriftTime.ToString("0.0000"));
+					//Console.WriteLine(chargeState + "\t" + unsaturatedIsotope + "\t" + statistics.ScanLcMin + "\t" + statistics.ScanLcMax + "\t" + statistics.ScanLcRep + "\t" + statistics.ScanImsMin + "\t" + statistics.ScanImsMax + "\t" + statistics.ScanImsRep + "\t" + isotopicFitScore.ToString("0.0000") + "\t" + result.NormalizedElutionTime.ToString("0.0000") + "\t" + result.DriftTime.ToString("0.0000"));
 				}
 
 				// TODO: Isotope Correlation (probably not going to do because of saturation issues)
 			}
 
 			// Charge State Correlation (use first unsaturated XIC feature)
+			List<ChargeStateCorrelationResult> chargeStateCorrelationResultList = new List<ChargeStateCorrelationResult>();
+			ChargeStateCorrelationResult bestCorrelationResult = null;
+			double bestCorrelationSum = 0;
+
 			List<ImsTargetResult> resultList = target.ResultList.OrderBy(x => x.IsotopicFitScore).ToList();
 			int numResults = resultList.Count;
 
@@ -233,18 +239,32 @@ namespace ImsInformed.Util
 			{
 				ImsTargetResult referenceResult = resultList[i];
 
+				ChargeStateCorrelationResult chargeStateCorrelationResult = new ChargeStateCorrelationResult(target, referenceResult);
+				chargeStateCorrelationResultList.Add(chargeStateCorrelationResult);
+
 				for (int j = i + 1; j < numResults; j++)
 				{
 					ImsTargetResult testResult = resultList[j];
 					double correlation = FeatureCorrelator.CorrelateFeaturesUsingLc(referenceResult.XicFeature, testResult.XicFeature);
-					Console.WriteLine(referenceResult.FeatureBlobStatistics.ScanLcRep + "\t" + referenceResult.FeatureBlobStatistics.ScanImsRep + "\t" + testResult.FeatureBlobStatistics.ScanLcRep + "\t" + testResult.FeatureBlobStatistics.ScanImsRep + "\t" + correlation);
+					chargeStateCorrelationResult.CorrelationMap.Add(testResult, correlation);
+					//Console.WriteLine(referenceResult.FeatureBlobStatistics.ScanLcRep + "\t" + referenceResult.FeatureBlobStatistics.ScanImsRep + "\t" + testResult.FeatureBlobStatistics.ScanLcRep + "\t" + testResult.FeatureBlobStatistics.ScanImsRep + "\t" + correlation);
+				}
+
+				List<ImsTargetResult> possibleBestResultList;
+				double correlationSum = chargeStateCorrelationResult.GetBestCorrelation(out possibleBestResultList);
+
+				if(correlationSum > bestCorrelationSum)
+				{
+					bestCorrelationSum = correlationSum;
+					bestCorrelationResult = chargeStateCorrelationResult;
 				}
 			}
-			// TODO: Do something with the charge state correlation results
 
 			// TODO: Score Target
 
 			// TODO: Quantify Target (return isotopic profile abundance)
+
+			return bestCorrelationResult;
 		}
 
 		private IEnumerable<FeatureBlob> FindFeatures(double targetMz)

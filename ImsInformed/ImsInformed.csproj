@@ -70,6 +70,7 @@
     <Compile Include="Domain\DriftTimeTarget.cs" />
     <Compile Include="Domain\ImsTarget.cs" />
     <Compile Include="Domain\ImsTargetResult.cs" />
+    <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
     <Compile Include="Parameters\InformedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

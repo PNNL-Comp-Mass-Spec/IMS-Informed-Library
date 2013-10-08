@@ -65,10 +65,10 @@ namespace ImsInformed.Util
 
 			// Figure out frame range
 			double targetNet = target.NormalizedElutionTime;
-			double netMin = targetNet - _parameters.NetTolerance;
-			double netMax = targetNet + _parameters.NetTolerance;
-			int scanLcMin = (int) Math.Floor(netMin*_numFrames);
-			int scanLcMax = (int) Math.Ceiling(netMax*_numFrames);
+			double targetNetMin = targetNet - _parameters.NetTolerance;
+			double targetNetMax = targetNet + _parameters.NetTolerance;
+			int targetScanLcMin = (int) Math.Floor(targetNetMin*_numFrames);
+			int targetScanLcMax = (int) Math.Ceiling(targetNetMax*_numFrames);
 
 			for (int chargeState = 1; chargeState <= _parameters.ChargeStateMax; chargeState++)
 			{
@@ -85,7 +85,7 @@ namespace ImsInformed.Util
 				List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
 				// Find XIC Features
-				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, scanLcMin, scanLcMax);
+				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, targetScanLcMin, targetScanLcMax);
 
 				// Filter away small XIC peaks
 				featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.95);

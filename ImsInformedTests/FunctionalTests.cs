@@ -30,10 +30,41 @@ namespace ImsInformedTests
 			string peptide = "DGWHSWPIAHQWPQGPSAVDAAFSWEEK";
 			double net = 0.4832;
 
-			ImsTarget target = new ImsTarget(peptide, net);
+			ImsTarget target = new ImsTarget(1, peptide, net);
 
 			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
 			informedWorkflow.RunInformedWorkflow(target);
+		}
+
+		[Test]
+		public void TestSinglePeptide2()
+		{
+			string uimfFileLocation = @"..\..\..\testFiles\Sarc_MS2_90_6Apr11_Cheetah_11-02-19.uimf";
+
+			InformedParameters parameters = new InformedParameters
+			{
+				ChargeStateMax = 5,
+				DriftTimeTolerance = 100,
+				NetTolerance = 0.1,
+				IsotopicFitScoreMax = 0.15,
+				MassToleranceInPpm = 30,
+				NumPointForSmoothing = 9
+			};
+
+			string peptide = "IAIANIIDEIIEK";
+			double net = 0.638;
+
+			ImsTarget target = new ImsTarget(1, peptide, net);
+			DriftTimeTarget driftTimeTarget = new DriftTimeTarget(2, 21.85);
+			target.DriftTimeTargetList.Add(driftTimeTarget);
+
+			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
+			ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(target);
+
+			using (ImsTargetResultExporter resultsExporter = new ImsTargetResultExporter("outputSingle.csv"))
+			{
+				if (correlationResult != null) resultsExporter.AppendResultToCsv(correlationResult);
+			}
 		}
 
 		[Test]
@@ -54,7 +85,7 @@ namespace ImsInformedTests
 			string peptide = "QGHNSVFLIKGDK";
 			double net = 0.2493;
 
-			ImsTarget target = new ImsTarget(peptide, net);
+			ImsTarget target = new ImsTarget(1, peptide, net);
 
 			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
 			informedWorkflow.RunInformedWorkflow(target);
@@ -70,13 +101,14 @@ namespace ImsInformedTests
 		[Test]
 		public void TestRunAllTargets()
 		{
-			string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
+			string uimfFileLocation = @"..\..\..\testFiles\Sarc_MS2_90_6Apr11_Cheetah_11-02-19.uimf";
+			//string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
 
 			InformedParameters parameters = new InformedParameters
 			{
 				ChargeStateMax = 5,
 				DriftTimeTolerance = 100,
-				NetTolerance = 0.1,
+				NetTolerance = 0.2,
 				IsotopicFitScoreMax = 0.15,
 				MassToleranceInPpm = 30,
 				NumPointForSmoothing = 9
@@ -84,11 +116,18 @@ namespace ImsInformedTests
 
 			List<ImsTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
 
-			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-
-			foreach (var imsTarget in targetList)
+			using (ImsTargetResultExporter resultsExporter = new ImsTargetResultExporter("output.csv"))
 			{
-				informedWorkflow.RunInformedWorkflow(imsTarget);	
+				InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
+
+				foreach (var imsTarget in targetList)
+				{
+					ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+
+					if (correlationResult == null) continue;
+
+					resultsExporter.AppendResultToCsv(correlationResult);
+				}
 			}
 		}
 	}

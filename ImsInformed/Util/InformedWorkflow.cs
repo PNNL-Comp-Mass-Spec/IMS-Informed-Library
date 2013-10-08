@@ -230,7 +230,7 @@ namespace ImsInformed.Util
 			// Charge State Correlation (use first unsaturated XIC feature)
 			List<ChargeStateCorrelationResult> chargeStateCorrelationResultList = new List<ChargeStateCorrelationResult>();
 			ChargeStateCorrelationResult bestCorrelationResult = null;
-			double bestCorrelationSum = 0;
+			double bestCorrelationSum = -1;
 
 			List<ImsTargetResult> resultList = target.ResultList.OrderBy(x => x.IsotopicFitScore).ToList();
 			int numResults = resultList.Count;

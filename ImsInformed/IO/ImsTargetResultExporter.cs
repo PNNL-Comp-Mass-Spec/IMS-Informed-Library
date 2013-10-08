@@ -61,6 +61,7 @@ namespace ImsInformed.IO
 				resultInfo.Append(result.IsotopicProfile.MonoPeakMZ + ",");
 				resultInfo.Append(result.PpmError + ",");
 				resultInfo.Append(result.IsotopicFitScore + ",");
+				resultInfo.Append(result.IsotopicProfile.GetAbundance() + ",");
 				resultInfo.Append(targetElutionTime + ",");
 				resultInfo.Append(result.NormalizedElutionTime + ",");
 				resultInfo.Append(elutionTimeError + ",");
@@ -75,7 +76,7 @@ namespace ImsInformed.IO
 
 		private static void AddCsvHeader(TextWriter textWriter)
 		{
-			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,IsoFitScore,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation";
+			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation";
 			textWriter.WriteLine(header);
 		}
 

@@ -45,17 +45,17 @@ namespace ImsInformedTests
 			{
 				ChargeStateMax = 5,
 				DriftTimeTolerance = 100,
-				NetTolerance = 0.1,
+				NetTolerance = 0.2,
 				IsotopicFitScoreMax = 0.15,
 				MassToleranceInPpm = 30,
 				NumPointForSmoothing = 9
 			};
 
-			string peptide = "IAIANIIDEIIEK";
-			double net = 0.638;
+			string peptide = "ATVLNYLPK";
+			double net = 0.3612;
 
 			ImsTarget target = new ImsTarget(1, peptide, net);
-			DriftTimeTarget driftTimeTarget = new DriftTimeTarget(2, 21.85);
+			DriftTimeTarget driftTimeTarget = new DriftTimeTarget(2, 19.62);
 			target.DriftTimeTargetList.Add(driftTimeTarget);
 
 			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);

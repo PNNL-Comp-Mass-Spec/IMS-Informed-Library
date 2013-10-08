@@ -63,11 +63,12 @@ namespace ImsInformed.Util
 			double targetMass = target.Mass;
 			string empiricalFormula = target.EmpiricalFormula;
 
+			// Figure out frame range
 			double targetNet = target.NormalizedElutionTime;
 			double netMin = targetNet - _parameters.NetTolerance;
 			double netMax = targetNet + _parameters.NetTolerance;
-			int scanMin = (int) Math.Floor(netMin*_numFrames);
-			int scanMax = (int) Math.Ceiling(netMax*_numFrames);
+			int scanLcMin = (int) Math.Floor(netMin*_numFrames);
+			int scanLcMax = (int) Math.Ceiling(netMax*_numFrames);
 
 			for (int chargeState = 1; chargeState <= _parameters.ChargeStateMax; chargeState++)
 			{
@@ -84,7 +85,7 @@ namespace ImsInformed.Util
 				List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
 				// Find XIC Features
-				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, scanMin, scanMax);
+				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, scanLcMin, scanLcMax);
 
 				// Filter away small XIC peaks
 				featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.95);
@@ -291,10 +292,10 @@ namespace ImsInformed.Util
 			return featureBlobs;
 		}
 
-		private IEnumerable<FeatureBlob> FindFeatures(double targetMz, int frameMin, int frameMax)
+		private IEnumerable<FeatureBlob> FindFeatures(double targetMz, int scanLcMin, int scanLcMax)
 		{
 			// Generate Chromatogram
-			List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, frameMin, frameMax, 0, 360, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
+			List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, scanLcMin, scanLcMax, 0, 360, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
 
 			// Smooth Chromatogram
 			IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPointList);

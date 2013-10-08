@@ -32,6 +32,8 @@ namespace ImsInformed.Util
 		private readonly ChromPeakDetector _peakDetector;
 		private readonly PeakLeastSquaresFitter _isotopicPeakFitScoreCalculator;
 
+		private readonly int _numFrames;
+
 		public InformedWorkflow(string uimfFileLocation, InformedParameters parameters)
 		{
 			_uimfReader = new DataReader(uimfFileLocation);
@@ -51,6 +53,7 @@ namespace ImsInformed.Util
 			    PeakDetectorSigNoiseRatioThreshold = 0.0001
 			};
 			_msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
+			_numFrames = _uimfReader.GetGlobalParameters().NumFrames;
 		}
 
 		public ChargeStateCorrelationResult RunInformedWorkflow(ImsTarget target)
@@ -59,6 +62,12 @@ namespace ImsInformed.Util
 			Composition targetComposition = target.Composition;
 			double targetMass = target.Mass;
 			string empiricalFormula = target.EmpiricalFormula;
+
+			double targetNet = target.NormalizedElutionTime;
+			double netMin = targetNet - _parameters.NetTolerance;
+			double netMax = targetNet + _parameters.NetTolerance;
+			int scanMin = (int) Math.Floor(netMin*_numFrames);
+			int scanMax = (int) Math.Ceiling(netMax*_numFrames);
 
 			for (int chargeState = 1; chargeState <= _parameters.ChargeStateMax; chargeState++)
 			{
@@ -75,7 +84,7 @@ namespace ImsInformed.Util
 				List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
 				// Find XIC Features
-				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz);
+				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, scanMin, scanMax);
 
 				// Filter away small XIC peaks
 				featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.95);
@@ -271,6 +280,21 @@ namespace ImsInformed.Util
 		{
 			// Generate Chromatogram
 			List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
+
+			// Smooth Chromatogram
+			IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPointList);
+			_smoother.Smooth(ref pointList);
+
+			// Peak Find Chromatogram
+			IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
+
+			return featureBlobs;
+		}
+
+		private IEnumerable<FeatureBlob> FindFeatures(double targetMz, int frameMin, int frameMax)
+		{
+			// Generate Chromatogram
+			List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, frameMin, frameMax, 0, 360, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
 
 			// Smooth Chromatogram
 			IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPointList);

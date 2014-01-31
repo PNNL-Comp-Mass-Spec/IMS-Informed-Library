@@ -21,7 +21,7 @@ namespace ImsInformed.IO
 			_dmsModToInformedModMap = new Dictionary<string, Modification> {{"IodoAcet", Modification.Carbamidomethylation}, {"Plus1Oxy", Modification.Oxidation}};
 		}
 
-		public static List<ImsTarget> ImportMassTags(string serverName, string databaseName, double maxMsgfSpecProb = 1e-10)
+		public static List<ImsTarget> ImportMassTags(string serverName, string databaseName, double maxMsgfSpecProb = 1e-10, bool isForCalibration = false)
 		{
 			List<ImsTarget> targetList = new List<ImsTarget>();
 
@@ -36,7 +36,7 @@ namespace ImsInformed.IO
 				connection.Open();
 
 				// Execute query
-				string queryString = GetQuery();
+				string queryString = isForCalibration ? GetQueryForCalibration() : GetQuery();
 				using (DbCommand command = connection.CreateCommand())
 				{
 					command.CommandText = queryString;
@@ -56,8 +56,14 @@ namespace ImsInformed.IO
 						
 						if(modCount > 0)
 						{
-							string modificationName = Convert.ToString(reader["Mod_Name"]);
-							modificationList.Add(_dmsModToInformedModMap[modificationName]);
+							string modificationString = Convert.ToString(reader["Mod_Description"]);
+							string[] splitModString = modificationString.Split(',');
+							foreach (var singleModString in splitModString)
+							{
+								string modificationName = singleModString.Split(':')[0];
+								Modification modification = _dmsModToInformedModMap[modificationName];
+								modificationList.Add(modification);
+							}
 						}
 
 						bool isSameTarget = IsSameTarget(currentImsTarget, peptide, normalizedElutionTime, modificationList);
@@ -121,29 +127,35 @@ namespace ImsInformed.IO
 			return "SELECT " +
 						"MT.Mass_Tag_ID, " +
 						"MT.Peptide, " +
-						"MT.Monoisotopic_Mass, " +
 						"MTN.Avg_GANET," +
-						"MTN.Cnt_GANET AS NET_Obs_Count," +
-						"MTN.PNET," +
 						"MT.Mod_Count," +
 						"MT.Mod_Description," +
-						"MT.Min_MSGF_SpecProb," +
-						"MTC.Conformer_ID, " +
 						"MTC.Charge AS Conformer_Charge, " +
 						"MTC.Conformer, " +
-						"MTC.Drift_Time_Avg, " +
-						"MTC.Drift_Time_StDev,"  +
-						"MTC.Obs_Count AS Conformer_Obs_Count, " + 
-						"MTMI.Mod_Name, " +
-						"MTMI.Mod_Position, " +
-						"MCF.Empirical_Formula " +
+						"MTC.Drift_Time_Avg " +
 					"FROM T_Mass_Tags MT " +
 						"JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
 						"JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
-						"LEFT JOIN T_Mass_Tag_Mod_Info MTMI ON MT.Mass_Tag_ID = MTMI.Mass_Tag_ID " +
-						"LEFT JOIN MT_Main.dbo.V_DMS_Mass_Correction_Factors MCF ON MTMI.Mod_Name = MCF.Mass_Correction_Tag " +
 					"WHERE MT.PMT_Quality_Score >= 2 " +
-					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID, MTMI.Mod_Name";
+					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
+		}
+
+		public static string GetQueryForCalibration()
+		{
+			return "SELECT " +
+						"MT.Mass_Tag_ID, " +
+						"MT.Peptide, " +
+						"MTN.Avg_GANET," +
+						"MT.Mod_Count," +
+						"MT.Mod_Description," +
+						"MTC.Charge AS Conformer_Charge, " +
+						"MTC.Conformer, " +
+						"MTC.Drift_Time_Avg " +
+					"FROM T_Mass_Tags MT " +
+						"JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
+						"JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
+					"WHERE MT.PMT_Quality_Score >= 3 AND MT.Number_Of_Peptides > 50 " +
+					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
 		}
 	}
 }

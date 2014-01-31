@@ -12,6 +12,7 @@ namespace ImsInformed.Domain
 	{
 		public int ChargeState { get; set; }
 		public FeatureBlobStatistics FeatureBlobStatistics { get; set; }
+		public int ScanLcRep { get; set; }
 		public double NormalizedElutionTime { get; set; }
 		public double DriftTime { get; set; }
 		public double MonoisotopicMass { get; set; }
@@ -23,6 +24,8 @@ namespace ImsInformed.Domain
 
 		public XYData MassSpectrum { get; set; }
 		public FeatureBlob XicFeature { get; set; }
+
+		public FailureReason FailureReason { get; set; }
 
 		public double Intensity
 		{

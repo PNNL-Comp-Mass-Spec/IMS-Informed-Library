@@ -19,7 +19,64 @@ namespace ImsInformed.IO
 			AddCsvHeader(_textWriter);
 		}
 
-		public void AppendResultToCsv(ChargeStateCorrelationResult correlationResult)
+		public void AppendResultsOfTargetToCsv(ImsTarget target)
+		{
+			string modificationString = "";
+			foreach (var modification in target.ModificationList)
+			{
+				modificationString += modification.Name + ":" + modification.AccessionNum + ";";
+			}
+
+			StringBuilder peptideInfo = new StringBuilder();
+			peptideInfo.Append(target.Id + ",");
+			peptideInfo.Append(target.Peptide + ",");
+			peptideInfo.Append(modificationString + ","); // TODO: Mods
+			peptideInfo.Append(target.EmpiricalFormula + ",");
+			peptideInfo.Append(target.Mass + ",");
+
+			double targetElutionTime = target.NormalizedElutionTime;
+
+			foreach (var result in target.ResultList)
+			{
+				int chargeState = result.ChargeState;
+				IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.DriftTime - result.DriftTime));
+
+				double targetDriftTime = 0;
+				double driftTimeError = 0;
+
+				if (possibleDriftTimeTargets.Any())
+				{
+					DriftTimeTarget driftTimeTarget = possibleDriftTimeTargets.First();
+					targetDriftTime = driftTimeTarget.DriftTime;
+					driftTimeError = result.DriftTime - targetDriftTime;
+				}
+
+				double observedMz = result.IsotopicProfile != null ? result.IsotopicProfile.MonoPeakMZ : 0;
+				double abundance = result.IsotopicProfile != null ? result.IsotopicProfile.GetAbundance() : 0;
+				double elutionTimeError = result.NormalizedElutionTime - targetElutionTime;
+				double correlationAverage = 0;
+
+				StringBuilder resultInfo = new StringBuilder();
+				resultInfo.Append(result.ChargeState + ",");
+				resultInfo.Append(observedMz + ",");
+				resultInfo.Append(result.PpmError + ",");
+				resultInfo.Append(result.ScanLcRep + ",");
+				resultInfo.Append(result.IsotopicFitScore + ",");
+				resultInfo.Append(abundance + ",");
+				resultInfo.Append(targetElutionTime + ",");
+				resultInfo.Append(result.NormalizedElutionTime + ",");
+				resultInfo.Append(elutionTimeError + ",");
+				resultInfo.Append(targetDriftTime + ",");
+				resultInfo.Append(result.DriftTime + ",");
+				resultInfo.Append(driftTimeError + ",");
+				resultInfo.Append(correlationAverage + ",");
+				resultInfo.Append(result.FailureReason.ToString());
+
+				_textWriter.WriteLine(peptideInfo.ToString() + resultInfo.ToString());
+			}
+		}
+
+		public void AppendCorrelationResultToCsv(ChargeStateCorrelationResult correlationResult)
 		{
 			ImsTarget target = correlationResult.ImsTarget;
 
@@ -60,6 +117,7 @@ namespace ImsInformed.IO
 				resultInfo.Append(result.ChargeState + ",");
 				resultInfo.Append(result.IsotopicProfile.MonoPeakMZ + ",");
 				resultInfo.Append(result.PpmError + ",");
+				resultInfo.Append(result.ScanLcRep + ",");
 				resultInfo.Append(result.IsotopicFitScore + ",");
 				resultInfo.Append(result.IsotopicProfile.GetAbundance() + ",");
 				resultInfo.Append(targetElutionTime + ",");
@@ -69,6 +127,7 @@ namespace ImsInformed.IO
 				resultInfo.Append(result.DriftTime + ",");
 				resultInfo.Append(driftTimeError + ",");
 				resultInfo.Append(correlationAverage + ",");
+				resultInfo.Append(result.FailureReason.ToString());
 
 				_textWriter.WriteLine(peptideInfo.ToString() + resultInfo.ToString());
 			}
@@ -76,7 +135,7 @@ namespace ImsInformed.IO
 
 		private static void AddCsvHeader(TextWriter textWriter)
 		{
-			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation";
+			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,ScanLcRep,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation,FailureReason";
 			textWriter.WriteLine(header);
 		}
 

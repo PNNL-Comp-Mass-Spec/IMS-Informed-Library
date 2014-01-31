@@ -52,5 +52,37 @@ namespace ImsInformed.Domain
 
 			return correlationSum;
 		}
+
+		public string CreateSqlUpdateQueries()
+		{
+			List<ImsTargetResult> correlatedResults;
+			double correlationSum = this.GetBestCorrelation(out correlatedResults);
+			double correlationAverage = correlationSum / (this.CorrelatedResults.Count - 1);
+
+			if (double.IsNaN(correlationSum) || double.IsNaN(correlationAverage)) return "";
+
+			StringBuilder allQueries = new StringBuilder();
+
+			foreach (var result in correlatedResults)
+			{
+				StringBuilder updateResultQuery = new StringBuilder();
+				updateResultQuery.Append("UPDATE T_Result SET Charge_Correlation = ");
+				updateResultQuery.Append(correlationAverage);
+				updateResultQuery.Append(" WHERE Mass_Tag_Id = ");
+				updateResultQuery.Append(this.ImsTarget.Id);
+				updateResultQuery.Append(" AND Charge_State = ");
+				updateResultQuery.Append(result.ChargeState);
+				updateResultQuery.Append(" AND Scan_Lc = ");
+				updateResultQuery.Append(result.ScanLcRep);
+				updateResultQuery.Append(" AND Drift_Time = ");
+				updateResultQuery.Append(result.DriftTime);
+				updateResultQuery.Append(";");
+
+				allQueries.Append(updateResultQuery.ToString());
+				allQueries.Append("\n");
+			}
+
+			return allQueries.ToString();
+		}
 	}
 }

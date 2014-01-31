@@ -68,8 +68,12 @@
   <ItemGroup>
     <Compile Include="Domain\ChargeStateCorrelationResult.cs" />
     <Compile Include="Domain\DriftTimeTarget.cs" />
+    <Compile Include="Domain\FailurePrecedence.cs" />
+    <Compile Include="Domain\FailureReason.cs" />
+    <Compile Include="Domain\FeatureBlobNet.cs" />
     <Compile Include="Domain\ImsTarget.cs" />
     <Compile Include="Domain\ImsTargetResult.cs" />
+    <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
     <Compile Include="Parameters\InformedParameters.cs" />

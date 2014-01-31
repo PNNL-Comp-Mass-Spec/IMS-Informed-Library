@@ -13,7 +13,7 @@ namespace ImsInformed.Util
 
 		static PeptideUtil()
 		{
-			_aminoAcidSet = new AminoAcidSet(Modification.Carbamidomethylation);
+			_aminoAcidSet = new AminoAcidSet();
 		}
 
 		public static Composition GetCompositionOfPeptide(string peptide)

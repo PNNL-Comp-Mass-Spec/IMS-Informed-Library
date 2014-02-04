@@ -51,8 +51,8 @@ namespace ImsInformed.IO
 					driftTimeError = result.DriftTime - targetDriftTime;
 				}
 
-				double observedMz = result.IsotopicProfile != null ? result.IsotopicProfile.MonoPeakMZ : 0;
-				double abundance = result.IsotopicProfile != null ? result.IsotopicProfile.GetAbundance() : 0;
+				double observedMz = result.IsotopicProfile != null ? 0 : 0;
+				double abundance = result.IsotopicProfile != null ? result.Intensity : 0;
 				double elutionTimeError = result.NormalizedElutionTime - targetElutionTime;
 				double correlationAverage = 0;
 
@@ -115,11 +115,11 @@ namespace ImsInformed.IO
 
 				StringBuilder resultInfo = new StringBuilder();
 				resultInfo.Append(result.ChargeState + ",");
-				resultInfo.Append(result.IsotopicProfile.MonoPeakMZ + ",");
+				resultInfo.Append(0 + ",");
 				resultInfo.Append(result.PpmError + ",");
 				resultInfo.Append(result.ScanLcRep + ",");
 				resultInfo.Append(result.IsotopicFitScore + ",");
-				resultInfo.Append(result.IsotopicProfile.GetAbundance() + ",");
+				resultInfo.Append(result.Intensity + ",");
 				resultInfo.Append(targetElutionTime + ",");
 				resultInfo.Append(result.NormalizedElutionTime + ",");
 				resultInfo.Append(elutionTimeError + ",");

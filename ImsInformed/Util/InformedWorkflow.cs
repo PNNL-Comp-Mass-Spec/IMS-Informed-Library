@@ -87,8 +87,6 @@ namespace ImsInformed.Util
 			Composition targetComposition = target.Composition;
 
 			double targetMass = targetComposition.GetMass();
-			string empiricalFormula = targetComposition.ToPlainString();
-
 			double targetNet = target.NormalizedElutionTime;
 			double targetNetMin = targetNet - _parameters.NetTolerance;
 			double targetNetMax = targetNet + _parameters.NetTolerance;
@@ -111,14 +109,8 @@ namespace ImsInformed.Util
 				// Calculate Target m/z
 				var targetIon = new Ion(targetComposition, chargeState);
 				double targetMz = targetIon.GetMz();
-				double minMzForSpectrum = targetMz - (1.6 / chargeState);
-				double maxMzForSpectrum = targetMz + (4.6 / chargeState);
 
 				//Console.WriteLine("Targeting " + targetMz);
-
-				// Generate Theoretical Isotopic Profile
-				IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
-				List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
 				// Find XIC Features
 				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, scanLcSearchMin, scanLcSearchMax);
@@ -135,7 +127,12 @@ namespace ImsInformed.Util
 					};
 
 					target.ResultList.Add(result);
+
+					continue;
 				}
+
+				// Generate Theoretical Isotopic Profile
+				float[] theoreticalIsotopicProfile = targetComposition.GetApproximatedIsotopomerEnvelop(5);
 
 				// Check each XIC Peak found
 				foreach (var featureBlob in featureBlobs)
@@ -159,6 +156,7 @@ namespace ImsInformed.Util
 					int scanImsMax = statistics.ScanImsMax;
 
 					// TODO: Verify that there are no peaks at isotope #s 0.5 and 1.5?? (If we filter on drift time, this shouldn't actually be necessary)
+					// TODO: Could do this at time of checking to left. 0.5 would need to be <= 0 and >= 1
 
 					// Find an unsaturated peak in the isotopic profile
 					for (int i = 1; i < 10; i++)
@@ -169,7 +167,7 @@ namespace ImsInformed.Util
 						double isotopeTargetMz = targetIon.GetIsotopeMz(i);
 
 						// Find XIC Features
-						IEnumerable<FeatureBlob> newFeatureBlobs = FindFeatures(isotopeTargetMz, scanLcMin - 20, scanLcMax + 20);
+						IEnumerable<FeatureBlob> newFeatureBlobs = FindFeatures(isotopeTargetMz, scanLcMin - 10, scanLcMax + 10);
 
 						// If no feature, then get out
 						if (!newFeatureBlobs.Any())
@@ -253,20 +251,12 @@ namespace ImsInformed.Util
 
 					//Console.WriteLine(target.Peptide + "\t" + targetMass + "\t" + targetMz + "\t" + scanLcRep);
 
-					// Get Mass Spectrum Data
-					XYData massSpectrum = GetMassSpectrum(scanLcRep, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
-					List<Peak> massSpectrumPeakList = _peakDetector.FindPeaks(massSpectrum);
-					//WriteXYDataToFile(massSpectrum, targetMz);
-
 					// Find Isotopic Profile
-					List<Peak> massSpectrumPeaks;
-					IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
+					double[] observedIsotopicProfile = GetIsotopicProfile(targetIon, scanLcRep, scanImsRep, 5);
+					double isotopicFitScore = IsotopicProfileUtil.GetFit(theoreticalIsotopicProfile, observedIsotopicProfile);
 
-					// Add data to result
-					result.MassSpectrum = massSpectrum;
-					
 					// No need to move on if the isotopic profile is not found
-					if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
+					if (observedIsotopicProfile[0] < 1 || isotopicFitScore > 0.95)
 					{
 						result.FailureReason = FailureReason.IsotopicProfileNotFound;
 						continue;
@@ -274,22 +264,17 @@ namespace ImsInformed.Util
 
 					// Add data to result
 					result.IsotopicProfile = observedIsotopicProfile;
-					result.MonoisotopicMass = observedIsotopicProfile.MonoIsotopicMass;
-					result.PpmError = Math.Abs(PeptideUtil.PpmError(targetMass, observedIsotopicProfile.MonoIsotopicMass));
 
-					// If not enough peaks to reach unsaturated isotope, no need to move on
-					if (observedIsotopicProfile.Peaklist.Count <= unsaturatedIsotope)
-					{
-						result.FailureReason = FailureReason.IsotopicProfileNotFound;
-						continue;
-					}
+					// TODO: Calculate a mono mass and error? Or should I not since the isotopic profile was created by looking at specific isotopes?
+					//result.MonoisotopicMass = observedIsotopicProfile.MonoIsotopicMass;
+					//result.PpmError = Math.Abs(PeptideUtil.PpmError(targetMass, observedIsotopicProfile.MonoIsotopicMass));
 
 					// If the mass error is too high, then ignore
-					if (result.PpmError > _parameters.MassToleranceInPpm)
-					{
-						result.FailureReason = FailureReason.MassError;
-						continue;
-					}
+					//if (result.PpmError > _parameters.MassToleranceInPpm)
+					//{
+					//    result.FailureReason = FailureReason.MassError;
+					//    continue;
+					//}
 
 					// Correct for Saturation if needed
 					if (unsaturatedIsotope > 0)
@@ -299,19 +284,15 @@ namespace ImsInformed.Util
 
 					//WriteMSPeakListToFile(observedIsotopicProfile.Peaklist, targetMz);
 
-					// TODO: This is a hack to fix an issue where the peak width is being calculated way too large which causes the leftOfMonoPeakLooker to use too wide of a tolerance
-					MSPeak monoPeak = observedIsotopicProfile.getMonoPeak();
-					if (monoPeak.Width > 0.15) monoPeak.Width = 0.15f;
-
 					// Filter out flagged results
-					MSPeak peakToLeft = _leftOfMonoPeakLooker.LookforPeakToTheLeftOfMonoPeak(monoPeak, observedIsotopicProfile.ChargeState, massSpectrumPeaks);
-					if (peakToLeft != null)
+					double isotopeLeftOfMonoMz = targetIon.GetIsotopeMz(-1);
+					List<IntensityPoint> pointList = _uimfReader.GetXic(isotopeLeftOfMonoMz, _parameters.MassToleranceInPpm, scanLcRep - 1, scanLcRep + 1, scanImsRep - 2, scanImsRep + 2, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
+					double intensityOfPeakToLeft = pointList.Sum(x => x.Intensity);
+					if(intensityOfPeakToLeft > (observedIsotopicProfile[0] * 0.5))
 					{
 						result.FailureReason = FailureReason.PeakToLeft;
 						continue;
 					}
-
-					double isotopicFitScore;
 
 					// Calculate isotopic fit score
 					if(unsaturatedIsotope > 0)
@@ -321,20 +302,9 @@ namespace ImsInformed.Util
 						if (unsaturatedScanLc > 0)
 						{
 							// Use the unsaturated profile if we were able to get one
-							XYData unsaturatedMassSpectrum = GetMassSpectrum(unsaturatedScanLc, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
-							//WriteXYDataToFile(unsaturatedMassSpectrum, targetMz);
-							List<Peak> unsaturatedMassSpectrumPeakList = _peakDetector.FindPeaks(unsaturatedMassSpectrum);
-							isotopicFitScore = _isotopicPeakFitScoreCalculator.GetFit(theoreticalIsotopicProfilePeakList, unsaturatedMassSpectrumPeakList, 0.15, _parameters.MassToleranceInPpm);
+							double[] unsaturatedIsotopicProfile = GetIsotopicProfile(targetIon, unsaturatedScanLc, scanImsRep, 5);
+							isotopicFitScore = IsotopicProfileUtil.GetFit(theoreticalIsotopicProfile, unsaturatedIsotopicProfile);
 						}
-						else
-						{
-							// Use the saturated profile
-							isotopicFitScore = _isotopicPeakFitScoreCalculator.GetFit(theoreticalIsotopicProfilePeakList, massSpectrumPeakList, 0.15, _parameters.MassToleranceInPpm);
-						}
-					}
-					else
-					{
-						isotopicFitScore = _isotopicPeakFitScoreCalculator.GetFit(theoreticalIsotopicProfilePeakList, massSpectrumPeakList, 0.15, _parameters.MassToleranceInPpm);
 					}
 
 					// Add data to result
@@ -667,6 +637,26 @@ namespace ImsInformed.Util
 			massSpectrum.SetXYValues(ref mzArray, ref intensityArrayAsDoubles);
 
 			return massSpectrum;
+		}
+
+		private double[] GetIsotopicProfile(Ion ion, int scanLcRep, int scanImsRep, int numIsotopes)
+		{
+			double[] isotopicProfile = new double[numIsotopes];
+
+			for (int i = 0; i < numIsotopes; i++)
+			{
+				double targetMz = ion.GetIsotopeMz(i);
+				List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, scanLcRep - 1, scanLcRep + 1, scanImsRep - 2, scanImsRep + 2, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
+
+				double intensitySum = intensityPointList.Sum(x => x.Intensity);
+
+				// If we reach an isotope with no intensity, no point in still looking
+				if (intensitySum < 1) break;
+
+				isotopicProfile[i] = intensitySum;
+			}
+
+			return isotopicProfile;
 		}
 
 		private double GetReverseAlignedNet(double net)

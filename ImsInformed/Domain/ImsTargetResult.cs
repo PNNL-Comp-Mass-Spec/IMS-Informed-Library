@@ -18,18 +18,17 @@ namespace ImsInformed.Domain
 		public double MonoisotopicMass { get; set; }
 		public bool IsSaturated { get; set; }
 
-		public IsotopicProfile IsotopicProfile { get; set; }
+		public double[] IsotopicProfile { get; set; }
 		public double IsotopicFitScore { get; set; }
 		public double PpmError { get; set; }
 
-		public XYData MassSpectrum { get; set; }
 		public FeatureBlob XicFeature { get; set; }
 
 		public FailureReason FailureReason { get; set; }
 
 		public double Intensity
 		{
-			get { return IsotopicProfile.IntensityMostAbundant; }
+			get { return IsotopicProfile.Max(); }
 		}
 	}
 }

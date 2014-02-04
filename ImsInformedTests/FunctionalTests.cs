@@ -195,11 +195,11 @@ namespace ImsInformedTests
 		}
 
 		[Test]
-		public void TestRunAllTargetsAndCalibrate()
+		public void TestRunAllTargetsAndCalibrateAndSqlOutput()
 		{
 			// Setup sqlite output file by deleting any current file and copying a blank schema over
 			string sqliteSchemaLocation = @"..\..\..\testFiles\informedSchema.db3";
-			string sqliteOutputLocation = "Sarc_Many_Datasets_All_Aligned.db3";
+			string sqliteOutputLocation = "Sarc_Many_Datasets_All_Aligned_NewFaster.db3";
 			if (File.Exists(sqliteOutputLocation)) File.Delete(sqliteOutputLocation);
 			File.Copy(sqliteSchemaLocation, sqliteOutputLocation);
 
@@ -269,91 +269,87 @@ namespace ImsInformedTests
 					// Iterate over each UIMF File
 					for (int i = 0; i < uimfFileList.Count; i++)
 					{
-						string uimfFileLocation = uimfFileList[i];
-						FileInfo uimfFileInfo = new FileInfo(uimfFileLocation);
-						Console.WriteLine(DateTime.Now + ": Processing " + uimfFileInfo.Name);
-
-						// NET Alignment
-						string netAlignmentFileName = uimfFileInfo.Name.Replace(".uimf", "_NetAlign.csv");
-						string netAlignmentLocation = Path.Combine(uimfFileInfo.DirectoryName, netAlignmentFileName);
-						FileInfo netAlignmentFileInfo = new FileInfo(netAlignmentLocation);
-						if(!File.Exists(netAlignmentFileInfo.FullName))
-						{
-							Console.WriteLine(DateTime.Now + ": Creating alignment file using " + calibrationTargetList.Count + " possible targets.");
-							InformedWorkflow calibrationWorkflow = new InformedWorkflow(uimfFileLocation, calibrationParameters);
-							List<Tuple<double, double>> netAlignmentInput = new List<Tuple<double, double>>();
-
-							int index = 0;
-							// Run calibration workflow on each of the calibration targets
-							foreach (var imsTarget in calibrationTargetList.OrderBy(x => x.NormalizedElutionTime))
-							{
-								//Console.WriteLine(DateTime.Now + ": Processing target " + index);
-								ChargeStateCorrelationResult correlationResult = calibrationWorkflow.RunInformedWorkflow(imsTarget);
-
-								if (correlationResult != null && correlationResult.CorrelatedResults.Any())
-								{
-									var elutionTimeFilteredResults = correlationResult.CorrelatedResults.Where(x => x.NormalizedElutionTime >= 0.1);
-									if(elutionTimeFilteredResults.Any())
-									{
-										ImsTargetResult result = correlationResult.CorrelatedResults.Where(x => x.NormalizedElutionTime >= 0.1).OrderByDescending(x => x.Intensity).First();
-										netAlignmentInput.Add(new Tuple<double, double>(result.NormalizedElutionTime, imsTarget.NormalizedElutionTime));
-									}
-								}
-
-								//Console.WriteLine(DateTime.Now + ": Done Processing target " + index);
-								imsTarget.RemoveResults();
-								//Console.WriteLine(DateTime.Now + ": Removed results from target " + index);
-
-								index++;
-							}
-
-							// Place data points at beginning and end to finish off the alignment
-							netAlignmentInput.Add(new Tuple<double, double>(0, 0));
-							netAlignmentInput.Add(new Tuple<double, double>(1, 1));
-
-							// Do LOESS to get NET alignment
-							Console.WriteLine(DateTime.Now + ": Found " + netAlignmentInput.Count + " targets to use for alignment.");
-							var netAlignmentInputGroup = netAlignmentInput.GroupBy(x => x.Item1).OrderBy(x => x.Key);
-							var groupedNetTuple = netAlignmentInputGroup.Select(x => x.OrderBy(y => Math.Abs(y.Item1 - y.Item2)).First()).ToArray();
-							var loessInterpolatorForNetAlignment = new LoessInterpolator(0.1, 4);
-							double[] xArray = groupedNetTuple.Select(x => x.Item1).ToArray();
-							double[] yArray = groupedNetTuple.Select(x => x.Item2).ToArray();
-							double[] newNetValues = loessInterpolatorForNetAlignment.Smooth(xArray, yArray);
-
-							// Creates a file for the NET Alignment to be stored
-							using (StreamWriter writer = new StreamWriter(netAlignmentFileInfo.FullName))
-							{
-								for (int j = 0; j < groupedNetTuple.Length; j++)
-								{
-									writer.WriteLine(groupedNetTuple[j].Item1 + "," + newNetValues[j]);
-								}
-							}
-						}
-						else
-						{
-							Console.WriteLine(DateTime.Now + ": Using existing alignment file");
-						}
-
-						// Grab the net alignment
-						IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileInfo.FullName);
-
-						InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
-
-						// Insert Dataset Info
 						using (var transaction = connection.BeginTransaction())
 						{
+							string uimfFileLocation = uimfFileList[i];
+							FileInfo uimfFileInfo = new FileInfo(uimfFileLocation);
+							Console.WriteLine(DateTime.Now + ": Processing " + uimfFileInfo.Name);
+
+							// NET Alignment
+							string netAlignmentFileName = uimfFileInfo.Name.Replace(".uimf", "_NetAlign.csv");
+							string netAlignmentLocation = Path.Combine(uimfFileInfo.DirectoryName, netAlignmentFileName);
+							FileInfo netAlignmentFileInfo = new FileInfo(netAlignmentLocation);
+							if (!File.Exists(netAlignmentFileInfo.FullName))
+							{
+								Console.WriteLine(DateTime.Now + ": Creating alignment file using " + calibrationTargetList.Count + " possible targets.");
+								InformedWorkflow calibrationWorkflow = new InformedWorkflow(uimfFileLocation, calibrationParameters);
+								List<Tuple<double, double>> netAlignmentInput = new List<Tuple<double, double>>();
+
+								int index = 0;
+								// Run calibration workflow on each of the calibration targets
+								foreach (var imsTarget in calibrationTargetList.OrderBy(x => x.NormalizedElutionTime))
+								{
+									//Console.WriteLine(DateTime.Now + ": Processing target " + index);
+									ChargeStateCorrelationResult correlationResult = calibrationWorkflow.RunInformedWorkflow(imsTarget);
+
+									if (correlationResult != null && correlationResult.CorrelatedResults.Any())
+									{
+										var elutionTimeFilteredResults = correlationResult.CorrelatedResults.Where(x => x.NormalizedElutionTime >= 0.1);
+										if (elutionTimeFilteredResults.Any())
+										{
+											ImsTargetResult result = correlationResult.CorrelatedResults.Where(x => x.NormalizedElutionTime >= 0.1).OrderByDescending(x => x.Intensity).First();
+											netAlignmentInput.Add(new Tuple<double, double>(result.NormalizedElutionTime, imsTarget.NormalizedElutionTime));
+										}
+									}
+
+									//Console.WriteLine(DateTime.Now + ": Done Processing target " + index);
+									imsTarget.RemoveResults();
+									//Console.WriteLine(DateTime.Now + ": Removed results from target " + index);
+
+									index++;
+								}
+
+								// Place data points at beginning and end to finish off the alignment
+								netAlignmentInput.Add(new Tuple<double, double>(0, 0));
+								netAlignmentInput.Add(new Tuple<double, double>(1, 1));
+
+								// Do LOESS to get NET alignment
+								Console.WriteLine(DateTime.Now + ": Found " + netAlignmentInput.Count + " targets to use for alignment.");
+								var netAlignmentInputGroup = netAlignmentInput.GroupBy(x => x.Item1).OrderBy(x => x.Key);
+								var groupedNetTuple = netAlignmentInputGroup.Select(x => x.OrderBy(y => Math.Abs(y.Item1 - y.Item2)).First()).ToArray();
+								var loessInterpolatorForNetAlignment = new LoessInterpolator(0.1, 4);
+								double[] xArray = groupedNetTuple.Select(x => x.Item1).ToArray();
+								double[] yArray = groupedNetTuple.Select(x => x.Item2).ToArray();
+								double[] newNetValues = loessInterpolatorForNetAlignment.Smooth(xArray, yArray);
+
+								// Creates a file for the NET Alignment to be stored
+								using (StreamWriter writer = new StreamWriter(netAlignmentFileInfo.FullName))
+								{
+									for (int j = 0; j < groupedNetTuple.Length; j++)
+									{
+										writer.WriteLine(groupedNetTuple[j].Item1 + "," + newNetValues[j]);
+									}
+								}
+							}
+							else
+							{
+								Console.WriteLine(DateTime.Now + ": Using existing alignment file");
+							}
+
+							// Grab the net alignment
+							IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileInfo.FullName);
+
+							InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
+
+							// Insert Dataset Info
 							string insertDatasetQuery = "INSERT INTO T_Dataset (Dataset_Id, File_Name) VALUES(" + i + ",'" + uimfFileInfo.Name + "');";
 							command.CommandText = insertDatasetQuery;
 							command.ExecuteNonQuery();
-							transaction.Commit();
-						}
 
-						Console.WriteLine(DateTime.Now + ": Processing targets");
+							Console.WriteLine(DateTime.Now + ": Processing targets");
 
-						// Execute workflow on each target and write results to database
-						foreach (var imsTarget in targetList)
-						{
-							using (var transaction = connection.BeginTransaction())
+							// Execute workflow on each target and write results to database
+							foreach (var imsTarget in targetList)
 							{
 								ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
 
@@ -371,11 +367,12 @@ namespace ImsInformedTests
 									}
 								}
 
-								transaction.Commit();
+								// Reset the target so it can be used again by another dataset
+								imsTarget.RemoveResults();
 							}
 
-							// Reset the target so it can be used again by another dataset
-							imsTarget.RemoveResults();
+							Console.WriteLine(DateTime.Now + ": Committing to SQLite.");
+							transaction.Commit();
 						}
 					}
 				}
@@ -389,7 +386,7 @@ namespace ImsInformedTests
 		{
 			// Setup sqlite output file by deleting any current file and copying a blank schema over
 			string sqliteSchemaLocation = @"..\..\..\testFiles\informedSchema.db3";
-			string sqliteOutputLocation = "Sarc_Many_Datasets.db3";
+			string sqliteOutputLocation = "Sarc_Many_Datasets_NewFaster.db3";
 			if(File.Exists(sqliteOutputLocation)) File.Delete(sqliteOutputLocation);
 			File.Copy(sqliteSchemaLocation, sqliteOutputLocation);
 
@@ -448,23 +445,20 @@ namespace ImsInformedTests
 
 					for (int i = 0; i < uimfFileList.Count; i++)
 					{
-						string uimfFileLocation = uimfFileList[i];
-						FileInfo uimfFileInfo = new FileInfo(uimfFileLocation);
-						Console.WriteLine(DateTime.Now + ": Processing " + uimfFileInfo.Name);
-
-						InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
 
 						using (var transaction = connection.BeginTransaction())
 						{
+							string uimfFileLocation = uimfFileList[i];
+							FileInfo uimfFileInfo = new FileInfo(uimfFileLocation);
+							Console.WriteLine(DateTime.Now + ": Processing " + uimfFileInfo.Name);
+
+							InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
+
 							string insertDatasetQuery = "INSERT INTO T_Dataset (Dataset_Id, File_Name) VALUES(" + i + ",'" + uimfFileInfo.Name + "');";
 							command.CommandText = insertDatasetQuery;
 							command.ExecuteNonQuery();
-							transaction.Commit();
-						}
 
-						foreach (var imsTarget in targetList)
-						{
-							using (var transaction = connection.BeginTransaction())
+							foreach (var imsTarget in targetList)
 							{
 								ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
 
@@ -482,11 +476,11 @@ namespace ImsInformedTests
 									}
 								}
 
-								transaction.Commit();
+								// Reset the target so it can be used again by another dataset
+								imsTarget.RemoveResults();
 							}
 
-							// Reset the target so it can be used again by another dataset
-							imsTarget.RemoveResults();
+							transaction.Commit();
 						}
 					}
 				}
@@ -536,7 +530,7 @@ namespace ImsInformedTests
 				//}
 
 				netAlignmentInput.Add(new Tuple<double, double>(result.NormalizedElutionTime, imsTarget.NormalizedElutionTime));
-				massAlignmentInput.Add(new Tuple<double, double>(result.IsotopicProfile.MonoPeakMZ, result.PpmError));
+				massAlignmentInput.Add(new Tuple<double, double>(0, result.PpmError));
 			}
 
 			var netAlignmentInputGroup = netAlignmentInput.GroupBy(x => x.Item1).OrderBy(x => x.Key);

@@ -36,7 +36,8 @@ namespace ImsInformed.IO
 				connection.Open();
 
 				// Execute query
-				string queryString = isForCalibration ? GetQueryForCalibration() : GetQuery();
+				//string queryString = isForCalibration ? GetQueryForCalibration() : GetQuery();
+				string queryString = GetQueryForLCA_FS_PE_pool_08();
 				using (DbCommand command = connection.CreateCommand())
 				{
 					command.CommandText = queryString;
@@ -74,11 +75,11 @@ namespace ImsInformed.IO
 							targetList.Add(currentImsTarget);
 						}
 
-						int chargeState = Convert.ToInt16(reader["Conformer_Charge"]);
-						double driftTime = Convert.ToDouble(reader["Drift_Time_Avg"]);
+						//int chargeState = Convert.ToInt16(reader["Conformer_Charge"]);
+						//double driftTime = Convert.ToDouble(reader["Drift_Time_Avg"]);
 
-						DriftTimeTarget driftTimeTarget = new DriftTimeTarget(chargeState, driftTime);
-						currentImsTarget.DriftTimeTargetList.Add(driftTimeTarget);
+						//DriftTimeTarget driftTimeTarget = new DriftTimeTarget(chargeState, driftTime);
+						//currentImsTarget.DriftTimeTargetList.Add(driftTimeTarget);
 					}
 				}
 			}
@@ -136,7 +137,7 @@ namespace ImsInformed.IO
 					"FROM T_Mass_Tags MT " +
 						"JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
 						"JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
-					"WHERE MT.PMT_Quality_Score >= 2 " +
+					"WHERE MT.PMT_Quality_Score >= 1 " +
 					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
 		}
 
@@ -156,6 +157,31 @@ namespace ImsInformed.IO
 						"JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
 					"WHERE MT.PMT_Quality_Score >= 3 AND MT.Number_Of_Peptides > 50 " +
 					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
+		}
+
+		public static string GetQueryForLCA_FS_PE_pool_08()
+		{
+			return "SELECT DISTINCT MT.Mass_Tag_ID, " +
+						"MT.Peptide, " +
+						"MT.Monoisotopic_Mass, " +
+						"MTN.Avg_GANET, " +
+						"MT.Mod_Count, " +
+						"MT.Mod_Description, " +
+						"MT.High_Peptide_Prophet_Probability, " +
+						"MTN.Cnt_GANET " +
+					"FROM ( SELECT DISTINCT MT.Mass_Tag_ID " +
+						   "FROM T_Mass_Tags MT " +
+								"INNER JOIN T_Peptides P " +
+								  "ON MT.Mass_Tag_ID = P.Mass_Tag_ID " +
+								"INNER JOIN T_Analysis_Description TAD " +
+								  "ON P.Job = TAD.Job " +
+						   "WHERE (TAD.Experiment LIKE '%LCA_FS_PE_pool_08%') AND " +
+								 "(MT.PMT_Quality_Score >= 2) ) AS MTLookup " +
+						 "INNER JOIN T_Mass_Tags AS MT " +
+						   "ON MTLookup.Mass_Tag_ID = MT.Mass_Tag_ID " +
+						 "INNER JOIN T_Mass_Tags_NET AS MTN " +
+						   "ON MTLookup.Mass_Tag_ID = MTN.Mass_Tag_ID " +
+					"ORDER BY MT.Monoisotopic_Mass";
 		}
 	}
 }

@@ -65,6 +65,8 @@ namespace ImsInformed.Util
 			_theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
 			_leftOfMonoPeakLooker = new LeftOfMonoPeakLooker();
 			_peakDetector = new ChromPeakDetector(0.0001, 0.0001);
+			_peakDetector.PeakFitType = Globals.PeakFitType.QUADRATIC;
+			_peakDetector.RawDataType = Globals.RawDataType.Profile;
 			_isotopicPeakFitScoreCalculator = new PeakLeastSquaresFitter();
 
 			IterativeTFFParameters msFeatureFinderParameters = new IterativeTFFParameters
@@ -249,6 +251,25 @@ namespace ImsInformed.Util
 						continue;
 					}
 
+					// Grab the mass spectrum near the mono m/z and find the accurate m/z to get a PPM Error
+					XYData monoisotopicMzSpectrum = GetMassSpectrum(scanLcRep, scanImsRep, targetMz);
+					List<Peak> monoisotopicMzPeakList = _peakDetector.FindPeaks(monoisotopicMzSpectrum).OrderBy(x => Math.Abs(x.XValue - targetMz)).ToList();
+					if(!monoisotopicMzPeakList.Any())
+					{
+						result.FailureReason = FailureReason.IsotopicProfileNotFound;
+						continue;
+					}
+
+					double mzOfObservedMonoPeak = monoisotopicMzPeakList[0].XValue;
+					double ppmError = PeptideUtil.PpmError(targetMz, mzOfObservedMonoPeak);
+					result.PpmError = ppmError;
+					result.ObservedMz = mzOfObservedMonoPeak;
+					if(Math.Abs(ppmError) > _parameters.MassToleranceInPpm)
+					{
+						result.FailureReason = FailureReason.MassError;
+						continue;
+					}
+
 					//Console.WriteLine(target.Peptide + "\t" + targetMass + "\t" + targetMz + "\t" + scanLcRep);
 
 					// Find Isotopic Profile
@@ -256,7 +277,7 @@ namespace ImsInformed.Util
 					double isotopicFitScore = IsotopicProfileUtil.GetFit(theoreticalIsotopicProfile, observedIsotopicProfile);
 
 					// No need to move on if the isotopic profile is not found
-					if (observedIsotopicProfile[0] < 1 || isotopicFitScore > 0.95)
+					if (observedIsotopicProfile[0] < 1 || isotopicFitScore > 0.95 || observedIsotopicProfile.Count(x => x > 0) < 3)
 					{
 						result.FailureReason = FailureReason.IsotopicProfileNotFound;
 						continue;
@@ -288,10 +309,47 @@ namespace ImsInformed.Util
 					double isotopeLeftOfMonoMz = targetIon.GetIsotopeMz(-1);
 					List<IntensityPoint> pointList = _uimfReader.GetXic(isotopeLeftOfMonoMz, _parameters.MassToleranceInPpm, scanLcRep - 1, scanLcRep + 1, scanImsRep - 2, scanImsRep + 2, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
 					double intensityOfPeakToLeft = pointList.Sum(x => x.Intensity);
-					if(intensityOfPeakToLeft > (observedIsotopicProfile[0] * 0.5))
+					if(intensityOfPeakToLeft > (observedIsotopicProfile[0] * 0.3))
 					{
-						result.FailureReason = FailureReason.PeakToLeft;
-						continue;
+						// Compare XIC of -1 isotope to 0 isotope
+						IEnumerable<FeatureBlob> leftIsotopeFeatures = FindFeatures(isotopeLeftOfMonoMz, scanLcMin - 10, scanLcMax + 10);
+
+						FeatureBlob leftIsotopeFeature = null;
+						bool foundFeature = false;
+						foreach (var featureBlobToTest in leftIsotopeFeatures.OrderByDescending(x => x.PointList.Count))
+						{
+							var leftIsotopeStatistics = featureBlobToTest.CalculateStatistics();
+							if (leftIsotopeStatistics.ScanImsRep <= scanImsMax && leftIsotopeStatistics.ScanImsRep >= scanImsMin && leftIsotopeStatistics.ScanLcRep <= scanLcMax && leftIsotopeStatistics.ScanLcRep >= scanLcMin)
+							{
+								leftIsotopeFeature = featureBlobToTest;
+								foundFeature = true;
+								break;
+							}
+						}
+
+						if(foundFeature)
+						{
+							// If the left isotope feature is saturated, we cannot get an accurate correlation so must assume PeakToLeft error
+							if (leftIsotopeFeature.Statistics.IsSaturated)
+							{
+								result.FailureReason = FailureReason.PeakToLeft;
+								continue;
+							}
+
+							// Check both LC and IMS correlation
+							double lcCorrelation = FeatureCorrelator.CorrelateFeaturesUsingLc(featureToUseForResult, leftIsotopeFeature);
+							//Console.WriteLine(chargeState + "\tLC Correlation of left isotope = " + lcCorrelation);
+							if (lcCorrelation > 0.90)
+							{
+								double imsCorrelation = FeatureCorrelator.CorrelateFeaturesUsingIms(featureToUseForResult, leftIsotopeFeature);
+								//Console.WriteLine(chargeState + "\tIMS Correlation of left isotope = " + imsCorrelation);
+								if(imsCorrelation > 0.90)
+								{
+									result.FailureReason = FailureReason.PeakToLeft;
+									continue;
+								}
+							}
+						}
 					}
 
 					// Calculate isotopic fit score
@@ -626,12 +684,12 @@ namespace ImsInformed.Util
 			return returnScanLc;
 		}
 
-		private XYData GetMassSpectrum(int scanLcRep, int scanImsRep, double minMzForSpectrum, double maxMzForSpectrum)
+		private XYData GetMassSpectrum(int scanLcRep, int scanImsRep, double targetMz)
 		{
 			double[] mzArray;
 			int[] intensityArray;
 
-			_uimfReader.GetSpectrum(scanLcRep - 1, scanLcRep + 1, DataReader.FrameType.MS1, scanImsRep - 2, scanImsRep + 2, minMzForSpectrum, maxMzForSpectrum, out mzArray, out intensityArray);
+			_uimfReader.GetSpectrumBinCentric(scanLcRep - 1, scanLcRep + 1, DataReader.FrameType.MS1, scanImsRep - 2, scanImsRep + 2, targetMz, _parameters.MassToleranceInPpm, DataReader.ToleranceType.PPM, out mzArray, out intensityArray);
 			double[] intensityArrayAsDoubles = XYData.ConvertIntsToDouble(intensityArray);
 			XYData massSpectrum = new XYData();
 			massSpectrum.SetXYValues(ref mzArray, ref intensityArrayAsDoubles);

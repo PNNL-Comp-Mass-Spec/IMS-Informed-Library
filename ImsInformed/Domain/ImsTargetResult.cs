@@ -21,6 +21,7 @@ namespace ImsInformed.Domain
 		public double[] IsotopicProfile { get; set; }
 		public double IsotopicFitScore { get; set; }
 		public double PpmError { get; set; }
+		public double ObservedMz { get; set; }
 
 		public FeatureBlob XicFeature { get; set; }
 

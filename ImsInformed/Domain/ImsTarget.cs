@@ -114,7 +114,7 @@ namespace ImsInformed.Domain
 
 			foreach (var imsTargetResult in this.ResultList)
 			{
-				double observedMz = imsTargetResult.IsotopicProfile != null ? 0 : 0;
+				double observedMz = imsTargetResult.ObservedMz;
 				double abundance = imsTargetResult.IsotopicProfile != null ? imsTargetResult.Intensity: 0;
 				int chargeState = imsTargetResult.ChargeState;
 				double driftTime = imsTargetResult.DriftTime;

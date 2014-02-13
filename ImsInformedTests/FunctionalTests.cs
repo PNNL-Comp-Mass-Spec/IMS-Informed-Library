@@ -44,23 +44,23 @@ namespace ImsInformedTests
 		[Test]
 		public void TestSinglePeptide2()
 		{
-			string uimfFileLocation = @"..\..\..\testFiles\Sarc_MS2_90_6Apr11_Cheetah_11-02-19.uimf";
+			string uimfFileLocation = @"..\..\..\testFiles\LCA_FS_PE_pool_08_8Jan14_Methow_13-10-11.uimf";
 
 			InformedParameters parameters = new InformedParameters
 			{
 				ChargeStateMax = 5,
 				DriftTimeTolerance = 100,
-				NetTolerance = 0.2,
+				NetTolerance = 0.03,
 				IsotopicFitScoreMax = 0.15,
-				MassToleranceInPpm = 30,
+				MassToleranceInPpm = 20,
 				NumPointForSmoothing = 9
 			};
 
-			string peptide = "ATVLNYLPK";
-			double net = 0.3612;
+			string peptide = "DLVEGQK";
+			double net = 0.3713572023313905;
 
 			ImsTarget target = new ImsTarget(1, peptide, net);
-			DriftTimeTarget driftTimeTarget = new DriftTimeTarget(2, 19.62);
+			DriftTimeTarget driftTimeTarget = new DriftTimeTarget(3, 15.14910078);
 			target.DriftTimeTargetList.Add(driftTimeTarget);
 
 			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
@@ -199,7 +199,7 @@ namespace ImsInformedTests
 		{
 			// Setup sqlite output file by deleting any current file and copying a blank schema over
 			string sqliteSchemaLocation = @"..\..\..\testFiles\informedSchema.db3";
-			string sqliteOutputLocation = "Sarc_Many_Datasets_All_Aligned_NewFaster.db3";
+			string sqliteOutputLocation = "Sarc_Many_Datasets_All_Aligned_NewFaster_MoreTargets.db3";
 			if (File.Exists(sqliteOutputLocation)) File.Delete(sqliteOutputLocation);
 			File.Copy(sqliteSchemaLocation, sqliteOutputLocation);
 
@@ -223,8 +223,8 @@ namespace ImsInformedTests
 				ChargeStateMax = 5,
 				DriftTimeTolerance = 100,
 				NetTolerance = 0.03,
-				IsotopicFitScoreMax = 0.2,
-				MassToleranceInPpm = 30,
+				IsotopicFitScoreMax = 0.15,
+				MassToleranceInPpm = 20,
 				NumPointForSmoothing = 9
 			};
 
@@ -677,14 +677,14 @@ namespace ImsInformedTests
 				NumPointForSmoothing = 9
 			};
 
-			string peptide = "LCHCPVGYTGPFCDVDTK";
-			double net = 0.3041;
+			string peptide = "TWQDCEYKDAAK";
+			double net = 0.19697314500808716;
 
 			List<Modification> modificationList = new List<Modification>();
 			//modificationList.Add(Modification.Oxidation);
 			modificationList.Add(Modification.Carbamidomethylation);
-			modificationList.Add(Modification.Carbamidomethylation);
-			modificationList.Add(Modification.Carbamidomethylation);
+			//modificationList.Add(Modification.Carbamidomethylation);
+			//modificationList.Add(Modification.Carbamidomethylation);
 
 			ImsTarget target = new ImsTarget(1, peptide, net, modificationList);
 
@@ -797,6 +797,123 @@ namespace ImsInformedTests
 				//Random random = new Random();
 				//informedWorkflow.ExtractData(targetList.OrderBy(x => random.Next()).Take(100));
 				//informedWorkflow.ExtractData(targetList);
+			}
+		}
+
+		[Test]
+		public void TestCalibrationLcaPool08()
+		{
+			string uimfFileLocation = @"..\..\..\testFiles\LCA_FS_PE_pool_08_8Jan14_Methow_13-10-11.uimf";
+			//string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
+
+			InformedParameters parameters = new InformedParameters
+			{
+				ChargeStateMax = 5,
+				DriftTimeTolerance = 100,
+				NetTolerance = 0.5,
+				IsotopicFitScoreMax = 0.15,
+				MassToleranceInPpm = 30,
+				NumPointForSmoothing = 9
+			};
+
+			List<ImsTarget> targetList = MassTagImporter.ImportMassTags("roadrunner", "MT_LCA_FS_PE_P939 ", 1e-10, true);
+			Console.WriteLine("Using " + targetList.Count + " targets for calibration.");
+
+			List<Tuple<double, double>> netAlignmentInput = new List<Tuple<double, double>>();
+			List<Tuple<double, double>> massAlignmentInput = new List<Tuple<double, double>>();
+
+			InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
+
+			foreach (var imsTarget in targetList.OrderBy(x => x.NormalizedElutionTime))
+			{
+				ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+
+				if (correlationResult == null || !correlationResult.CorrelatedResults.Any()) continue;
+
+				ImsTargetResult result = correlationResult.CorrelatedResults.OrderByDescending(x => x.Intensity).First();
+				//ImsTargetResult result = correlationResult.CorrelatedResults.OrderByDescending(x => x.Intensity * (1 - Math.Abs(x.NormalizedElutionTime - imsTarget.NormalizedElutionTime))).First();
+				//ImsTargetResult result = correlationResult.CorrelatedResults.OrderBy(x => x.NormalizedElutionTime).First();
+
+				//if (netAlignmentInput.Count == 0 || Math.Abs(netAlignmentInput.Last().Item1 - imsTarget.NormalizedElutionTime) > 0.0001)
+				//{
+				//    netAlignmentInput.Add(new Tuple<double, double>(imsTarget.NormalizedElutionTime, result.NormalizedElutionTime));
+				//    massAlignmentInput.Add(new Tuple<double, double>(imsTarget.NormalizedElutionTime, result.PpmError));
+				//}
+
+				netAlignmentInput.Add(new Tuple<double, double>(result.NormalizedElutionTime, imsTarget.NormalizedElutionTime));
+				massAlignmentInput.Add(new Tuple<double, double>(0, result.PpmError));
+			}
+
+			// Place data points at beginning and end to finish off the alignment
+			netAlignmentInput.Add(new Tuple<double, double>(0, 0));
+			netAlignmentInput.Add(new Tuple<double, double>(1, 1));
+
+			// Do LOESS to get NET alignment
+			Console.WriteLine(DateTime.Now + ": Found " + netAlignmentInput.Count + " targets to use for alignment.");
+			var netAlignmentInputGroup = netAlignmentInput.GroupBy(x => x.Item1).OrderBy(x => x.Key);
+			var groupedNetTuple = netAlignmentInputGroup.Select(x => x.OrderBy(y => Math.Abs(y.Item1 - y.Item2)).First()).ToArray();
+			var loessInterpolatorForNetAlignment = new LoessInterpolator(0.1, 4);
+			double[] xArray = groupedNetTuple.Select(x => x.Item1).ToArray();
+			double[] yArray = groupedNetTuple.Select(x => x.Item2).ToArray();
+			double[] newNetValues = loessInterpolatorForNetAlignment.Smooth(xArray, yArray);
+
+			using (StreamWriter writer = new StreamWriter("oldNetValues.csv"))
+			{
+				foreach (var netTuple in groupedNetTuple)
+				{
+					writer.WriteLine(netTuple.Item1 + "," + netTuple.Item2);
+				}
+			}
+
+			using (StreamWriter writer = new StreamWriter("smoothedNetValues.csv"))
+			{
+				for (int i = 0; i < groupedNetTuple.Length; i++)
+				{
+					writer.WriteLine(groupedNetTuple[i].Item1 + "," + newNetValues[i]);
+				}
+			}
+		}
+
+		[Test]
+		public void TestLCAPool08()
+		{
+			string uimfFileLocation = @"..\..\..\testFiles\LCA_FS_PE_pool_08_8Jan14_Methow_13-10-11.uimf";
+			string netAlignmentFileLocation = @"..\..\..\testFiles\LCA_FS_PE_pool_08_8Jan14_Methow_13-10-11_NetAlign.csv";
+			//string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
+
+			IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
+
+			InformedParameters parameters = new InformedParameters
+			{
+				ChargeStateMax = 5,
+				DriftTimeTolerance = 100,
+				NetTolerance = 0.05,
+				IsotopicFitScoreMax = 0.2,
+				MassToleranceInPpm = 15,
+				NumPointForSmoothing = 9
+			};
+
+			List<ImsTarget> targetList = MassTagImporter.ImportMassTags("roadrunner", "MT_LCA_FS_PE_P939");
+
+			Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");
+
+			using (ImsTargetResultExporter allResultsExporter = new ImsTargetResultExporter("outputTestAll.csv"))
+			{
+				using (ImsTargetResultExporter resultsExporter = new ImsTargetResultExporter("outputTest.csv"))
+				{
+					InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters, interpolation);
+
+					foreach (var imsTarget in targetList)
+					{
+						ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+
+						allResultsExporter.AppendResultsOfTargetToCsv(imsTarget);
+
+						if (correlationResult == null) continue;
+
+						resultsExporter.AppendCorrelationResultToCsv(correlationResult);
+					}
+				}
 			}
 		}
 	}

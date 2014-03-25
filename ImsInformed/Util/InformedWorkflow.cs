@@ -88,7 +88,6 @@ namespace ImsInformed.Util
 			// Get empirical formula
 			Composition targetComposition = target.Composition;
 
-			double targetMass = targetComposition.GetMass();
 			double targetNet = target.NormalizedElutionTime;
 			double targetNetMin = targetNet - _parameters.NetTolerance;
 			double targetNetMax = targetNet + _parameters.NetTolerance;
@@ -118,7 +117,7 @@ namespace ImsInformed.Util
 				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, scanLcSearchMin, scanLcSearchMax);
 
 				// Filter away small XIC peaks
-				featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.25);
+				featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.5);
 
 				if(!featureBlobs.Any())
 				{
@@ -699,12 +698,14 @@ namespace ImsInformed.Util
 
 		private double[] GetIsotopicProfile(Ion ion, int scanLcRep, int scanImsRep, int numIsotopes)
 		{
+			// TODO: Correlate each isotope in LC and set any non-correlating isotopes to 0
+
 			double[] isotopicProfile = new double[numIsotopes];
 
 			for (int i = 0; i < numIsotopes; i++)
 			{
 				double targetMz = ion.GetIsotopeMz(i);
-				List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, scanLcRep - 1, scanLcRep + 1, scanImsRep - 2, scanImsRep + 2, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
+				List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, scanLcRep, scanLcRep, scanImsRep, scanImsRep, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
 
 				double intensitySum = intensityPointList.Sum(x => x.Intensity);
 

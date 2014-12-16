@@ -36,7 +36,7 @@ namespace ImsInformed.IO
 
 			double targetElutionTime = target.NormalizedElutionTime;
 
-			foreach (var result in target.ResultList)
+			foreach (ImsTargetResult result in target.ResultList)
 			{
 				int chargeState = result.ChargeState;
 				IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.DriftTime - result.DriftTime));
@@ -51,8 +51,8 @@ namespace ImsInformed.IO
 					driftTimeError = result.DriftTime - targetDriftTime;
 				}
 
-				double observedMz = result.ObservedMz;
-				double abundance = result.IsotopicProfile != null ? result.Intensity : 0;
+				double observedMz = result.IsotopicProfile != null ? result.IsotopicProfile.MonoPeakMZ : 0;
+				double abundance = result.IsotopicProfile != null ? result.IsotopicProfile.GetAbundance() : 0;
 				double elutionTimeError = result.NormalizedElutionTime - targetElutionTime;
 				double correlationAverage = 0;
 
@@ -115,11 +115,11 @@ namespace ImsInformed.IO
 
 				StringBuilder resultInfo = new StringBuilder();
 				resultInfo.Append(result.ChargeState + ",");
-				resultInfo.Append(result.ObservedMz + ",");
+				resultInfo.Append(result.IsotopicProfile.MonoPeakMZ + ",");
 				resultInfo.Append(result.PpmError + ",");
 				resultInfo.Append(result.ScanLcRep + ",");
 				resultInfo.Append(result.IsotopicFitScore + ",");
-				resultInfo.Append(result.Intensity + ",");
+				resultInfo.Append(result.IsotopicProfile.GetAbundance() + ",");
 				resultInfo.Append(targetElutionTime + ",");
 				resultInfo.Append(result.NormalizedElutionTime + ",");
 				resultInfo.Append(elutionTimeError + ",");

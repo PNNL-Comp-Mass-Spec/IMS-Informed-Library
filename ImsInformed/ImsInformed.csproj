@@ -12,13 +12,14 @@
     <AssemblyName>ImsInformed</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>6482a9ab</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -30,14 +31,13 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DeconTools.Backend">
-      <HintPath>..\lib\x86\DeconTools.Backend.dll</HintPath>
+    <Reference Include="DeconTools.Backend, Version=1.0.5044.25138, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\DeconTools\DeconTools.Backend.dll</HintPath>
     </Reference>
-    <Reference Include="DeconTools.Workflows">
-      <HintPath>..\lib\x86\DeconTools.Workflows.dll</HintPath>
-    </Reference>
-    <Reference Include="InformedProteomics.Backend">
-      <HintPath>..\lib\x86\InformedProteomics.Backend.dll</HintPath>
+    <Reference Include="InformedProteomics.Backend, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\InformedProteomics\InformedProteomics.Backend.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\lib\log4net.dll</HintPath>
@@ -45,48 +45,92 @@
     <Reference Include="MathNet.Numerics">
       <HintPath>..\lib\MathNet.Numerics.dll</HintPath>
     </Reference>
-    <Reference Include="MultiDimensionalPeakFinding">
-      <HintPath>..\lib\x86\MultiDimensionalPeakFinding.dll</HintPath>
+    <Reference Include="MultiDimensionalPeakFinding, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\MultiDimensionalPeakFinding\MultiDimensionalPeakFinding.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot">
+      <HintPath>..\packages\OxyPlot.Core.2014.1.546\lib\portable-net4+sl4+wp71+win8\OxyPlot.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot.Wpf">
+      <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net40\OxyPlot.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot.Xps">
+      <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net40\OxyPlot.Xps.dll</HintPath>
     </Reference>
     <Reference Include="PNNLOmics">
       <HintPath>..\lib\PNNLOmics.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\lib\x86\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.93.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\UIMFLibrary\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UIMFLibrary">
-      <HintPath>..\lib\x86\UIMFLibrary.dll</HintPath>
+    <Reference Include="UIMFLibrary, Version=2.1.5394.28939, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\UIMFLibrary\UIMFLibrary.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\ChargeStateCorrelationResult.cs" />
     <Compile Include="Domain\DriftTimeTarget.cs" />
     <Compile Include="Domain\FailurePrecedence.cs" />
     <Compile Include="Domain\FailureReason.cs" />
+    <Compile Include="Domain\FakeUIMFReader.cs" />
     <Compile Include="Domain\FeatureBlobNet.cs" />
+    <Compile Include="Domain\FeatureUtil.cs" />
     <Compile Include="Domain\ImsTarget.cs" />
     <Compile Include="Domain\ImsTargetResult.cs" />
+    <Compile Include="Domain\InjectionMethod.cs" />
+    <Compile Include="Domain\IonizationMethod.cs" />
+    <Compile Include="IO\ImsInformedPlotter.cs" />
+    <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
+    <Compile Include="Stats\FitLine.cs" />
+    <Compile Include="Domain\TargetType.cs" />
+    <Compile Include="Domain\ExtractedIonChromatogram.cs" />
+    <Compile Include="Stats\UnitConversion.cs" />
+    <Compile Include="Domain\VoltageGroup.cs" />
+    <Compile Include="Domain\VoltageSeparatedAccumulatedXICs.cs" />
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
     <Compile Include="Parameters\InformedParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Util\InformedWorkflow.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
+    <Compile Include="Util\MoleculeUtil.cs" />
+    <Compile Include="Util\MoleculeInformedWorkflow.cs" />
     <Compile Include="Util\PeptideUtil.cs" />
+    <Compile Include="Util\SaturationDetector.cs" />
+    <Compile Include="Stats\ContinuousXYPoint.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="PNNLOmicsElementData.xml">
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PNNLOmicsElementData.xml">
+      <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

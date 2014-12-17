@@ -1017,7 +1017,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, parameters);
+            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "", parameters);
             informedWorkflow.RunMoleculeInformedWorkFlow(sample);
         }
 
@@ -1051,7 +1051,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, parameters);
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
 
@@ -1102,7 +1102,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, parameters);
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
     }

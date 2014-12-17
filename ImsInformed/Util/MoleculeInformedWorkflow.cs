@@ -11,6 +11,7 @@ using MultiDimensionalPeakFinding.PeakDetection;
 namespace ImsInformed.Util
 {
     using System.Dynamic;
+    using System.IO;
 
     using ImsInformed.IO;
     using ImsInformed.Stats;
@@ -19,17 +20,53 @@ namespace ImsInformed.Util
     public class MoleculeInformedWorkflow : InformedWorkflow
     {
         public MoleculeWorkflowParameters Parameters { get; set; }
+        
+        public string OutputPath { get; set; }
 
-		public MoleculeInformedWorkflow(string uimfFileLocation, MoleculeWorkflowParameters parameters) : base(uimfFileLocation, parameters)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MoleculeInformedWorkflow"/> class.
+        /// </summary>
+        /// <param name="uimfFileLocation">
+        /// The uimf file location.
+        /// </param>
+        /// <param name="outputDirectory">
+        /// The output directory.
+        /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
+        public MoleculeInformedWorkflow(string uimfFileLocation, string outputDirectory, MoleculeWorkflowParameters parameters) : base(uimfFileLocation, parameters)
 		{
-            Parameters = parameters;
+            this.Parameters = parameters;
+            
+            if (outputDirectory == "")
+            {
+                outputDirectory = Directory.GetCurrentDirectory();
+            }
+            if (Directory.Exists(outputDirectory))
+            {
+                this.OutputPath = outputDirectory;
+            }
+            else 
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception e)
+                {
+                    
+                    Console.WriteLine("Failed to create directory.");
+                    throw;
+                }
+            }
 		}
 
         // return nth isotope of the target, return null if target does not have composition data
         // TODO verify if correct, i think this is wrong
         public static Ion TargetIon(ImsTarget target, int n, int chargeState)
         {
-            return  new Ion(target.Composition, chargeState);
+            return new Ion(target.Composition, chargeState);
         }
 
         public double ScoreFeatureUsingIsotopicProfile(FeatureBlob featureBlob, ImsTarget target, int chargeState, FeatureBlobStatistics statistics)

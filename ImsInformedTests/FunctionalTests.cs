@@ -1071,5 +1071,39 @@ namespace ImsInformedTests
             //foreach (var item in intensity)
             //    Console.WriteLine(item);
         }
+
+        [Test]
+        public void TestFileNotFound()
+        {
+                        // Good BPS data
+            double mz = 273.0192006876;
+            string uimfFile = "blablabla";
+
+            // Acetaminophen
+            // double mz = 150.0555008;
+            // string uimfFile = Acetaminophen;
+
+            // Nicotinefnic
+            // double mz = 161.10787;
+            // string uimfFile = NicoFile;
+
+            // AcetamipridFile
+            // double mz = 221.059395;
+            // string uimfFile = AcetamipridFile;
+
+            ImsTarget target= new ImsTarget(1, IonizationMethod.ProtonMinus, mz);
+            Console.WriteLine("Nicotine:");
+            Console.WriteLine("MZ:   " + mz);
+
+            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
+            {
+                IsotopicFitScoreMax = 0.15,
+                MassToleranceInPpm = 10,
+                NumPointForSmoothing = 9
+            };
+
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, parameters);
+            workflow.RunMoleculeInformedWorkFlow(target);
+        }
     }
 }

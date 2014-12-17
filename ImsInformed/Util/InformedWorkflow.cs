@@ -457,8 +457,8 @@ namespace ImsInformed.Util
 					FrameParams frameParameters = _uimfReader.GetFrameParams(1);
 					double slope = frameParameters.CalibrationSlope;
 					double intercept = frameParameters.CalibrationIntercept;
-					double binWidth = _uimfReader.GetGlobalParameters().BinWidth;
-					float tofCorrectionTime = _uimfReader.GetGlobalParameters().TOFCorrectionTime;
+					double binWidth = _uimfReader.GetGlobalParams().BinWidth;
+					float tofCorrectionTime = _uimfReader.GetGlobalParams().TOFCorrectionTime;
 
 					double mzTolerance = targetMz / 1000000 * _parameters.MassToleranceInPpm;
 					double lowMz = targetMz - mzTolerance;

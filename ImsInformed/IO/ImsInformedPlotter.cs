@@ -13,7 +13,6 @@ namespace ImsInformed.IO
     using System.Windows.Media;
     using System.Windows.Media.Animation;
     using System.Windows.Media.Imaging;
-    using System.Windows.Shapes;
 
     using ImsInformed.Domain;
     using ImsInformed.Stats;

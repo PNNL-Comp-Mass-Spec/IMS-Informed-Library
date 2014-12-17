@@ -26,8 +26,6 @@ using UIMFLibrary;
 
 namespace ImsInformed.Util
 {
-    using System.Data.SQLite;
-
     public class InformedWorkflow
 	{
 		protected readonly DataReader _uimfReader;

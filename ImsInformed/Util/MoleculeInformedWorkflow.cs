@@ -59,14 +59,13 @@ namespace ImsInformed.Util
                 {
                     Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    
                     Console.WriteLine("Failed to create directory.");
                     throw;
                 }
             }
-		}
+        }
 
         // return nth isotope of the target, return null if target does not have composition data
         // TODO verify if correct, i think this is wrong

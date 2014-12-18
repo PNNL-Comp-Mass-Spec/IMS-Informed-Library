@@ -42,7 +42,13 @@ namespace ImsInformed.Util
             if (outputDirectory == "")
             {
                 outputDirectory = Directory.GetCurrentDirectory();
+            } 
+            
+            if (!outputDirectory.EndsWith("\\"))
+            {
+                outputDirectory += "\\";
             }
+
             if (Directory.Exists(outputDirectory))
             {
                 this.OutputPath = outputDirectory;
@@ -294,7 +300,7 @@ namespace ImsInformed.Util
             line.LeastSquaresFitLinear(newPoints);
 
             // Export the fit line into QC oxyplot drawings
-            string outputPath = "QC.png" ; //DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")+ 
+            string outputPath = this.OutputPath + "QC.png" ; //DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")+
             ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
             Console.WriteLine("Writes QC plot of fitline to " + outputPath);
 

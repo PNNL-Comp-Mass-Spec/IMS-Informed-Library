@@ -1017,7 +1017,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "", parameters);
+            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", parameters);
             informedWorkflow.RunMoleculeInformedWorkFlow(sample);
         }
 

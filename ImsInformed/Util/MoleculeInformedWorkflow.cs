@@ -26,37 +26,27 @@
     public class MoleculeInformedWorkflow : InformedWorkflow
     {
         /// <summary>
-        /// Gets or sets the parameters.
-        /// </summary>
-        public MoleculeWorkflowParameters Parameters { get; set; }
-
-        /// <summary>
-        /// Gets or sets the dataset name.
-        /// </summary>
-        public string DatasetName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the output path.
-        /// </summary>
-        public string OutputPath { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="MoleculeInformedWorkflow"/> class.
         /// </summary>
         /// <param name="uimfFileLocation">
-        /// The uimf file location.
+        /// The UIMF file location.
         /// </param>
         /// <param name="outputDirectory">
         /// The output directory.
         /// </param>
+        /// <param name="resultFileName">
+        /// The result path.
+        /// </param>
         /// <param name="parameters">
         /// The parameters.
         /// </param>
-        public MoleculeInformedWorkflow(string uimfFileLocation, string outputDirectory, MoleculeWorkflowParameters parameters) : base(uimfFileLocation, parameters)
-		{
+        public MoleculeInformedWorkflow(string uimfFileLocation, string outputDirectory, string resultFileName, MoleculeWorkflowParameters parameters) : base(uimfFileLocation, parameters)
+        {
             this.DatasetName = Path.GetFileNameWithoutExtension(uimfFileLocation);
 
             this.Parameters = parameters;
+
+            this.ResultFileName = resultFileName;
             
             if (outputDirectory == string.Empty)
             {
@@ -68,11 +58,7 @@
                 outputDirectory += "\\";
             }
 
-            if (Directory.Exists(outputDirectory))
-            {
-                this.OutputPath = outputDirectory;
-            }
-            else 
+            if (!Directory.Exists(outputDirectory))
             {
                 try
                 {
@@ -84,7 +70,29 @@
                     throw;
                 }
             }
+
+            this.OutputPath = outputDirectory;
         }
+
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        public MoleculeWorkflowParameters Parameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the dataset name.
+        /// </summary>
+        public string DatasetName { get; set; }
+
+        /// <summary>
+        /// Gets the result path.
+        /// </summary>
+        public string ResultFileName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the output path.
+        /// </summary>
+        public string OutputPath { get; set; }
 
         /// <summary>
         /// The target ion.
@@ -129,16 +137,15 @@
         public double ScoreFeatureUsingIsotopicProfile(FeatureBlob featureBlob, ImsTarget target, int chargeState, FeatureBlobStatistics statistics)
         {
             // No need to move on if the isotopic profile is not found
-            //if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
-            //{
-            //    result.FailureReason = FailureReason.IsotopicProfileNotFound;
-            //    continue;
-            //}
+            // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
+            // {
+            // result.FailureReason = FailureReason.IsotopicProfileNotFound;
+            // continue;
+            // }
 
             // Find Isotopic Profile
-                // List<Peak> massSpectrumPeaks;
-                //IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
-
+            // List<Peak> massSpectrumPeaks;
+            // IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
             int unsaturatedIsotope = 0;
 
             if (target.Composition == null)
@@ -275,15 +282,9 @@
             Trace.Listeners.Clear();
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
             consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
-            string resultPath = this.OutputPath + this.DatasetName +  "_" + target.IonizationType + "_Result.txt";
+            string result = this.OutputPath + this.ResultFileName;
 
-            // Delete the result file if it already exists
-            if (File.Exists(resultPath))
-            {
-                File.Delete(resultPath);
-            }
-
-            using (StreamWriter resultFile = File.AppendText(resultPath))
+            using (StreamWriter resultFile = File.AppendText(result))
             {
                 TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(resultFile)
                 {
@@ -300,7 +301,7 @@
                 {
                     // Because ion assumes adding a proton, that's the reason for decompensation
                     Ion targetIon = new Ion(targetComposition, 1);
-                target.TargetMz = targetIon.GetMonoIsotopicMz();
+                    target.TargetMz = targetIon.GetMonoIsotopicMz();
                 } 
                 
                 resultFile.WriteLine();
@@ -406,32 +407,44 @@
                         newPoints.Add(point);
                     }
                 }
-                line.LeastSquaresFitLinear(newPoints);
 
-                // Export the fit line into QC oxyplot drawings
-                string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
-                ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
-                Console.WriteLine("Writes QC plot of fitline to " + outputPath);
-                Trace.WriteLine("");
-
-                double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
-                double crossSection = 0;
-
-                // mobility and cross section area
-                // Printout results
-                foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                // If not enough points
+                bool sufficientPoints = newPoints.Count >= 3;
+                if (!sufficientPoints)
                 {
-                    Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
-                    Trace.WriteLine(String.Format("Mean Voltrage {0:F2} V", voltageGroup.MeanVoltageInVolts));
-                    Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
-                    Trace.WriteLine(String.Format("mobilityScan: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
-                    Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
-                    Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
-                    Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
-                    Trace.WriteLine("");
+                    Trace.WriteLine("Not enough points are qualified for perform linear fit. Abort identification.");
                 }
-                Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", mobility));
-                Trace.WriteLine(String.Format("Cross Sectional Area: " + crossSection));
+                else 
+                {
+                    line.LeastSquaresFitLinear(newPoints);
+
+                    // Export the fit line into QC oxyplot drawings
+                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
+                    ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
+                    Console.WriteLine("Writes QC plot of fitline to " + outputPath);
+                    Trace.WriteLine("");
+
+                    double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
+                    double crossSection = 0;
+
+                    // mobility and cross section area
+                    // Printout results
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                    {
+                        Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
+                        Trace.WriteLine(String.Format("Mean Voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
+                        Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
+                        Trace.WriteLine(String.Format("mobilityScan: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
+                        Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
+                        Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
+                        Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
+                        Trace.WriteLine("");
+                    }
+                    Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", mobility));
+                    Trace.WriteLine(String.Format("Cross Sectional Area: " + crossSection));
+                    return true;
+                }
+
                 return false;
             }
         }

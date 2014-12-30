@@ -1017,7 +1017,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", parameters);
+            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result", parameters);
             informedWorkflow.RunMoleculeInformedWorkFlow(sample);
         }
 
@@ -1036,6 +1036,10 @@ namespace ImsInformedTests
             // double mz = 161.10787;
             // string uimfFile = NicoFile;
 
+            // Nico M+H
+            // double mz = 161.10787;
+            // string uimfFile = NicoFile;
+
             // AcetamipridFile
             // double mz = 221.059395;
             // string uimfFile = AcetamipridFile;
@@ -1051,7 +1055,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "", parameters);
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
 
@@ -1102,7 +1106,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "", parameters);
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
     }

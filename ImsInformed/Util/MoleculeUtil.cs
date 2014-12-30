@@ -1,22 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-// utilities used to work on non-peptide small particles.
+﻿// utilities used to work on non-peptide small particles.
 namespace ImsInformed.Util
 {
-    using System.Collections;
-    using System.IO;
-    using System.Net.Mime;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using System.Text.RegularExpressions;
-    using System.Windows;
-    using System.Windows.Input;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Xml.Linq;
-
-    using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
     using ImsInformed.Domain;
 
@@ -27,6 +15,9 @@ namespace ImsInformed.Util
 
     using UIMFLibrary;
 
+    /// <summary>
+    /// The molecule util.
+    /// </summary>
     public static class MoleculeUtil
     {
         // Apply the ionization composition to the chemical of interest. Return null if the given composition is null.

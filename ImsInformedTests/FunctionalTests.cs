@@ -1017,10 +1017,13 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result", parameters);
+            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
             informedWorkflow.RunMoleculeInformedWorkFlow(sample);
         }
 
+        /// <summary>
+        /// The test single molecule MZ only.
+        /// </summary>
         [Test][STAThread]
         public void TestSingleMoleculeMzOnly()
         {
@@ -1055,12 +1058,15 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result", parameters);
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
 
+        /// <summary>
+        /// The test UIMF file reading.
+        /// </summary>
         [Test]
-        public void TestUIMFfileReading() 
+        public void TestUimFfileReading() 
         {
             double[] mzq = new double[200];
             int[] intensity = new int[100];
@@ -1076,6 +1082,9 @@ namespace ImsInformedTests
             //    Console.WriteLine(item);
         }
 
+        /// <summary>
+        /// The test file not found.
+        /// </summary>
         [Test]
         public void TestFileNotFound()
         {
@@ -1106,7 +1115,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result", parameters);
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
     }

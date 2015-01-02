@@ -68,12 +68,10 @@
             _uimfReader = new DataReader(uimfFileLocation);
 
             // Append bin-centric table to the uimf if not present.
-            if (!_uimfReader.TableExists("Bin_Intensities")) 
-            {
-                using (DataWriter uimfWriter = new DataWriter(uimfFileLocation))
-			    {
-				    uimfWriter.CreateBinCentricTables();
-			    }
+            if (!_uimfReader.DoesContainBinCentricData())
+			{
+				DataWriter dataWriter = new DataWriter(uimfFileLocation);
+				dataWriter.CreateBinCentricTables();
 			}
 			
 			_parameters = parameters;

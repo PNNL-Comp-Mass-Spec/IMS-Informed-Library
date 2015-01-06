@@ -434,6 +434,8 @@ namespace ImsInformed.Util
                     Console.WriteLine("Writes QC plot of fitline to " + outputPath);
                     Trace.WriteLine("");
 
+                    double rSquared = line.RSquared;
+
                     // Compute mobility and cross section area
                     double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
                     Composition bufferGas = new Composition(0, 0, 2, 0, 0);
@@ -466,6 +468,7 @@ namespace ImsInformed.Util
                         Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
                         Trace.WriteLine("");
                     }
+                    Trace.WriteLine(String.Format("R Squared {0:F4}", rSquared));
                     Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", mobility));
                     Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", crossSection));
                     return true;

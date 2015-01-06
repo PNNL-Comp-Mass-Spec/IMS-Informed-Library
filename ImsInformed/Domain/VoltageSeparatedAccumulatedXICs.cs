@@ -28,8 +28,8 @@ namespace ImsInformed.Domain
             {
                 FrameParams param = uimfReader.GetFrameParams(i);
                 double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage);
-                double driftTubeTemperatureInKelvin = UnitConversion.DegreeCelsius2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.AmbientTemperature));
-                double driftTubePressureInPascal = UnitConversion.Torr2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.PressureBack));
+                double driftTubeTemperatureNondimensionalized = UnitConversion.DegreeCelsius2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.AmbientTemperature));
+                double driftTubePressureNondimensionalized = UnitConversion.Torr2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.PressureBack));
                 if (driftTubeVoltageInVolts <= 0)
                     throw new InvalidOperationException("Floating voltage is recorded as 0 in the uimf file, "
                                                         + "try run the newer version of agilent .d folder conveter");
@@ -40,13 +40,13 @@ namespace ImsInformed.Domain
                 if (XIC.Count != 0)
                 {
                     ExtractedIonChromatogram extractedIonChromatogram = new ExtractedIonChromatogram(XIC, uimfReader, i, targetMz);
-                    bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts, driftTubePressureInPascal, driftTubeTemperatureInKelvin);
+                    bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized);
                     // And when a new but unsimilar voltage appears 
                 
                     if (!similarVoltage)
                     {
                         currentVoltageGroup = new VoltageGroup(i);
-                        currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureInPascal, driftTubeTemperatureInKelvin);
+                        currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized);
                         this.Add(currentVoltageGroup, extractedIonChromatogram);
                     } 
                     if (!this.ContainsKey(currentVoltageGroup)) 

@@ -1,4 +1,13 @@
-﻿// utilities used to work on non-peptide small particles.
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MoleculeUtil.cs" company="PNNL">
+//   Written for the Department of Energy (PNNL, Richland, WA)
+//   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
+// </copyright>
+// <summary>
+//   The molecule util.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace ImsInformed.Util
 {
     using System;
@@ -16,31 +25,64 @@ namespace ImsInformed.Util
     using UIMFLibrary;
 
     /// <summary>
-    /// The molecule util.
+    /// The molecule utilities.
     /// </summary>
     public static class MoleculeUtil
     {
-        // Apply the ionization composition to the chemical of interest. Return null if the given composition is null.
+        /// <summary>
+        /// The ionization composition compensation.
+        /// </summary>
+        /// <param name="composition">
+        /// The composition.
+        /// </param>
+        /// <param name="method">
+        /// The method.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
         public static Composition IonizationCompositionCompensation(Composition composition, IonizationMethod method)
         {
             if (composition != null)
             {
                 // compensate for extra composition difference due to different ionization method
-                if (method == IonizationMethod.ProtonPlus)
-				    return composition + new Composition(0, 1 , 0, 0, 0);
-                else if (method == IonizationMethod.ProtonMinus)
+                if (method == IonizationMethod.ProtonPlus) 
+                {
+                    return composition + new Composition(0, 1, 0, 0, 0);
+                }
+                else if (method == IonizationMethod.ProtonMinus) 
+                {
                     return composition - new Composition(0, 1, 0, 0, 0);
-                else if (method == IonizationMethod.SodiumPlus)
-                    return composition + MoleculeUtil.ReadEmpiricalFormulaNoParenthesis("Na"); 
+                }
+                else if (method == IonizationMethod.SodiumPlus) 
+                {
+                    return composition + MoleculeUtil.ReadEmpiricalFormulaNoParenthesis("Na");
+                }
                 else if (method == IonizationMethod.Proton2Plus)
-                    return composition + new Composition(0, 2 , 0, 0, 0);
+                {
+                    return composition + new Composition(0, 2, 0, 0, 0);
+                }
                 else if (method == IonizationMethod.Proton2Minus)
-                    return composition - new Composition(0, 2 , 0, 0, 0);
+                {
+                    return composition - new Composition(0, 2, 0, 0, 0);
+                }
             }
+
             return null;
         }
 
-        // Filter spurious data
+        /// <summary>
+        /// Filter spurious data
+        /// </summary>
+        /// <param name="bestFeature">
+        /// The best feature.
+        /// </param>
+        /// <param name="globalMaxIntensities">
+        /// The global max intensities.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double NoiseClassifier(FeatureBlob bestFeature, double globalMaxIntensities)
         {
             double featureMaxIntensity = bestFeature.Statistics.IntensityMax;
@@ -54,32 +96,66 @@ namespace ImsInformed.Util
             }
             else
             {
-                return featureMaxIntensity*10 / globalMaxIntensities;
+                return featureMaxIntensity * 10 / globalMaxIntensities;
             }
         }
 
-        // Calculate the max global intensities for the given voltage group.
-        private static double MaxGlobalIntensities(DataReader reader, int firstScan, int lastScan, int firstBin, int lastBin, int firstFrame, int lastFrame)
+        /// <summary>
+        /// The compute collision cross sectional area.
+        /// </summary>
+        /// <param name="averageTemperatureInKelvin">
+        /// The average temperature in kelvin.
+        /// </param>
+        /// <param name="mobility">
+        /// The mobility.
+        /// </param>
+        /// <param name="chargeState">
+        /// The charge state.
+        /// </param>
+        /// <param name="reducedMass">
+        /// The reduced mass.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double ComputeCrossSectionalArea(double averageTemperatureInKelvin, double mobility, int chargeState, double reducedMass)
         {
-            int[][][] intensities = reader.GetIntensityBlock(firstFrame, lastFrame, DataReader.FrameType.MS1, firstScan, lastScan, firstBin, lastBin);
-            long maxIntensities = 0;
-            for (int scan = firstScan; scan <= lastScan; scan++)
-            {
-                for (int bin = firstBin; bin < lastBin; bin++)
-                {
-                    long sumIntensity = 0;
-                    for (int frame = firstFrame; frame <= lastFrame; frame++)
-                    {
-                        sumIntensity += intensities[frame-1][scan-firstScan][bin-firstBin];
-                    }
-                    maxIntensities = (sumIntensity > maxIntensities) ? sumIntensity : maxIntensities;
-                }
-            }
-            return maxIntensities;
+            return 18459 / Math.Sqrt(reducedMass * averageTemperatureInKelvin) * chargeState / mobility;
         }
 
-        // Since loading all the data onto the screen can overload the computer
-        // get max global intensities locally then compare.
+        /// <summary>
+        /// The reduced mass.
+        /// </summary>
+        /// <param name="targetMz">
+        /// The target MZ.
+        /// </param>
+        /// <param name="bufferGas">
+        /// The buffer gas composition. 
+        /// Example: N2
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double ComputeReducedMass(double targetMz, Composition bufferGas)
+        {
+            double bufferGasMass = bufferGas.Mass;
+            double result = (bufferGasMass * targetMz) / (bufferGasMass + targetMz);
+            return result;
+        }
+
+        /// <summary>
+        /// Since loading all the data onto the screen can overload the computer
+        /// get max global intensities locally then compare.
+        /// </summary>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        /// <param name="reader">
+        /// The reader.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         [Obsolete("This method is really slow. Use MaxDigitization instead")]
         public static double MaxGlobalIntensities(VoltageGroup group, DataReader reader)
         {
@@ -108,40 +184,96 @@ namespace ImsInformed.Util
             return maxIntensities;
         }
 
+        /// <summary>
+        /// The max global intensities 2.
+        /// </summary>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        /// <param name="reader">
+        /// The reader.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double MaxGlobalIntensities2(VoltageGroup group, DataReader reader)
         {
             Stack<int[]> data = reader.GetFrameAndScanListByDescendingIntensity();
             return data.Pop()[0];
         }
 
-        // return the maxium intensity value possible for a given voltage group
-        // Note currently supports 8-bit digitizers, proceeds with caution when
-        // dealing with 12-bit digitizers
+
+        /// <summary>
+        /// return the maximum intensity value possible for a given voltage group
+        /// Note currently supports 8-bit digitizers, proceeds with caution when
+        /// dealing with 12-bit digitizers
+        /// </summary>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        /// <param name="reader">
+        /// The reader.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double MaxDigitization(VoltageGroup group, DataReader reader)
         {
             return 255 * group.AccumulationCount * reader.GetFrameParams(group.FirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
         }
 
-
+        /// <summary>
+        /// The ionization composition decompensation.
+        /// </summary>
+        /// <param name="composition">
+        /// The composition.
+        /// </param>
+        /// <param name="method">
+        /// The method.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
         public static Composition IonizationCompositionDecompensation(Composition composition, IonizationMethod method)
         {
             if (composition != null)
             {
                 // decompensate for extra composition difference due to different ionization method
                 if (method == IonizationMethod.ProtonPlus)
-				    return composition - new Composition(0, 1 , 0, 0, 0);
-                else if (method == IonizationMethod.ProtonMinus)
+                {
+                    return composition - new Composition(0, 1 , 0, 0, 0);
+                }
+                else if (method == IonizationMethod.ProtonMinus) 
+                {
                     return composition + new Composition(0, 1, 0, 0, 0);
-                else if (method == IonizationMethod.SodiumPlus)
-                    return composition - MoleculeUtil.ReadEmpiricalFormulaNoParenthesis("Na"); 
-                else if (method == IonizationMethod.Proton2Plus)
-                    return composition - new Composition(0, 2 , 0, 0, 0);
+                }
+                else if (method == IonizationMethod.SodiumPlus) 
+                {
+                    return composition - MoleculeUtil.ReadEmpiricalFormulaNoParenthesis("Na");
+                }
+                else if (method == IonizationMethod.Proton2Plus) 
+                {
+                    return composition - new Composition(0, 2, 0, 0, 0);
+                }
                 else if (method == IonizationMethod.Proton2Minus)
-                    return composition + new Composition(0, 2 , 0, 0, 0);
+                {
+                    return composition + new Composition(0, 2, 0, 0, 0);
+                }
             }
             return null;
         }
 
+        /// <summary>
+        /// The read empirical formula.
+        /// </summary>
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
         public static Composition ReadEmpiricalFormula(string empiricalFormula)
         {
             char[] leftParenthesisArray = {'(', '[', '<', '{'};
@@ -178,7 +310,23 @@ namespace ImsInformed.Util
             return ReadEmpiricalFormula(empiricalFormula, leftParenthesisSymbols, rightParenthesisSymbols);
         }
 
-        // This method can parse empirical formulas with parenthethese
+        /// <summary>
+        /// This method can parse empirical formulas with parentheses
+        /// </summary>
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
+        /// </param>
+        /// <param name="leftParenthesisSymbols">
+        /// The left parenthesis symbols.
+        /// </param>
+        /// <param name="rightParenthesisSymbols">
+        /// The right parenthesis symbols.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
         private static Composition ReadEmpiricalFormula(string empiricalFormula, HashSet<char> leftParenthesisSymbols, HashSet<char> rightParenthesisSymbols)
         {
             int index = 0; // reset index
@@ -212,6 +360,28 @@ namespace ImsInformed.Util
             return beforeParenthesis + insideParenthesis + afterParenthesis;
         }
 
+        /// <summary>
+        /// The close parenthesis.
+        /// </summary>
+        /// <param name="stringToBeClosed">
+        /// The string to be closed.
+        /// </param>
+        /// <param name="leftOver">
+        /// The left over.
+        /// </param>
+        /// <param name="leftParenthesisSymbols">
+        /// The left parenthesis symbols.
+        /// </param>
+        /// <param name="rightParenthesisSymbols">
+        /// The right parenthesis symbols.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
+        /// <exception cref="NotImplementedException">
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// </exception>
         private static Composition CloseParenthesis(string stringToBeClosed, out string leftOver, HashSet<char> leftParenthesisSymbols, HashSet<char> rightParenthesisSymbols)
         {
             int index = 0; // reset index
@@ -262,8 +432,18 @@ namespace ImsInformed.Util
             return summedInside;
         }
 
-        // This method only parse empirical formulas without parenthethese
-        // Examples, CHOCOOH, H2O, CO2, FeS
+        /// <summary>
+        /// This method only parse empirical formulas without parenthethese
+        /// Examples, CHOCOOH, H2O, CO2, FeS
+        /// </summary>
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
+        /// <exception cref="Exception">
+        /// </exception>
         public static Composition ReadEmpiricalFormulaNoParenthesis(string empiricalFormula)
         {
             int c = 0;
@@ -330,7 +510,52 @@ namespace ImsInformed.Util
             {
                 throw new Exception("Failed to read atom info from PNNLOmicsElementData.xml. " + e);
             }
+        }
 
+        /// <summary>
+        /// Calculate the max global intensities for the given voltage group.
+        /// </summary>
+        /// <param name="reader">
+        /// The reader.
+        /// </param>
+        /// <param name="firstScan">
+        /// The first scan.
+        /// </param>
+        /// <param name="lastScan">
+        /// The last scan.
+        /// </param>
+        /// <param name="firstBin">
+        /// The first bin.
+        /// </param>
+        /// <param name="lastBin">
+        /// The last bin.
+        /// </param>
+        /// <param name="firstFrame">
+        /// The first frame.
+        /// </param>
+        /// <param name="lastFrame">
+        /// The last frame.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        private static double MaxGlobalIntensities(DataReader reader, int firstScan, int lastScan, int firstBin, int lastBin, int firstFrame, int lastFrame)
+        {
+            int[][][] intensities = reader.GetIntensityBlock(firstFrame, lastFrame, DataReader.FrameType.MS1, firstScan, lastScan, firstBin, lastBin);
+            long maxIntensities = 0;
+            for (int scan = firstScan; scan <= lastScan; scan++)
+            {
+                for (int bin = firstBin; bin < lastBin; bin++)
+                {
+                    long sumIntensity = 0;
+                    for (int frame = firstFrame; frame <= lastFrame; frame++)
+                    {
+                        sumIntensity += intensities[frame - 1][scan - firstScan][bin - firstBin];
+                    }
+                    maxIntensities = (sumIntensity > maxIntensities) ? sumIntensity : maxIntensities;
+                }
+            }
+            return maxIntensities;
         }
     }
 }

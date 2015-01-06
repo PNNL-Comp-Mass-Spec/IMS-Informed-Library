@@ -1,4 +1,14 @@
-﻿namespace ImsInformed.Util
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MoleculeInformedWorkflow.cs" company="PNNL">
+//   Written for the Department of Energy (PNNL, Richland, WA)
+//   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
+// </copyright>
+// <summary>
+//   Find molecules with a known formula and know ionization methods. metabolites and pipetides alike.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace ImsInformed.Util
 {
     using System;
     using System.Collections.Generic;
@@ -335,9 +345,9 @@
                         
                     // Filter away small XIC peaks
                     featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel);
-                    //Trace.WriteLine(" .After Filtering: " + featureBlobs.Count());
 
-                    double score = 0;;
+                    // Trace.WriteLine(" .After Filtering: " + featureBlobs.Count());
+                    double score = 0;
 
                     // Find the global intensity MAX, used for noise rejection
                     double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
@@ -389,7 +399,7 @@
                     double x = group.BestFeature.Statistics.ScanImsRep * FakeUIMFReader.AverageScanPeriodInMicroSeconds / 1000000;
                 
                     // P/(T*V) value in pascal per (volts * kelvin)
-                    double y = group.MeanPressureInPascal / group.MeanVoltageInVolts / group.MeanTemperatureInKelvin; 
+                    double y = group.MeanPressureNondimensionalized / group.MeanVoltageInVolts / group.MeanTemperatureNondimensionalized; 
                     ContinuousXYPoint point = new ContinuousXYPoint(x, y);
                     fitPoints.Add(point);
                     group.FitPoint = point;
@@ -424,10 +434,25 @@
                     Console.WriteLine("Writes QC plot of fitline to " + outputPath);
                     Trace.WriteLine("");
 
+                    // Compute mobility and cross section area
                     double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
-                    double crossSection = 0;
+                    Composition bufferGas = new Composition(0, 0, 2, 0, 0);
+                    double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
+                    
+                    // Find the average temperature across from various voltage groups.
+                    double globalMeanTemperature = 0;
+                    int frameCount = 0;
+                    foreach (VoltageGroup group in accumulatedXiCs.Keys)
+                    {
+                        double voltageGroupTemperature = UnitConversion.AbsoluteZero * group.MeanTemperatureNondimensionalized;
+                        globalMeanTemperature += voltageGroupTemperature * group.AccumulationCount;
+                        frameCount += group.AccumulationCount;
+                    }
 
-                    // mobility and cross section area
+                    globalMeanTemperature /= frameCount;
+
+                    double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
+
                     // Printout results
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
@@ -442,7 +467,7 @@
                         Trace.WriteLine("");
                     }
                     Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", mobility));
-                    Trace.WriteLine(String.Format("Cross Sectional Area: " + crossSection));
+                    Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", crossSection));
                     return true;
                 }
 

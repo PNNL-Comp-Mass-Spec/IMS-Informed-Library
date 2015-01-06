@@ -19,9 +19,9 @@ namespace ImsInformed.Domain
         public double MeanVoltageInVolts { get; private set; }
         public double VarianceVoltage { get; private set; }
         public int AccumulationCount { get; private set; }
-        public double MeanTemperatureInKelvin { get; private set; }
+        public double MeanTemperatureNondimensionalized { get; private set; }
         public double VarianceTemperature { get; private set; }
-        public double MeanPressureInPascal { get; private set; }
+        public double MeanPressureNondimensionalized { get; private set; }
         public double VariancePressure { get; private set; }
 
         // stores ion detection as the following result 
@@ -35,10 +35,10 @@ namespace ImsInformed.Domain
             this.FirstFrameNumber = frameNumber;
             this.MeanVoltageInVolts = 0;
             this.VarianceVoltage = 0;
-            this.MeanTemperatureInKelvin = 0;
+            this.MeanTemperatureNondimensionalized = 0;
             VarianceTemperature = 0;
             AccumulationCount = 0;
-            this.MeanPressureInPascal = 0;
+            this.MeanPressureNondimensionalized = 0;
             VariancePressure = 0;
             this.BestFeature = null;
             this.BestScore = 0;
@@ -61,14 +61,14 @@ namespace ImsInformed.Domain
             this.MeanVoltageInVolts = newMeanVoltage;
 
             // Accumulate temperature
-            double newMeanTemperature = (this.MeanTemperatureInKelvin * (this.AccumulationCount - 1) + newTemperature)/this.AccumulationCount;
-            this.VarianceTemperature = ((this.AccumulationCount - 1) * VarianceTemperature + (newTemperature - newMeanTemperature) * (newTemperature - this.MeanTemperatureInKelvin)) / this.AccumulationCount;
-            this.MeanTemperatureInKelvin = newMeanTemperature;
+            double newMeanTemperature = (this.MeanTemperatureNondimensionalized * (this.AccumulationCount - 1) + newTemperature)/this.AccumulationCount;
+            this.VarianceTemperature = ((this.AccumulationCount - 1) * VarianceTemperature + (newTemperature - newMeanTemperature) * (newTemperature - this.MeanTemperatureNondimensionalized)) / this.AccumulationCount;
+            this.MeanTemperatureNondimensionalized = newMeanTemperature;
 
             // Accumulate pressure
-            double newMeanPressure = (this.MeanPressureInPascal * (this.AccumulationCount - 1) + newPressure)/this.AccumulationCount;
-            this.VariancePressure = ((this.AccumulationCount - 1) * VariancePressure + (newPressure - newMeanPressure) * (newPressure - this.MeanPressureInPascal)) / this.AccumulationCount;
-            this.MeanPressureInPascal = newMeanPressure;
+            double newMeanPressure = (this.MeanPressureNondimensionalized * (this.AccumulationCount - 1) + newPressure)/this.AccumulationCount;
+            this.VariancePressure = ((this.AccumulationCount - 1) * VariancePressure + (newPressure - newMeanPressure) * (newPressure - this.MeanPressureNondimensionalized)) / this.AccumulationCount;
+            this.MeanPressureNondimensionalized = newMeanPressure;
         }
 
         public VoltageGroup AddVoltageDryRun(double newVoltage)

@@ -432,9 +432,10 @@
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
                         Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
-                        Trace.WriteLine(String.Format("Mean Voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
+                        Trace.WriteLine(String.Format("Mean voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
+                        Trace.WriteLine(String.Format("Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
                         Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
-                        Trace.WriteLine(String.Format("mobilityScan: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
+                        Trace.WriteLine(String.Format("Scan number: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
                         Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
                         Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
                         Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));

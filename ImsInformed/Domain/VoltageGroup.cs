@@ -102,7 +102,7 @@ namespace ImsInformed.Domain
 
             const double MinDifferentialVoltage = 5;
             
-            // if first voltage, declare it as simular.
+            // if first voltage, declare it as similar.
             if ((this.AccumulationCount == 0) ||
             
             // if the new voltage is within 3 standard deviation, declare it as a similar point.

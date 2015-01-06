@@ -162,6 +162,7 @@ namespace ImsInformed.Util
             {
                 throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims target without Composition provided.");
             }
+
             FeatureBlob isotopeFeature = null;
             
             // Bad Feature, so get out
@@ -209,11 +210,12 @@ namespace ImsInformed.Util
                 statistics = isotopeFeature.CalculateStatistics();
                 unsaturatedIsotope = i;
             }
+
             return 0;
         }
 
         /// <summary>
-        /// The score feature mz only.
+        /// This score uses summed intensity around the found feature.
         /// </summary>
         /// <param name="featureBlob">
         /// The feature blob.
@@ -230,6 +232,7 @@ namespace ImsInformed.Util
             {
                 return 0;
             }
+
             return statistics.SumIntensities;
         }
 

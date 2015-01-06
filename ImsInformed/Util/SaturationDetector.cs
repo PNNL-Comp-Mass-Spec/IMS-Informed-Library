@@ -1,237 +1,239 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DeconTools.Backend;
-using DeconTools.Backend.Core;
-using DeconTools.Backend.ProcessingTasks.PeakDetectors;
-using DeconTools.Backend.ProcessingTasks.TargetedFeatureFinders;
-using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
-using InformedProteomics.Backend.Data.Biology;
-using InformedProteomics.Backend.Data.Composition;
-using InformedProteomics.Backend.Data.Sequence;
-using UIMFLibrary;
-using MultiDimensionalPeakFinding.PeakDetection;
-using MultiDimensionalPeakFinding;
-
-namespace ImsInformed.Util
+﻿namespace ImsInformed.Util
 {
-	public class SaturationDetector
-	{
-		private readonly DataReader _uimfReader;
-		private readonly SavitzkyGolaySmoother _smoother;
-		private readonly ChromPeakDetector _peakDetector;
-		private readonly IterativeTFF _msFeatureFinder;
-		private readonly ITheorFeatureGenerator _theoreticalFeatureGenerator;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-		public SaturationDetector(string uimfFileLocation)
-		{
-			_uimfReader = new DataReader(uimfFileLocation);
-			_smoother = new SavitzkyGolaySmoother(9, 2);
-			_peakDetector = new ChromPeakDetector(0.0001, 0.0001);
-			_theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
+    using DeconTools.Backend;
+    using DeconTools.Backend.Core;
+    using DeconTools.Backend.ProcessingTasks.PeakDetectors;
+    using DeconTools.Backend.ProcessingTasks.TargetedFeatureFinders;
+    using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
-			if (!_uimfReader.DoesContainBinCentricData())
-			{
-				DataWriter dataWriter = new DataWriter(uimfFileLocation);
-				dataWriter.CreateBinCentricTables();
-			}
+    using InformedProteomics.Backend.Data.Biology;
+    using InformedProteomics.Backend.Data.Composition;
 
-			IterativeTFFParameters msFeatureFinderParameters = new IterativeTFFParameters
-			{
-				MinimumRelIntensityForForPeakInclusion = 0.0000000001,
-				PeakDetectorMinimumPeakBR = 0,
-				PeakDetectorPeakBR = 5.00000000000002,
-				PeakBRStep = 0.25,
-				PeakDetectorSigNoiseRatioThreshold = 0.00000000001,
-				ToleranceInPPM = 50
-			};
-			_msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
-		}
+    using MultiDimensionalPeakFinding;
+    using MultiDimensionalPeakFinding.PeakDetection;
 
-		public void GetIntensity(string peptideSequence, double ppmTolerance)
-		{
-			Composition composition;
+    using UIMFLibrary;
 
-			if (peptideSequence.Equals("Tetraoctylammonium"))
-			{
-				composition = new Composition(32, 67, 1, 0, 0);
-			}
-			else if (peptideSequence.Equals("Tetraoctylammonium Bromide"))
-			{
-				composition = new Composition(64, 135, 2, 0, 0) + Composition.ParseFromPlainString("Br");
-			}
-			else
-			{
-				composition = PeptideUtil.GetCompositionOfPeptide(peptideSequence);
-			}
-			
-			string empiricalFormula = composition.ToPlainString();
+    public class SaturationDetector
+    {
+        private readonly DataReader _uimfReader;
+        private readonly SavitzkyGolaySmoother _smoother;
+        private readonly ChromPeakDetector _peakDetector;
+        private readonly IterativeTFF _msFeatureFinder;
+        private readonly ITheorFeatureGenerator _theoreticalFeatureGenerator;
 
-			for (int chargeState = 1; chargeState <= 5; chargeState++)
-			{
-				// Calculate Target m/z
-				var targetIon = new Ion(composition, chargeState);
-				double targetMz = targetIon.GetMonoIsotopicMz();
-				double minMzForSpectrum = targetMz - (3.0 / chargeState);
-				double maxMzForSpectrum = targetMz + (10.0 / chargeState);
+        public SaturationDetector(string uimfFileLocation)
+        {
+            _uimfReader = new DataReader(uimfFileLocation);
+            _smoother = new SavitzkyGolaySmoother(9, 2);
+            _peakDetector = new ChromPeakDetector(0.0001, 0.0001);
+            _theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
 
-				Console.WriteLine(peptideSequence + " - +" + chargeState + " - " + targetMz);
+            if (!_uimfReader.DoesContainBinCentricData())
+            {
+                DataWriter dataWriter = new DataWriter(uimfFileLocation);
+                dataWriter.CreateBinCentricTables();
+            }
 
-				// Generate Theoretical Isotopic Profile
-				IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
-				List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
+            IterativeTFFParameters msFeatureFinderParameters = new IterativeTFFParameters
+            {
+                MinimumRelIntensityForForPeakInclusion = 0.0000000001,
+                PeakDetectorMinimumPeakBR = 0,
+                PeakDetectorPeakBR = 5.00000000000002,
+                PeakBRStep = 0.25,
+                PeakDetectorSigNoiseRatioThreshold = 0.00000000001,
+                ToleranceInPPM = 50
+            };
+            _msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
+        }
 
-				// Find XIC Features
-				IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, ppmTolerance, 1, 1);
+        public void GetIntensity(string peptideSequence, double ppmTolerance)
+        {
+            Composition composition;
 
-				// Check each XIC Peak found
-				foreach (var featureBlob in featureBlobs)
-				{
-					FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
-					int unsaturatedIsotope = 0;
-					FeatureBlob isotopeFeature = null;
+            if (peptideSequence.Equals("Tetraoctylammonium"))
+            {
+                composition = new Composition(32, 67, 1, 0, 0);
+            }
+            else if (peptideSequence.Equals("Tetraoctylammonium Bromide"))
+            {
+                composition = new Composition(64, 135, 2, 0, 0) + Composition.ParseFromPlainString("Br");
+            }
+            else
+            {
+                composition = PeptideUtil.GetCompositionOfPeptide(peptideSequence);
+            }
+            
+            string empiricalFormula = composition.ToPlainString();
 
-					int scanLcMin = statistics.ScanLcMin;
-					int scanLcMax = statistics.ScanLcMax;
-					int scanImsMin = statistics.ScanImsMin;
-					int scanImsMax = statistics.ScanImsMax;
-					double intensity = statistics.SumIntensities;
+            for (int chargeState = 1; chargeState <= 5; chargeState++)
+            {
+                // Calculate Target m/z
+                var targetIon = new Ion(composition, chargeState);
+                double targetMz = targetIon.GetMonoIsotopicMz();
+                double minMzForSpectrum = targetMz - (3.0 / chargeState);
+                double maxMzForSpectrum = targetMz + (10.0 / chargeState);
 
-					// Find an unsaturated peak in the isotopic profile
-					for (int i = 1; i < 10; i++)
-					{
-						if (!statistics.IsSaturated) break;
+                Console.WriteLine(peptideSequence + " - +" + chargeState + " - " + targetMz);
 
-						// Target isotope m/z
-						double isotopeTargetMz = targetIon.GetIsotopeMz(i);
+                // Generate Theoretical Isotopic Profile
+                IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
+                List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
-						// Find XIC Features
-						IEnumerable<FeatureBlob> newFeatureBlobs = FindFeatures(isotopeTargetMz, ppmTolerance, 1, 1);
+                // Find XIC Features
+                IEnumerable<FeatureBlob> featureBlobs = FindFeatures(targetMz, ppmTolerance, 1, 1);
 
-						// If no feature, then get out
-						if (!newFeatureBlobs.Any())
-						{
-							statistics = null;
-							break;
-						}
+                // Check each XIC Peak found
+                foreach (var featureBlob in featureBlobs)
+                {
+                    FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
+                    int unsaturatedIsotope = 0;
+                    FeatureBlob isotopeFeature = null;
 
-						bool foundFeature = false;
-						foreach (var newFeatureBlob in newFeatureBlobs.OrderByDescending(x => x.PointList.Count))
-						{
-							var newStatistics = newFeatureBlob.CalculateStatistics();
-							if (newStatistics.ScanImsRep <= scanImsMax && newStatistics.ScanImsRep >= scanImsMin && newStatistics.ScanLcRep <= scanLcMax && newStatistics.ScanLcRep >= scanLcMin)
-							{
-								isotopeFeature = newFeatureBlob;
-								foundFeature = true;
-								break;
-							}
-						}
+                    int scanLcMin = statistics.ScanLcMin;
+                    int scanLcMax = statistics.ScanLcMax;
+                    int scanImsMin = statistics.ScanImsMin;
+                    int scanImsMax = statistics.ScanImsMax;
+                    double intensity = statistics.SumIntensities;
 
-						if (!foundFeature)
-						{
-							statistics = null;
-							break;
-						}
+                    // Find an unsaturated peak in the isotopic profile
+                    for (int i = 1; i < 10; i++)
+                    {
+                        if (!statistics.IsSaturated) break;
 
-						statistics = isotopeFeature.CalculateStatistics();
-						unsaturatedIsotope = i;
-					}
+                        // Target isotope m/z
+                        double isotopeTargetMz = targetIon.GetIsotopeMz(i);
 
-					int scanImsRep = statistics.ScanImsRep;
+                        // Find XIC Features
+                        IEnumerable<FeatureBlob> newFeatureBlobs = FindFeatures(isotopeTargetMz, ppmTolerance, 1, 1);
 
-					// Get Mass Spectrum Data
-					XYData massSpectrum = GetMassSpectrum(1, scanImsMin, scanImsMax, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
-					//List<Peak> massSpectrumPeakList = _peakDetector.FindPeaks(massSpectrum);
-					//WriteXYDataToFile(massSpectrum, targetMz);
+                        // If no feature, then get out
+                        if (!newFeatureBlobs.Any())
+                        {
+                            statistics = null;
+                            break;
+                        }
 
-					// Find Isotopic Profile
-					List<Peak> massSpectrumPeaks;
-					IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
-					double unsaturatedIntensity = observedIsotopicProfile != null ? observedIsotopicProfile.GetSummedIntensity() : 0;
+                        bool foundFeature = false;
+                        foreach (var newFeatureBlob in newFeatureBlobs.OrderByDescending(x => x.PointList.Count))
+                        {
+                            var newStatistics = newFeatureBlob.CalculateStatistics();
+                            if (newStatistics.ScanImsRep <= scanImsMax && newStatistics.ScanImsRep >= scanImsMin && newStatistics.ScanLcRep <= scanLcMax && newStatistics.ScanLcRep >= scanLcMin)
+                            {
+                                isotopeFeature = newFeatureBlob;
+                                foundFeature = true;
+                                break;
+                            }
+                        }
 
-					// Correct for Saturation if needed
-					if (unsaturatedIsotope > 0)
-					{
-						IsotopicProfileUtil.AdjustSaturatedIsotopicProfile(observedIsotopicProfile, theoreticalIsotopicProfile, unsaturatedIsotope);
-					}
+                        if (!foundFeature)
+                        {
+                            statistics = null;
+                            break;
+                        }
 
-					if (observedIsotopicProfile != null && observedIsotopicProfile.MonoIsotopicMass > 1)
-					{
-						Console.WriteLine("ScanIMS = " + scanImsMin + "-" + scanImsMax + "\tImsRep = " + scanImsRep + "\tUncorrectedIntensity = " + unsaturatedIntensity + "\tIntensity = " + observedIsotopicProfile.GetSummedIntensity());
-					}
-				}
-			}
-		}
+                        statistics = isotopeFeature.CalculateStatistics();
+                        unsaturatedIsotope = i;
+                    }
 
-		public void GetIntensity(double mz, double ppmTolerance)
-		{
-			// Find XIC Features
-			IEnumerable<FeatureBlob> featureBlobs = FindFeatures(mz, ppmTolerance, 1, 1);
+                    int scanImsRep = statistics.ScanImsRep;
 
-			// Check each XIC Peak found
-			foreach (var featureBlob in featureBlobs)
-			{
-				FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
+                    // Get Mass Spectrum Data
+                    XYData massSpectrum = GetMassSpectrum(1, scanImsMin, scanImsMax, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
+                    //List<Peak> massSpectrumPeakList = _peakDetector.FindPeaks(massSpectrum);
+                    //WriteXYDataToFile(massSpectrum, targetMz);
 
-				if (statistics.IsSaturated)
-				{
-					// TODO: Do something
-				}
+                    // Find Isotopic Profile
+                    List<Peak> massSpectrumPeaks;
+                    IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
+                    double unsaturatedIntensity = observedIsotopicProfile != null ? observedIsotopicProfile.GetSummedIntensity() : 0;
 
-				int scanLcMin = statistics.ScanLcMin;
-				int scanLcMax = statistics.ScanLcMax;
-				int scanImsMin = statistics.ScanImsMin;
-				int scanImsMax = statistics.ScanImsMax;
-				double intensity = statistics.SumIntensities;
+                    // Correct for Saturation if needed
+                    if (unsaturatedIsotope > 0)
+                    {
+                        IsotopicProfileUtil.AdjustSaturatedIsotopicProfile(observedIsotopicProfile, theoreticalIsotopicProfile, unsaturatedIsotope);
+                    }
 
-				Console.WriteLine("ScanLC = " + scanLcMin + "-" + scanLcMax + "\tScanIMS = " + scanImsMin + "-" + scanImsMax + "\tIntensity = " + intensity);
-			}
-		}
+                    if (observedIsotopicProfile != null && observedIsotopicProfile.MonoIsotopicMass > 1)
+                    {
+                        Console.WriteLine("ScanIMS = " + scanImsMin + "-" + scanImsMax + "\tImsRep = " + scanImsRep + "\tUncorrectedIntensity = " + unsaturatedIntensity + "\tIntensity = " + observedIsotopicProfile.GetSummedIntensity());
+                    }
+                }
+            }
+        }
 
-		private IEnumerable<FeatureBlob> FindFeatures(double targetMz, double ppmTolerance, int scanLcMin, int scanLcMax)
-		{
-			// Generate Chromatogram
-			List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, ppmTolerance, scanLcMin, scanLcMax, 0, 360, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
+        public void GetIntensity(double mz, double ppmTolerance)
+        {
+            // Find XIC Features
+            IEnumerable<FeatureBlob> featureBlobs = FindFeatures(mz, ppmTolerance, 1, 1);
 
-			if (intensityPointList == null || intensityPointList.Count == 0)
-			{
-				return new List<FeatureBlob>();
-			}
+            // Check each XIC Peak found
+            foreach (var featureBlob in featureBlobs)
+            {
+                FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
 
-			//WritePointsToFile(intensityPointList, targetMz);	
+                if (statistics.IsSaturated)
+                {
+                    // TODO: Do something
+                }
 
-			// Smooth Chromatogram
-			//_buildWatershedStopWatch.Start();
-			IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPointList);
-			//_buildWatershedStopWatch.Stop();
+                int scanLcMin = statistics.ScanLcMin;
+                int scanLcMax = statistics.ScanLcMax;
+                int scanImsMin = statistics.ScanImsMin;
+                int scanImsMax = statistics.ScanImsMax;
+                double intensity = statistics.SumIntensities;
 
-			//_smoothStopwatch.Start();
-			_smoother.Smooth(ref pointList);
-			//_smoothStopwatch.Stop();
+                Console.WriteLine("ScanLC = " + scanLcMin + "-" + scanLcMax + "\tScanIMS = " + scanImsMin + "-" + scanImsMax + "\tIntensity = " + intensity);
+            }
+        }
 
-			// Peak Find Chromatogram
-			//_featureFindStopWatch.Start();
-			IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
-			//_featureFindStopWatch.Stop();
+        private IEnumerable<FeatureBlob> FindFeatures(double targetMz, double ppmTolerance, int scanLcMin, int scanLcMax)
+        {
+            // Generate Chromatogram
+            List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, ppmTolerance, scanLcMin, scanLcMax, 0, 360, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);
 
-			//_featureFindCount++;
-			//_pointCount += pointList.Count();
+            if (intensityPointList == null || intensityPointList.Count == 0)
+            {
+                return new List<FeatureBlob>();
+            }
 
-			return featureBlobs;
-		}
+            //WritePointsToFile(intensityPointList, targetMz);	
 
-		private XYData GetMassSpectrum(int scanLcRep, int scanImsMin, int scanImsMax, int scanImsRep, double minMzForSpectrum, double maxMzForSpectrum)
-		{
-			double[] mzArray;
-			int[] intensityArray;
+            // Smooth Chromatogram
+            //_buildWatershedStopWatch.Start();
+            IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPointList);
+            //_buildWatershedStopWatch.Stop();
 
-			_uimfReader.GetSpectrum(1, 5, DataReader.FrameType.MS1, scanImsMin, scanImsMax, minMzForSpectrum, maxMzForSpectrum, out mzArray, out intensityArray);
-			double[] intensityArrayAsDoubles = XYData.ConvertIntsToDouble(intensityArray);
-			XYData massSpectrum = new XYData();
-			massSpectrum.SetXYValues(ref mzArray, ref intensityArrayAsDoubles);
+            //_smoothStopwatch.Start();
+            _smoother.Smooth(ref pointList);
+            //_smoothStopwatch.Stop();
 
-			return massSpectrum;
-		}
-	}
+            // Peak Find Chromatogram
+            //_featureFindStopWatch.Start();
+            IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
+            //_featureFindStopWatch.Stop();
+
+            //_featureFindCount++;
+            //_pointCount += pointList.Count();
+
+            return featureBlobs;
+        }
+
+        private XYData GetMassSpectrum(int scanLcRep, int scanImsMin, int scanImsMax, int scanImsRep, double minMzForSpectrum, double maxMzForSpectrum)
+        {
+            double[] mzArray;
+            int[] intensityArray;
+
+            _uimfReader.GetSpectrum(1, 5, DataReader.FrameType.MS1, scanImsMin, scanImsMax, minMzForSpectrum, maxMzForSpectrum, out mzArray, out intensityArray);
+            double[] intensityArrayAsDoubles = XYData.ConvertIntsToDouble(intensityArray);
+            XYData massSpectrum = new XYData();
+            massSpectrum.SetXYValues(ref mzArray, ref intensityArrayAsDoubles);
+
+            return massSpectrum;
+        }
+    }
 }

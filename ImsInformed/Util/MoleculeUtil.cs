@@ -56,7 +56,7 @@ namespace ImsInformed.Util
                 }
                 else if (method == IonizationMethod.SodiumPlus) 
                 {
-                    return composition + MoleculeUtil.ReadEmpiricalFormulaNoParenthesis("Na");
+                    return composition + ReadEmpiricalFormulaNoParenthesis("Na");
                 }
                 else if (method == IonizationMethod.Proton2Plus)
                 {
@@ -475,6 +475,7 @@ namespace ImsInformed.Util
                 //load PNNLOmicsElementData.xml on runtime and consult it to construct the Atom profile
                 string xml_str = Properties.Resources.PNNLOmicsElementData;
                 XElement xelement = XElement.Parse(xml_str);
+
                 // Convert the rest of the dictionary as an IEnumberable<tuple<string, int>>
                 List<Tuple<Atom, short>> additionalElements = new List<Tuple<Atom, short>>();
                 foreach (var entry in dict) 
@@ -484,6 +485,7 @@ namespace ImsInformed.Util
                     {
                         int norminalMass;
                         double averageMass;
+
                         // Find the element in the PNNL xml File.
                         var elemen = xelement.Element("ElementIsotopes").Elements("Element");
                         IEnumerable<XElement> els = from el in elemen

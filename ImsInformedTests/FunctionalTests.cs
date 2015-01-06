@@ -1222,5 +1222,27 @@ namespace ImsInformedTests
             MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
         }
+
+        /// <summary>
+        /// The test locked uimf.
+        /// </summary>
+        [Test]
+        public void TestLockedUIMF()
+        {
+            // A locked UIMF file
+            string uimfFile = @"\\protoapps\ims08_UIMFs\EXP-NIC_pos2_13Sep14_Columbia_DI.uimf";
+
+            ImsTarget target = new ImsTarget(1, IonizationMethod.SodiumPlus, "C10H14N2");
+
+            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
+            {
+                IsotopicFitScoreMax = 0.15,
+                MassToleranceInPpm = 10,
+                NumPointForSmoothing = 9
+            };
+
+            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
+            workflow.RunMoleculeInformedWorkFlow(target);
+        }
     }
 }

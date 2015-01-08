@@ -1081,6 +1081,15 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestSingleMoleculeWithFormula()
         {
+            // Nicotine
+            // string formula = "C10H14N2";
+            // ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2Plus, formula);
+            // Console.WriteLine("Nicotine:");
+            // Console.WriteLine("Composition: " + sample.Composition);
+            // Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
+            // Console.WriteLine("MZ:   " +  221.0594);
+            // string fileLocation = AcetamipridFile;
+
             // Acetamiprid
             // string formula = "C10H11ClN4";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);

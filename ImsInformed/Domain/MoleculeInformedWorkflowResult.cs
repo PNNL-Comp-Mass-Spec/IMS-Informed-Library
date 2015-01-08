@@ -10,9 +10,12 @@
 
 namespace ImsInformed.Domain
 {
+    using System;
+
     /// <summary>
     /// The molecule informed workflow result.
     /// </summary>
+    [Serializable]
     public struct MoleculeInformedWorkflowResult
     {
         /// <summary>

@@ -78,6 +78,7 @@ namespace ImsInformed.Util
             _featureFindCount = 0;
             _pointCount = 0;
             _uimfFileLocation = uimfFileLocation;
+
             _uimfReader = new DataReader(uimfFileLocation);
 
             // Append bin-centric table to the uimf if not present.
@@ -157,7 +158,7 @@ namespace ImsInformed.Util
                     ImsTargetResult result = new ImsTargetResult
                     {
                         ChargeState = chargeState,
-                        FailureReason = FailureReason.XicNotFound
+                        AnalysisStatus = AnalysisStatus.XicNotFound
                     };
 
                     target.ResultList.Add(result);
@@ -170,7 +171,7 @@ namespace ImsInformed.Util
                     ImsTargetResult result = new ImsTargetResult
                     {
                         ChargeState = chargeState,
-                        FailureReason = FailureReason.None
+                        AnalysisStatus = AnalysisStatus.Positive
                     };
 
                     target.ResultList.Add(result);
@@ -229,7 +230,7 @@ namespace ImsInformed.Util
                     // Bad Feature, so get out
                     if (statistics == null)
                     {
-                        result.FailureReason = FailureReason.IsotopicProfileNotFound;
+                        result.AnalysisStatus = AnalysisStatus.IsotopicProfileNotFound;
                         continue;
                     }
 
@@ -257,7 +258,7 @@ namespace ImsInformed.Util
                     // Don't consider bogus results
                     if (scanImsRep < 5 || scanImsRep > _numScans - 5)
                     {
-                        result.FailureReason = FailureReason.DriftTimeError;
+                        result.AnalysisStatus = AnalysisStatus.DriftTimeError;
                         continue;
                     }
 
@@ -265,7 +266,7 @@ namespace ImsInformed.Util
                         // Don't consider bogus results
                         if (scanLcRep < 3 || scanLcRep > _numFrames - 4)
                         {
-                            result.FailureReason = FailureReason.ElutionTimeError;
+                            result.AnalysisStatus = AnalysisStatus.ElutionTimeError;
                             continue;
                         }
 
@@ -275,7 +276,7 @@ namespace ImsInformed.Util
                         // Filter by NET
                         if (net > targetNetMax || net < targetNetMin)
                         {
-                            result.FailureReason = FailureReason.ElutionTimeError;
+                            result.AnalysisStatus = AnalysisStatus.ElutionTimeError;
                             continue;
                         }
                     }
@@ -297,7 +298,7 @@ namespace ImsInformed.Util
                     // No need to move on if the isotopic profile is not found
                     if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
                     {
-                        result.FailureReason = FailureReason.IsotopicProfileNotFound;
+                        result.AnalysisStatus = AnalysisStatus.IsotopicProfileNotFound;
                         continue;
                     }
 
@@ -309,14 +310,14 @@ namespace ImsInformed.Util
                     // If not enough peaks to reach unsaturated isotope, no need to move on
                     if (observedIsotopicProfile.Peaklist.Count <= unsaturatedIsotope)
                     {
-                        result.FailureReason = FailureReason.IsotopicProfileNotFound;
+                        result.AnalysisStatus = AnalysisStatus.IsotopicProfileNotFound;
                         continue;
                     }
 
                     // If the mass error is too high, then ignore
                     if (result.PpmError > _parameters.MassToleranceInPpm)
                     {
-                        result.FailureReason = FailureReason.MassError;
+                        result.AnalysisStatus = AnalysisStatus.MassError;
                         continue;
                     }
 
@@ -336,7 +337,7 @@ namespace ImsInformed.Util
                     MSPeak peakToLeft = _leftOfMonoPeakLooker.LookforPeakToTheLeftOfMonoPeak(monoPeak, observedIsotopicProfile.ChargeState, massSpectrumPeaks);
                     if (peakToLeft != null)
                     {
-                        result.FailureReason = FailureReason.PeakToLeft;
+                        result.AnalysisStatus = AnalysisStatus.PeakToLeft;
                         continue;
                     }
 
@@ -372,7 +373,7 @@ namespace ImsInformed.Util
                     // Filter out bad isotopic fit scores
                     if (isotopicFitScore > _parameters.IsotopicFitScoreMax && unsaturatedIsotope == 0)
                     {
-                        result.FailureReason = FailureReason.IsotopicFitScoreError;
+                        result.AnalysisStatus = AnalysisStatus.IsotopicFitScoreError;
                         continue;
                     }
 
@@ -387,7 +388,7 @@ namespace ImsInformed.Util
             ChargeStateCorrelationResult bestCorrelationResult = null;
             double bestCorrelationSum = -1;
 
-            List<ImsTargetResult> resultList = target.ResultList.Where(x => x.FailureReason == FailureReason.None).OrderBy(x => x.IsotopicFitScore).ToList();
+            List<ImsTargetResult> resultList = target.ResultList.Where(x => x.AnalysisStatus == AnalysisStatus.Positive).OrderBy(x => x.IsotopicFitScore).ToList();
             int numResults = resultList.Count;
 
             for (int i = 0; i < numResults; i++)

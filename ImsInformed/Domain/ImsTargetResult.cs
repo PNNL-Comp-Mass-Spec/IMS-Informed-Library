@@ -25,7 +25,7 @@ namespace ImsInformed.Domain
 		public XYData MassSpectrum { get; set; }
 		public FeatureBlob XicFeature { get; set; }
         public double IsotopicFitScore { get; set; }
-		public FailureReason FailureReason { get; set; }
+		public AnalysisStatus AnalysisStatus { get; set; }
 
 		public double Intensity
 		{

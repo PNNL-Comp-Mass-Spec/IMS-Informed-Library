@@ -1,4 +1,14 @@
-﻿namespace ImsInformed.Util
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SaturationDetector.cs" company="PNNL">
+//   Written for the Department of Energy (PNNL, Richland, WA)
+//   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
+// </copyright>
+// <summary>
+//   Defines the SaturationDetector type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace ImsInformed.Util
 {
     using System;
     using System.Collections.Generic;

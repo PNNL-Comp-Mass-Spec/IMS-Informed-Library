@@ -185,7 +185,7 @@ namespace ImsInformed.Domain
 				resultQuery.Append(",");
 				resultQuery.Append("0");
 				resultQuery.Append(",");
-				resultQuery.Append("'" + imsTargetResult.FailureReason + "'");
+				resultQuery.Append("'" + imsTargetResult.AnalysisStatus + "'");
 				resultQuery.Append(");");
 
 				allQueries.Append("\n");

@@ -73,7 +73,7 @@
     <Compile Include="Domain\ChargeStateCorrelationResult.cs" />
     <Compile Include="Domain\DriftTimeTarget.cs" />
     <Compile Include="Domain\FailurePrecedence.cs" />
-    <Compile Include="Domain\FailureReason.cs" />
+    <Compile Include="Domain\AnalysisStatus.cs" />
     <Compile Include="Domain\FakeUIMFReader.cs" />
     <Compile Include="Domain\FeatureBlobNet.cs" />
     <Compile Include="Domain\FeatureUtil.cs" />
@@ -81,6 +81,7 @@
     <Compile Include="Domain\ImsTargetResult.cs" />
     <Compile Include="Domain\InjectionMethod.cs" />
     <Compile Include="Domain\IonizationMethod.cs" />
+    <Compile Include="Domain\MoleculeInformedWorkflowResult.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
     <Compile Include="Stats\FitLine.cs" />

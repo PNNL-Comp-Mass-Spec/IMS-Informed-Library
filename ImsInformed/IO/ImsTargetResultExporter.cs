@@ -70,7 +70,7 @@ namespace ImsInformed.IO
 				resultInfo.Append(result.DriftTime + ",");
 				resultInfo.Append(driftTimeError + ",");
 				resultInfo.Append(correlationAverage + ",");
-				resultInfo.Append(result.FailureReason.ToString());
+				resultInfo.Append(result.AnalysisStatus.ToString());
 
 				_textWriter.WriteLine(peptideInfo.ToString() + resultInfo.ToString());
 			}
@@ -127,7 +127,7 @@ namespace ImsInformed.IO
 				resultInfo.Append(result.DriftTime + ",");
 				resultInfo.Append(driftTimeError + ",");
 				resultInfo.Append(correlationAverage + ",");
-				resultInfo.Append(result.FailureReason.ToString());
+				resultInfo.Append(result.AnalysisStatus.ToString());
 
 				_textWriter.WriteLine(peptideInfo.ToString() + resultInfo.ToString());
 			}
@@ -135,7 +135,7 @@ namespace ImsInformed.IO
 
 		private static void AddCsvHeader(TextWriter textWriter)
 		{
-			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,ScanLcRep,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation,FailureReason";
+			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,ScanLcRep,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation,AnalysisStatus";
 			textWriter.WriteLine(header);
 		}
 

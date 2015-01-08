@@ -13,6 +13,7 @@ namespace ImsInformed.Util
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
 
@@ -149,7 +150,7 @@ namespace ImsInformed.Util
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
             // {
-            // result.FailureReason = FailureReason.IsotopicProfileNotFound;
+            // result.AnalysisStatus = AnalysisStatus.IsotopicProfileNotFound;
             // continue;
             // }
 
@@ -274,24 +275,22 @@ namespace ImsInformed.Util
             return bestBlob;
         }
 
-        /// <summary>
-        /// The run molecule informed work flow.
-        /// </summary>
-        /// <param name="target">
-        /// The target.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public bool RunMoleculeInformedWorkFlow(ImsTarget target)
+        public MoleculeInformedWorkflowResult RunMoleculeInformedWorkFlow(ImsTarget target)
         {
+            // Initialize the result object
+            MoleculeInformedWorkflowResult informedResult;
+            informedResult.DatasetName = this.DatasetName;
+            informedResult.IonizationMethod = target.IonizationType;
+
             // ImsTarget assumes proton+ ionization. Get rid of it here.
             Composition targetComposition = MoleculeUtil.IonizationCompositionDecompensation(target.Composition, IonizationMethod.ProtonPlus);
             targetComposition = MoleculeUtil.IonizationCompositionCompensation(targetComposition, target.IonizationType);
             
             string empiricalFormula = (targetComposition != null) ? targetComposition.ToPlainString() : string.Empty;
           
-            // Setup result object
+            informedResult.TargetDescriptor = (targetComposition == null) ? target.TargetMz.ToString(CultureInfo.InvariantCulture) : target.EmpiricalFormula;
+
+            // Setup result file.
             Trace.Listeners.Clear();
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
             consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
@@ -391,7 +390,11 @@ namespace ImsInformed.Util
                 if (accumulatedXiCs.Keys.Count < 1)
                 {
                     Trace.WriteLine("Target Ion not found in this UIMF file");
-                    return false;
+                    informedResult.AnalysisStatus = AnalysisStatus.XicNotFound;
+                    informedResult.Mobility = 0;
+                    informedResult.CrossSectionalArea = 0;
+                    informedResult.RSquared = 0;
+                    return informedResult;
                 }
 
                 // Calculate the fit line 
@@ -426,6 +429,11 @@ namespace ImsInformed.Util
                 if (!sufficientPoints)
                 {
                     Trace.WriteLine("Not enough points are qualified for perform linear fit. Abort identification.");
+                    informedResult.AnalysisStatus = AnalysisStatus.NotSufficientPointsForFitline;
+                    informedResult.Mobility = 0;
+                    informedResult.CrossSectionalArea = 0;
+                    informedResult.RSquared = 0;
+                    return informedResult;
                 }
                 else 
                 {
@@ -435,7 +443,7 @@ namespace ImsInformed.Util
                     string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
                     ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
                     Console.WriteLine("Writes QC plot of fitline to " + outputPath);
-                    Trace.WriteLine("");
+                    Trace.WriteLine(string.Empty);
 
                     double rSquared = line.RSquared;
 
@@ -458,6 +466,12 @@ namespace ImsInformed.Util
 
                     double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
 
+                    // Initialize the result struct.
+                    informedResult.AnalysisStatus = AnalysisStatus.Positive;
+                    informedResult.Mobility = mobility;
+                    informedResult.CrossSectionalArea = crossSection;
+                    informedResult.RSquared = rSquared;
+
                     // Printout results
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
@@ -469,15 +483,13 @@ namespace ImsInformed.Util
                         Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
                         Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
                         Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
-                        Trace.WriteLine("");
+                        Trace.WriteLine(string.Empty);
                     }
-                    Trace.WriteLine(String.Format("R Squared {0:F4}", rSquared));
-                    Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", mobility));
-                    Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", crossSection));
-                    return true;
+                    Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.RSquared));
+                    Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", informedResult.Mobility));
+                    Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", informedResult.CrossSectionalArea));
+                    return informedResult;
                 }
-
-                return false;
             }
         }
     }

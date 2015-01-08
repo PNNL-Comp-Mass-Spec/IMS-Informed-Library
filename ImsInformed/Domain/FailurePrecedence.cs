@@ -4,20 +4,20 @@ namespace ImsInformed.Domain
 {
 	public class FailurePrecedence
 	{
-		public static Dictionary<FailureReason, double> FailurePredenceMap = new Dictionary<FailureReason, double>
+		public static Dictionary<AnalysisStatus, double> FailurePredenceMap = new Dictionary<AnalysisStatus, double>
 		{
-			{ FailureReason.None, 0 },
-			{ FailureReason.XicNotFound, 1 },
-			{ FailureReason.IsotopicProfileNotFound, 2 },
-			{ FailureReason.IsotopicProfileNotMatchTheoretical, 2.1 },
-			{ FailureReason.IsotopicProfileNotEnoughPeaks, 2.2 },
-			{ FailureReason.IsotopicFitScoreError, 3 },
-			{ FailureReason.ElutionTimeError, 4 },
-			{ FailureReason.DriftTimeError, 5 },
-			{ FailureReason.MassError, 6 },
-			{ FailureReason.PeakToLeft, 7 },
-			{ FailureReason.ChargeStateCorrelation, 8 },
-			{ FailureReason.Unknown, 9 }
+			{ AnalysisStatus.Positive, 0 },
+			{ AnalysisStatus.XicNotFound, 1 },
+			{ AnalysisStatus.IsotopicProfileNotFound, 2 },
+			{ AnalysisStatus.IsotopicProfileNotMatchTheoretical, 2.1 },
+			{ AnalysisStatus.IsotopicProfileNotEnoughPeaks, 2.2 },
+			{ AnalysisStatus.IsotopicFitScoreError, 3 },
+			{ AnalysisStatus.ElutionTimeError, 4 },
+			{ AnalysisStatus.DriftTimeError, 5 },
+			{ AnalysisStatus.MassError, 6 },
+			{ AnalysisStatus.PeakToLeft, 7 },
+			{ AnalysisStatus.ChargeStateCorrelation, 8 },
+			{ AnalysisStatus.Error, 9 }
 		};
 	}
 }

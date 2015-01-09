@@ -6,7 +6,7 @@ namespace ImsInformed.Domain
 	{
 		public static Dictionary<AnalysisStatus, double> FailurePredenceMap = new Dictionary<AnalysisStatus, double>
 		{
-			{ AnalysisStatus.Positive, 0 },
+			{ AnalysisStatus.POS, 0 },
 			{ AnalysisStatus.XicNotFound, 1 },
 			{ AnalysisStatus.IsotopicProfileNotFound, 2 },
 			{ AnalysisStatus.IsotopicProfileNotMatchTheoretical, 2.1 },
@@ -17,7 +17,7 @@ namespace ImsInformed.Domain
 			{ AnalysisStatus.MassError, 6 },
 			{ AnalysisStatus.PeakToLeft, 7 },
 			{ AnalysisStatus.ChargeStateCorrelation, 8 },
-			{ AnalysisStatus.Error, 9 }
+			{ AnalysisStatus.ERR, 9 }
 		};
 	}
 }

@@ -171,7 +171,7 @@ namespace ImsInformed.Util
                     ImsTargetResult result = new ImsTargetResult
                     {
                         ChargeState = chargeState,
-                        AnalysisStatus = AnalysisStatus.Positive
+                        AnalysisStatus = AnalysisStatus.POS
                     };
 
                     target.ResultList.Add(result);
@@ -388,7 +388,7 @@ namespace ImsInformed.Util
             ChargeStateCorrelationResult bestCorrelationResult = null;
             double bestCorrelationSum = -1;
 
-            List<ImsTargetResult> resultList = target.ResultList.Where(x => x.AnalysisStatus == AnalysisStatus.Positive).OrderBy(x => x.IsotopicFitScore).ToList();
+            List<ImsTargetResult> resultList = target.ResultList.Where(x => x.AnalysisStatus == AnalysisStatus.POS).OrderBy(x => x.IsotopicFitScore).ToList();
             int numResults = resultList.Count;
 
             for (int i = 0; i < numResults; i++)

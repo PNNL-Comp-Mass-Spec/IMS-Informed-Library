@@ -390,7 +390,7 @@ namespace ImsInformed.Util
                 if (accumulatedXiCs.Keys.Count < 1)
                 {
                     Trace.WriteLine("Target Ion not found in this UIMF file");
-                    informedResult.AnalysisStatus = AnalysisStatus.XicNotFound;
+                    informedResult.AnalysisStatus = AnalysisStatus.NEG;
                     informedResult.Mobility = 0;
                     informedResult.CrossSectionalArea = 0;
                     informedResult.RSquared = 0;
@@ -429,7 +429,7 @@ namespace ImsInformed.Util
                 if (!sufficientPoints)
                 {
                     Trace.WriteLine("Not enough points are qualified for perform linear fit. Abort identification.");
-                    informedResult.AnalysisStatus = AnalysisStatus.NotSufficientPointsForFitline;
+                    informedResult.AnalysisStatus = AnalysisStatus.NSP;
                     informedResult.Mobility = 0;
                     informedResult.CrossSectionalArea = 0;
                     informedResult.RSquared = 0;
@@ -467,7 +467,7 @@ namespace ImsInformed.Util
                     double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
 
                     // Initialize the result struct.
-                    informedResult.AnalysisStatus = AnalysisStatus.Positive;
+                    informedResult.AnalysisStatus = AnalysisStatus.POS;
                     informedResult.Mobility = mobility;
                     informedResult.CrossSectionalArea = crossSection;
                     informedResult.RSquared = rSquared;

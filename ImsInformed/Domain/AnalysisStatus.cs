@@ -3,9 +3,10 @@ namespace ImsInformed.Domain
 {
     public enum AnalysisStatus
     {
-        Positive,
-        Error,
-        Negative,
+        POS, // Result positive, ion found and mobility calculated.
+        ERR, // Error
+        NEG, // Result negative, ion not found
+        Nah, // Analysis not scheduled
         XicNotFound,
         IsotopicProfileNotFound,
         IsotopicProfileNotMatchTheoretical,
@@ -15,7 +16,7 @@ namespace ImsInformed.Domain
         DriftTimeError,
         MassError,
         PeakToLeft,
-        NotSufficientPointsForFitline,
+        NSP, // No sufficient points for the fitline.
         ChargeStateCorrelation
     }
 }

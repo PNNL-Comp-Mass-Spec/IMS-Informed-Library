@@ -275,221 +275,246 @@ namespace ImsInformed.Util
             return bestBlob;
         }
 
+        /// <summary>
+        /// The run molecule informed work flow.
+        /// </summary>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <returns>
+        /// The <see cref="MoleculeInformedWorkflowResult"/>.
+        /// </returns>
         public MoleculeInformedWorkflowResult RunMoleculeInformedWorkFlow(ImsTarget target)
         {
-            // Initialize the result object
-            MoleculeInformedWorkflowResult informedResult;
-            informedResult.DatasetName = this.DatasetName;
-            informedResult.IonizationMethod = target.IonizationType;
-
-            // ImsTarget assumes proton+ ionization. Get rid of it here.
-            Composition targetComposition = MoleculeUtil.IonizationCompositionDecompensation(target.Composition, IonizationMethod.ProtonPlus);
-            targetComposition = MoleculeUtil.IonizationCompositionCompensation(targetComposition, target.IonizationType);
-            
-            string empiricalFormula = (targetComposition != null) ? targetComposition.ToPlainString() : string.Empty;
-          
-            informedResult.TargetDescriptor = (targetComposition == null) ? target.TargetMz.ToString(CultureInfo.InvariantCulture) : target.EmpiricalFormula;
-
-            // Setup result file.
-            Trace.Listeners.Clear();
-            ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
-            consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
-            string result = this.OutputPath + this.ResultFileName;
-
-            using (StreamWriter resultFile = File.AppendText(result))
+            try
             {
-                TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(resultFile)
-                {
-                    Name = "this.DatasetName" + "_Result",
-                    TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
-                };
-
-                Trace.Listeners.Add(consoleTraceListener);
-                Trace.Listeners.Add(resultFileTraceListener);
-                Trace.AutoFlush = true;
-
-                // Setup target object
-                if (targetComposition != null) 
-                {
-                    // Because ion assumes adding a proton, that's the reason for decompensation
-                    Ion targetIon = new Ion(targetComposition, 1);
-                    target.TargetMz = targetIon.GetMonoIsotopicMz();
-                } 
+                // Initialize the result object
+                MoleculeInformedWorkflowResult informedResult;
+                informedResult.DatasetName = this.DatasetName;
+                informedResult.IonizationMethod = target.IonizationType;
                 
-                resultFile.WriteLine();
-                Trace.WriteLine("Dataset: " + this.DatasetName);
-                Trace.WriteLine("Ionization method: " + target.IonizationType);
-                Trace.WriteLine("Targeting Mz: " + target.TargetMz);
-                    
-                // Generate Theoretical Isotopic Profile
-                IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
-                List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
-
-                // Generate VoltageSeparatedAccumulatedXICs
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz, _parameters);
-                    
-                // For each voltage, find 2D XIC features 
-                double totalScore = 0;
-
-                // Because we can't delete keys while iterating over a dictionary, and thus removalList
-                List<VoltageGroup> removaList = new List<VoltageGroup>();
-                foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                // ImsTarget assumes proton+ ionization. Get rid of it here.
+                Composition targetComposition = MoleculeUtil.IonizationCompositionDecompensation(target.Composition,    IonizationMethod.ProtonPlus);
+                targetComposition = MoleculeUtil.IonizationCompositionCompensation(targetComposition, target.IonizationType);
+                
+                string empiricalFormula = (targetComposition != null) ? targetComposition.ToPlainString() : string.Empty;
+                
+                informedResult.TargetDescriptor = (targetComposition == null) ? target.TargetMz.ToString(CultureInfo.InvariantCulture) : target.EmpiricalFormula;
+                
+                // Setup result file.
+                Trace.Listeners.Clear();
+                ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
+                consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
+                string result = this.OutputPath + this.ResultFileName;
+                
+                using (StreamWriter resultFile = File.AppendText(result))
                 {
-                    // The filters below were written for 3D XICs, but they should work for 2D XICs.
-
-                    // Smooth Chromatogram
-                    IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
-                    _smoother.Smooth(ref pointList);
-                    
-                    // Peak Find Chromatogram
-                    IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
-                    //Trace.Write("Feature Blobs: " + featureBlobs.Count());
-                        
-                    // Filter away small XIC peaks
-                    featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel);
-
-                    // Trace.WriteLine(" .After Filtering: " + featureBlobs.Count());
-                    double score = 0;
-
-                    // Find the global intensity MAX, used for noise rejection
-                    double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
-
-                    // select best feature
-                    FeatureBlob bestFeature = this.FeaturesSelection(featureBlobs, target, 1, out score);
-
-                    // Rate the feature's confidence score. Confidence score measures how likely the feature is an ion instead of noise.
-                    voltageGroup.BestFeature = bestFeature;
-                    voltageGroup.ConfidenceScore = MoleculeUtil.NoiseClassifier(bestFeature, globalMaxIntensity);
-
-                    voltageGroup.BestScore = score;
-                    totalScore += score;
-                    if (voltageGroup.BestFeature == null || voltageGroup.ConfidenceScore < this.Parameters.ConfidenceThreshold) 
+                    TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(resultFile)
                     {
-                        Console.WriteLine("Nothing is found in voltage group {0:F2} V", voltageGroup.MeanVoltageInVolts);
-                        removaList.Add(voltageGroup);
+                        Name = "this.DatasetName" + "_Result",
+                        TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
+                    };
+                
+                    Trace.Listeners.Add(consoleTraceListener);
+                    Trace.Listeners.Add(resultFileTraceListener);
+                    Trace.AutoFlush = true;
+                
+                    // Setup target object
+                    if (targetComposition != null) 
+                    {
+                        // Because ion assumes adding a proton, that's the reason for decompensation
+                        Ion targetIon = new Ion(targetComposition, 1);
+                        target.TargetMz = targetIon.GetMonoIsotopicMz();
                     } 
-                }
-
-                double averageScore = totalScore / accumulatedXiCs.Keys.Count;
-                double threshold = averageScore / 10;
-                foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
-                {
-                    if (voltageGroup.BestScore < threshold)
-                    {
-                        removaList.Add(voltageGroup);
-                    }
-                }
                     
-                // Remove stuff
-                foreach (VoltageGroup voltageGroup in removaList)
-                {
-                    accumulatedXiCs.Remove(voltageGroup);
-                }
-
-                // Reject voltage groups without ion presense.
-                if (accumulatedXiCs.Keys.Count < 1)
-                {
-                    Trace.WriteLine("Target Ion not found in this UIMF file");
-                    informedResult.AnalysisStatus = AnalysisStatus.NEG;
-                    informedResult.Mobility = 0;
-                    informedResult.CrossSectionalArea = 0;
-                    informedResult.RSquared = 0;
-                    return informedResult;
-                }
-
-                // Calculate the fit line 
-                HashSet<ContinuousXYPoint> fitPoints = new HashSet<ContinuousXYPoint>();
-                foreach (VoltageGroup group in accumulatedXiCs.Keys)
-                {
-                    // convert drift time to SI unit seconds
-                    double x = group.BestFeature.Statistics.ScanImsRep * FakeUIMFReader.AverageScanPeriodInMicroSeconds / 1000000;
+                    resultFile.WriteLine();
+                    Trace.WriteLine("Dataset: " + this.DatasetName);
+                    Trace.WriteLine("Ionization method: " + target.IonizationType);
+                    Trace.WriteLine("Targeting Mz: " + target.TargetMz);
+                        
+                    // Generate Theoretical Isotopic Profile
+                    IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                    List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                 
-                    // P/(T*V) value in pascal per (volts * kelvin)
-                    double y = group.MeanPressureNondimensionalized / group.MeanVoltageInVolts / group.MeanTemperatureNondimensionalized; 
-                    ContinuousXYPoint point = new ContinuousXYPoint(x, y);
-                    fitPoints.Add(point);
-                    group.FitPoint = point;
-                }
-
-                double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                FitLine line = new FitLine(fitPoints, 3);            
-
-                // Mark outliers and compute the fitline without using the outliers.
-                HashSet<ContinuousXYPoint> newPoints = new HashSet<ContinuousXYPoint>();
-                foreach (ContinuousXYPoint point in fitPoints)
-                {
-                    if (!point.IsOutlier)
-                    {
-                        newPoints.Add(point);
-                    }
-                }
-
-                // If not enough points
-                bool sufficientPoints = newPoints.Count >= 3;
-                if (!sufficientPoints)
-                {
-                    Trace.WriteLine("Not enough points are qualified for perform linear fit. Abort identification.");
-                    informedResult.AnalysisStatus = AnalysisStatus.NSP;
-                    informedResult.Mobility = 0;
-                    informedResult.CrossSectionalArea = 0;
-                    informedResult.RSquared = 0;
-                    return informedResult;
-                }
-                else 
-                {
-                    line.LeastSquaresFitLinear(newPoints);
-
-                    // Export the fit line into QC oxyplot drawings
-                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
-                    ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
-                    Console.WriteLine("Writes QC plot of fitline to " + outputPath);
-                    Trace.WriteLine(string.Empty);
-
-                    double rSquared = line.RSquared;
-
-                    // Compute mobility and cross section area
-                    double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
-                    Composition bufferGas = new Composition(0, 0, 2, 0, 0);
-                    double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
-                    
-                    // Find the average temperature across from various voltage groups.
-                    double globalMeanTemperature = 0;
-                    int frameCount = 0;
-                    foreach (VoltageGroup group in accumulatedXiCs.Keys)
-                    {
-                        double voltageGroupTemperature = UnitConversion.AbsoluteZero * group.MeanTemperatureNondimensionalized;
-                        globalMeanTemperature += voltageGroupTemperature * group.AccumulationCount;
-                        frameCount += group.AccumulationCount;
-                    }
-
-                    globalMeanTemperature /= frameCount;
-
-                    double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
-
-                    // Initialize the result struct.
-                    informedResult.AnalysisStatus = AnalysisStatus.POS;
-                    informedResult.Mobility = mobility;
-                    informedResult.CrossSectionalArea = crossSection;
-                    informedResult.RSquared = rSquared;
-
-                    // Printout results
+                    // Generate VoltageSeparatedAccumulatedXICs
+                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz,     _parameters);
+                        
+                    // For each voltage, find 2D XIC features 
+                    double totalScore = 0;
+                
+                    // Because we can't delete keys while iterating over a dictionary, and thus removalList
+                    List<VoltageGroup> removaList = new List<VoltageGroup>();
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
-                        Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
-                        Trace.WriteLine(String.Format("Mean voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
-                        Trace.WriteLine(String.Format("Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
-                        Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
-                        Trace.WriteLine(String.Format("Scan number: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
-                        Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
-                        Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
-                        Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
-                        Trace.WriteLine(string.Empty);
+                        // The filters below were written for 3D XICs, but they should work for 2D XICs.
+                
+                        // Smooth Chromatogram
+                        IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
+                        _smoother.Smooth(ref pointList);
+                        
+                        // Peak Find Chromatogram
+                        IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
+                        //Trace.Write("Feature Blobs: " + featureBlobs.Count());
+                            
+                        // Filter away small XIC peaks
+                        featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel);
+                
+                        // Trace.WriteLine(" .After Filtering: " + featureBlobs.Count());
+                        double score = 0;
+                
+                        // Find the global intensity MAX, used for noise rejection
+                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
+                
+                        // select best feature
+                        FeatureBlob bestFeature = this.FeaturesSelection(featureBlobs, target, 1, out score);
+                
+                        // Rate the feature's confidence score. Confidence score measures how likely the feature is an ion instead of   noise.
+                        voltageGroup.BestFeature = bestFeature;
+                        voltageGroup.ConfidenceScore = MoleculeUtil.NoiseClassifier(bestFeature, globalMaxIntensity);
+                
+                        voltageGroup.BestScore = score;
+                        totalScore += score;
+                        if (voltageGroup.BestFeature == null || voltageGroup.ConfidenceScore < this.Parameters.ConfidenceThreshold) 
+                        {
+                            Console.WriteLine("Nothing is found in voltage group {0:F2} V", voltageGroup.MeanVoltageInVolts);
+                            removaList.Add(voltageGroup);
+                        } 
                     }
-                    Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.RSquared));
-                    Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", informedResult.Mobility));
-                    Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", informedResult.CrossSectionalArea));
-                    return informedResult;
+                
+                    double averageScore = totalScore / accumulatedXiCs.Keys.Count;
+                    double threshold = averageScore / 10;
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                    {
+                        if (voltageGroup.BestScore < threshold)
+                        {
+                            removaList.Add(voltageGroup);
+                        }
+                    }
+                        
+                    // Remove stuff
+                    foreach (VoltageGroup voltageGroup in removaList)
+                    {
+                        accumulatedXiCs.Remove(voltageGroup);
+                    }
+                
+                    // Reject voltage groups without ion presense.
+                    if (accumulatedXiCs.Keys.Count < 1)
+                    {
+                        Trace.WriteLine("Target Ion not found in this UIMF file");
+                        informedResult.AnalysisStatus = AnalysisStatus.NEG;
+                        informedResult.Mobility = 0;
+                        informedResult.CrossSectionalArea = 0;
+                        informedResult.RSquared = 0;
+                        return informedResult;
+                    }
+                
+                    // Calculate the fit line 
+                    HashSet<ContinuousXYPoint> fitPoints = new HashSet<ContinuousXYPoint>();
+                    foreach (VoltageGroup group in accumulatedXiCs.Keys)
+                    {
+                        // convert drift time to SI unit seconds
+                        double x = group.BestFeature.Statistics.ScanImsRep * FakeUIMFReader.AverageScanPeriodInMicroSeconds / 1000000;
+                    
+                        // P/(T*V) value in pascal per (volts * kelvin)
+                        double y = group.MeanPressureNondimensionalized / group.MeanVoltageInVolts /    group.MeanTemperatureNondimensionalized; 
+                        ContinuousXYPoint point = new ContinuousXYPoint(x, y);
+                        fitPoints.Add(point);
+                        group.FitPoint = point;
+                    }
+                
+                    double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
+                    FitLine line = new FitLine(fitPoints, 3);            
+                
+                    // Mark outliers and compute the fitline without using the outliers.
+                    HashSet<ContinuousXYPoint> newPoints = new HashSet<ContinuousXYPoint>();
+                    foreach (ContinuousXYPoint point in fitPoints)
+                    {
+                        if (!point.IsOutlier)
+                        {
+                            newPoints.Add(point);
+                        }
+                    }
+                
+                    // If not enough points
+                    bool sufficientPoints = newPoints.Count >= 3;
+                    if (!sufficientPoints)
+                    {
+                        Trace.WriteLine("Not enough points are qualified for perform linear fit. Abort identification.");
+                        informedResult.AnalysisStatus = AnalysisStatus.NSP;
+                        informedResult.Mobility = 0;
+                        informedResult.CrossSectionalArea = 0;
+                        informedResult.RSquared = 0;
+                        return informedResult;
+                    }
+                    else 
+                    {
+                        line.LeastSquaresFitLinear(newPoints);
+                
+                        // Export the fit line into QC oxyplot drawings
+                        string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
+                        ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
+                        Console.WriteLine("Writes QC plot of fitline to " + outputPath);
+                        Trace.WriteLine(string.Empty);
+                
+                        double rSquared = line.RSquared;
+                
+                        // Compute mobility and cross section area
+                        double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
+                        Composition bufferGas = new Composition(0, 0, 2, 0, 0);
+                        double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
+                        
+                        // Find the average temperature across from various voltage groups.
+                        double globalMeanTemperature = 0;
+                        int frameCount = 0;
+                        foreach (VoltageGroup group in accumulatedXiCs.Keys)
+                        {
+                            double voltageGroupTemperature = UnitConversion.AbsoluteZero * group.MeanTemperatureNondimensionalized;
+                            globalMeanTemperature += voltageGroupTemperature * group.AccumulationCount;
+                            frameCount += group.AccumulationCount;
+                        }
+                
+                        globalMeanTemperature /= frameCount;
+                
+                        double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); //   Charge State is assumed to be 1 here;
+                
+                        // Initialize the result struct.
+                        informedResult.AnalysisStatus = AnalysisStatus.POS;
+                        informedResult.Mobility = mobility;
+                        informedResult.CrossSectionalArea = crossSection;
+                        informedResult.RSquared = rSquared;
+                
+                        // Printout results
+                        foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                        {
+                            Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
+                            Trace.WriteLine(String.Format("Mean voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
+                            Trace.WriteLine(String.Format("Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
+                            Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
+                            Trace.WriteLine(String.Format("Scan number: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
+                            Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
+                            Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
+                            Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
+                            Trace.WriteLine(string.Empty);
+                        }
+                        Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.RSquared));
+                        Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", informedResult.Mobility));
+                        Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", informedResult.CrossSectionalArea));
+                        return informedResult;
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                // create the error result
+                MoleculeInformedWorkflowResult informedResult;
+                informedResult.DatasetName = this.DatasetName;
+                informedResult.TargetDescriptor = null;
+                informedResult.IonizationMethod = target.IonizationType;
+                informedResult.AnalysisStatus = AnalysisStatus.ERR;
+                informedResult.Mobility = 0;
+                informedResult.CrossSectionalArea = 0;
+                informedResult.RSquared = 0;
+                return informedResult;
             }
         }
     }

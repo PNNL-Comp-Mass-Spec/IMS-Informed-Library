@@ -5,6 +5,7 @@ namespace ImsInformed.Domain
     {
         POS, // Result positive, ion found and mobility calculated.
         ERR, // Error
+        TAR, // Target construction problem
         NEG, // Result negative, ion not found
         Nah, // Analysis not scheduled
         XicNotFound,

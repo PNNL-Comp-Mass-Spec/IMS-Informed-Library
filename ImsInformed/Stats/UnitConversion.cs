@@ -20,6 +20,8 @@ namespace ImsInformed.Stats
         /// </summary>
         public const double AbsoluteZero = 273.15;
 
+        public const double RoomTemperature = 298.15;
+
         /// <summary>
         /// The atmospheric pressure.
         /// </summary>
@@ -78,7 +80,7 @@ namespace ImsInformed.Stats
         /// </returns>
         public static double DegreeCelsius2Nondimensionalized(double temperature)
         {
-            return DegreeCelsius2Kelvin(temperature) / AbsoluteZero;
+            return DegreeCelsius2Kelvin(temperature) / RoomTemperature;
         }
     }
 }

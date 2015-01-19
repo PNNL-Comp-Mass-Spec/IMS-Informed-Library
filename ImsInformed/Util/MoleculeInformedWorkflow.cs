@@ -492,6 +492,10 @@ namespace ImsInformed.Util
                             Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
                             Trace.WriteLine(String.Format("Scan number: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
                             Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
+                            // FOR COMPARISON WITH MATT"S RESULT, UNCOMMENT IF YOU SEE IT
+                            informedResult.Mobility = voltageGroup.FitPoint.x * 1000;
+                            // Normalize the drift time to be displayed.
+                            informedResult.Mobility = informedResult.Mobility / voltageGroup.MeanPressureNondimensionalized / voltageGroup.MeanTemperatureNondimensionalized;
                             Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
                             Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
                             Trace.WriteLine(string.Empty);
@@ -499,6 +503,7 @@ namespace ImsInformed.Util
                         Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.RSquared));
                         Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", informedResult.Mobility));
                         Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", informedResult.CrossSectionalArea));
+
                         return informedResult;
                     }
                 }

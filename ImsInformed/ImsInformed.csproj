@@ -79,7 +79,6 @@
     <Compile Include="Domain\AnalysisStatus.cs" />
     <Compile Include="Domain\FakeUIMFReader.cs" />
     <Compile Include="Domain\FeatureBlobNet.cs" />
-    <Compile Include="Domain\FeatureUtil.cs" />
     <Compile Include="Domain\ImsTarget.cs" />
     <Compile Include="Domain\ImsTargetResult.cs" />
     <Compile Include="Domain\InjectionMethod.cs" />

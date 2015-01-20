@@ -958,9 +958,7 @@ namespace ImsInformedTests
                 //informedWorkflow.PrintFeatureFindStatistics();
 
                 // Warmup
-                //informedWorkflow.ExtractData(targetList.Take(10));
-
-                
+                //informedWorkflow.ExtractData(targetList.Take(10)); 
 
                 // Actual
                 //Random random = new Random();
@@ -1019,13 +1017,25 @@ namespace ImsInformedTests
             // More complicated test cases with parenthesis
             foreach (string testCase in testCases)
             {
+                Console.WriteLine(testCase);
                 try
                 {
-                    Console.WriteLine(testCase);
+                    Composition compo = Composition.ParseFromPlainString(testCase);
+                    Console.WriteLine(@"InformedProteomicsParse: [{0}]", compo.ToPlainString());
+                } 
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+                try
+                {
+                    
                     Dictionary<string, int> dict = EmpiricalFormulaUtilities.ParseEmpiricalFormulaString(testCase);
+                    Console.WriteLine(@"Decon tool ParseEmpiricalFormulaString:");
                     foreach (var entry in dict)
                     {
-                        Console.WriteLine(@"[{0} {1}]", entry.Key, entry.Value);
+                        Console.Write(@"[{0} {1}]", entry.Key, entry.Value);
                     }
                 }
                 catch (Exception e)
@@ -1081,6 +1091,14 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestSingleMoleculeWithFormula()
         {
+            // DSA
+            string formula = "C12H10NNaO3S";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.SodiumPlus, formula);
+            Console.WriteLine("Nicotine:");
+            Console.WriteLine("Composition: " + sample.Composition);
+            Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
+            string fileLocation = AcetamipridFile;
+
             // Nicotine
             // string formula = "C10H14N2";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2Plus, formula);
@@ -1100,13 +1118,13 @@ namespace ImsInformedTests
             // string fileLocation = AcetamipridFile;
 
             // BPS Na
-            string formula = "C12H10O4S";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.SodiumPlus, formula);
-            string fileLocation = Bps;
-            Console.WriteLine("BPS:");
-            Console.WriteLine("Composition: " + sample.Composition);
-            Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
-            Console.WriteLine("MZ:   " +  273.019748);
+            // string formula = "C12H10O4S";
+            // ImsTarget sample = new ImsTarget(1, IonizationMethod.SodiumPlus, formula);
+            // string fileLocation = Bps;
+            // Console.WriteLine("BPS:");
+            // Console.WriteLine("Composition: " + sample.Composition);
+            // Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
+            // Console.WriteLine("MZ:   " +  273.019748);
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {

@@ -16,6 +16,7 @@ namespace ImsInformed.Util
     using System.Xml.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Stats;
 
     using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
@@ -56,7 +57,8 @@ namespace ImsInformed.Util
                 }
                 else if (method == IonizationMethod.SodiumPlus) 
                 {
-                    return composition + ReadEmpiricalFormulaNoParenthesis("Na");
+                    Composition sodium = ReadEmpiricalFormulaNoParenthesis("Na");
+                    return composition.Add(sodium);
                 }
                 else if (method == IonizationMethod.Proton2Plus)
                 {
@@ -202,6 +204,24 @@ namespace ImsInformed.Util
             return data.Pop()[0];
         }
 
+        /// <summary>
+        /// The normalize drift time.
+        /// </summary>
+        /// <param name="driftTime">
+        /// The drift time.
+        /// </param>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double NormalizeDriftTime(double driftTime, VoltageGroup group)
+        {
+            double normalizedPressure = UnitConversion.Nondimensionalized2Torr(group.MeanPressureNondimensionalized) / UnitConversion.StandardImsPressureInTorr;
+            double normalizedTemperature = UnitConversion.Nondimensionalized2Kelvin(group.MeanTemperatureNondimensionalized) / UnitConversion.RoomTemperatureInKelvin;
+            return driftTime / normalizedPressure;
+        }
 
         /// <summary>
         /// return the maximum intensity value possible for a given voltage group

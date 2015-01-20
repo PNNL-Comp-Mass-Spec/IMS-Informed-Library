@@ -18,14 +18,27 @@ namespace ImsInformed.Stats
         /// <summary>
         /// The absolute zero.
         /// </summary>
-        public const double AbsoluteZero = 273.15;
+        public const double AbsoluteZeroInKelvin = 273.15;
 
-        public const double RoomTemperature = 298.15;
+        /// <summary>
+        /// The room temperature.
+        /// </summary>
+        public const double RoomTemperatureInKelvin = 298.15;
+
+        /// <summary>
+        /// The standard ims pressure in TORR.
+        /// </summary>
+        public const double StandardImsPressureInTorr = 4;
+
+        /// <summary>
+        /// The pascal unit TORR.
+        /// </summary>
+        public const double PascalPerTorr = 133.322368;
 
         /// <summary>
         /// The atmospheric pressure.
         /// </summary>
-        public const double AtmosphericPressure = 101325;
+        public const double AtmosphericPressureInPascal = 101325;
 
         /// <summary>
         /// The torr 2 pascal.
@@ -38,7 +51,7 @@ namespace ImsInformed.Stats
         /// </returns>
         public static double Torr2Pascal(double pressureInTorr)
         {
-            return 133.322368 * pressureInTorr;
+            return PascalPerTorr * pressureInTorr;
         }
 
         /// <summary>
@@ -52,7 +65,12 @@ namespace ImsInformed.Stats
         /// </returns>
         public static double Torr2Nondimensionalized(double pressureInTorr)
         {
-            return (133.322368 * pressureInTorr) / AtmosphericPressure;
+            return (PascalPerTorr * pressureInTorr) / AtmosphericPressureInPascal;
+        }
+
+        public static double Nondimensionalized2Torr(double pressureNondimensionalized)
+        {
+            return pressureNondimensionalized * AtmosphericPressureInPascal / PascalPerTorr;
         }
 
         /// <summary>
@@ -66,7 +84,7 @@ namespace ImsInformed.Stats
         /// </returns>
         public static double DegreeCelsius2Kelvin(double temperature)
         {
-            return AbsoluteZero + temperature;
+            return AbsoluteZeroInKelvin + temperature;
         }
 
         /// <summary>
@@ -80,7 +98,12 @@ namespace ImsInformed.Stats
         /// </returns>
         public static double DegreeCelsius2Nondimensionalized(double temperature)
         {
-            return DegreeCelsius2Kelvin(temperature) / RoomTemperature;
+            return DegreeCelsius2Kelvin(temperature) / AbsoluteZeroInKelvin;
+        }
+
+        public static double Nondimensionalized2Kelvin(double temperature)
+        {
+            return temperature * AbsoluteZeroInKelvin;
         }
     }
 }

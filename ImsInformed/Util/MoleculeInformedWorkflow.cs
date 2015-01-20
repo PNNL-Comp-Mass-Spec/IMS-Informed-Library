@@ -354,7 +354,8 @@ namespace ImsInformed.Util
                         
                         // Peak Find Chromatogram
                         IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
-                        //Trace.Write("Feature Blobs: " + featureBlobs.Count());
+
+                        // Trace.Write("Feature Blobs: " + featureBlobs.Count());
                             
                         // Filter away small XIC peaks
                         featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel);
@@ -413,10 +414,12 @@ namespace ImsInformed.Util
                     foreach (VoltageGroup group in accumulatedXiCs.Keys)
                     {
                         // convert drift time to SI unit seconds
-                        double x = group.BestFeature.Statistics.ScanImsRep * FakeUIMFReader.AverageScanPeriodInMicroSeconds / 1000000;
+                        double x = group.BestFeature.Statistics.ScanImsRep * group.AverageTofWidthInSeconds;
                     
                         // P/(T*V) value in pascal per (volts * kelvin)
-                        double y = group.MeanPressureNondimensionalized / group.MeanVoltageInVolts /    group.MeanTemperatureNondimensionalized; 
+                        double y = group.MeanPressureNondimensionalized / group.MeanVoltageInVolts
+                                   / group.MeanTemperatureNondimensionalized;
+                         
                         ContinuousXYPoint point = new ContinuousXYPoint(x, y);
                         fitPoints.Add(point);
                         group.FitPoint = point;
@@ -468,14 +471,14 @@ namespace ImsInformed.Util
                         int frameCount = 0;
                         foreach (VoltageGroup group in accumulatedXiCs.Keys)
                         {
-                            double voltageGroupTemperature = UnitConversion.AbsoluteZero * group.MeanTemperatureNondimensionalized;
+                            double voltageGroupTemperature = UnitConversion.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
                             globalMeanTemperature += voltageGroupTemperature * group.AccumulationCount;
                             frameCount += group.AccumulationCount;
                         }
                 
                         globalMeanTemperature /= frameCount;
                 
-                        double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); //   Charge State is assumed to be 1 here;
+                        double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
                 
                         // Initialize the result struct.
                         informedResult.AnalysisStatus = AnalysisStatus.POS;
@@ -495,7 +498,7 @@ namespace ImsInformed.Util
                             // FOR COMPARISON WITH MATT"S RESULT, UNCOMMENT IF YOU SEE IT
                             informedResult.Mobility = voltageGroup.FitPoint.x * 1000;
                             // Normalize the drift time to be displayed.
-                            informedResult.Mobility = informedResult.Mobility / voltageGroup.MeanPressureNondimensionalized / voltageGroup.MeanTemperatureNondimensionalized;
+                            informedResult.Mobility = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
                             Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
                             Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
                             Trace.WriteLine(string.Empty);

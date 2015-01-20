@@ -10,6 +10,5 @@ namespace ImsInformed.Domain
     public class FakeUIMFReader
     {
         public static readonly double DriftTubeLengthInCentimeters = 100;
-        public static readonly double AverageScanPeriodInMicroSeconds = 163;
     }
 }

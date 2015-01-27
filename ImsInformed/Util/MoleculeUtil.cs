@@ -74,35 +74,6 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// Filter spurious data
-        /// </summary>
-        /// <param name="bestFeature">
-        /// The best feature.
-        /// </param>
-        /// <param name="globalMaxIntensities">
-        /// The global max intensities.
-        /// </param>
-        /// <returns>
-        /// The <see cref="double"/>.
-        /// </returns>
-        public static double NoiseClassifier(FeatureBlob bestFeature, double globalMaxIntensities)
-        {
-            double featureMaxIntensity = bestFeature.Statistics.IntensityMax;
-            if (featureMaxIntensity * 10 >= globalMaxIntensities)
-            {
-                return 1;
-            } 
-            else if (featureMaxIntensity <= 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return featureMaxIntensity * 10 / globalMaxIntensities;
-            }
-        }
-
-        /// <summary>
         /// The compute collision cross sectional area.
         /// </summary>
         /// <param name="averageTemperatureInKelvin">

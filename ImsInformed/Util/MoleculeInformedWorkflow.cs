@@ -22,6 +22,7 @@ namespace ImsInformed.Util
     using ImsInformed.Domain;
     using ImsInformed.IO;
     using ImsInformed.Parameters;
+    using ImsInformed.Scoring;
     using ImsInformed.Stats;
 
     using InformedProteomics.Backend.Data.Biology;
@@ -126,156 +127,6 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// The score feature using isotopic profile.
-        /// </summary>
-        /// <param name="featureBlob">
-        /// The feature blob.
-        /// </param>
-        /// <param name="target">
-        /// The target.
-        /// </param>
-        /// <param name="chargeState">
-        /// The charge state.
-        /// </param>
-        /// <param name="statistics">
-        /// The statistics.
-        /// </param>
-        /// <returns>
-        /// The <see cref="double"/>.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        /// </exception>
-        public double ScoreFeatureUsingIsotopicProfile(FeatureBlob featureBlob, ImsTarget target, int chargeState, FeatureBlobStatistics statistics)
-        {
-            // No need to move on if the isotopic profile is not found
-            // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
-            // {
-            // result.AnalysisStatus = AnalysisStatus.IsotopicProfileNotFound;
-            // continue;
-            // }
-
-            // Find Isotopic Profile
-            // List<Peak> massSpectrumPeaks;
-            // IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
-            int unsaturatedIsotope = 0;
-
-            if (target.Composition == null)
-            {
-                throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims target without Composition provided.");
-            }
-
-            FeatureBlob isotopeFeature = null;
-            
-            // Bad Feature, so get out
-            if (statistics == null)
-            {
-                return 0;
-            }
-            
-            // Find an unsaturated peak in the isotopic profile
-            for (int i = 1; i < 10; i++)
-            {
-                // TODO: Verify that there are no peaks at isotope #s 0.5 and 1.5?? (If we filter on drift time, this shouldn't actually be necessary)
-                if (!statistics.IsSaturated) break;
-
-                double isotopeTargetMz = TargetIon(target, i, chargeState).GetIsotopeMz(i);
-
-                // Find XIC Features
-                IEnumerable<FeatureBlob> newFeatureBlobs = FindFeatures(isotopeTargetMz, statistics.ScanLcMin - 20, statistics.ScanLcMax + 20);
-
-                // If no feature, then get out
-                if (!newFeatureBlobs.Any())
-                {
-                    statistics = null;
-                    break;
-                }
-
-                bool foundFeature = false;
-                foreach (var newFeatureBlob in newFeatureBlobs.OrderByDescending(x => x.PointList.Count))
-                {
-                    var newStatistics = newFeatureBlob.CalculateStatistics();
-                    if(newStatistics.ScanImsRep <= statistics.ScanImsMax && newStatistics.ScanImsRep >= statistics.ScanImsMin && newStatistics.ScanLcRep <= statistics.ScanLcMax && newStatistics.ScanLcRep >= statistics.ScanLcMin)
-                    {
-                        isotopeFeature = newFeatureBlob;
-                        foundFeature = true;
-                        break;
-                    }
-                }
-
-                if(!foundFeature)
-                {
-                    statistics = null;
-                    break;
-                }
-
-                statistics = isotopeFeature.CalculateStatistics();
-                unsaturatedIsotope = i;
-            }
-
-            return 0;
-        }
-
-        /// <summary>
-        /// This score uses summed intensity around the found feature.
-        /// </summary>
-        /// <param name="featureBlob">
-        /// The feature blob.
-        /// </param>
-        /// <returns>
-        /// The <see cref="double"/>.
-        /// </returns>
-        public double ScoreFeatureMzOnly(FeatureBlob featureBlob)
-        {
-            // Sort features by relative intensity
-            FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
-            int scanImsRep = statistics.ScanImsRep;
-            if (scanImsRep < 5 || scanImsRep > _numScans - 5)
-            {
-                return 0;
-            }
-
-            return statistics.SumIntensities;
-        }
-
-        /// <summary>
-        /// Find the feature with highest matching score for the target for one voltage group
-        /// </summary>
-        /// <param name="features">
-        /// The features.
-        /// </param>
-        /// <param name="target">
-        /// The target.
-        /// </param>
-        /// <param name="chargeState">
-        /// The charge state.
-        /// </param>
-        /// <param name="score">
-        /// The score.
-        /// </param>
-        /// <returns>
-        /// The <see cref="FeatureBlob"/>.
-        /// </returns>
-        public FeatureBlob FeaturesSelection(IEnumerable<FeatureBlob> features, ImsTarget target, int chargeState, out double score)
-        {
-            FeatureBlob bestBlob = null;
-            double maxScore = 0;
-
-            // Check each XIC Peak found
-            foreach (var featureBlob in features)
-            {
-                // Find the feature with the highest intensity.
-                score = this.ScoreFeatureMzOnly(featureBlob);
-                if (score > maxScore)
-                {
-                    bestBlob = featureBlob;
-                    maxScore = score;
-                }
-            }
-            score = maxScore;
-            return bestBlob;
-        }
-
-        /// <summary>
         /// The run molecule informed work flow.
         /// </summary>
         /// <param name="target">
@@ -294,11 +145,7 @@ namespace ImsInformed.Util
                 informedResult.IonizationMethod = target.IonizationType;
                 
                 // ImsTarget assumes proton+ ionization. Get rid of it here.
-                Composition targetComposition = MoleculeUtil.IonizationCompositionDecompensation(target.Composition,    IonizationMethod.ProtonPlus);
-                targetComposition = MoleculeUtil.IonizationCompositionCompensation(targetComposition, target.IonizationType);
-                
-                string empiricalFormula = (targetComposition != null) ? targetComposition.ToPlainString() : string.Empty;
-                
+                Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(target.Composition, target.IonizationType);
                 informedResult.TargetDescriptor = (targetComposition == null) ? target.TargetMz.ToString(CultureInfo.InvariantCulture) : target.EmpiricalFormula;
                 
                 // Setup result file.
@@ -318,11 +165,13 @@ namespace ImsInformed.Util
                     Trace.Listeners.Add(consoleTraceListener);
                     Trace.Listeners.Add(resultFileTraceListener);
                     Trace.AutoFlush = true;
-                
+                    
+                    targetComposition = MoleculeUtil.IonizationCompositionDecompensation(targetComposition, IonizationMethod.ProtonPlus);
+
                     // Setup target object
                     if (targetComposition != null) 
                     {
-                        // Because ion assumes adding a proton, that's the reason for decompensation
+                        // Because Ion class from Informed Proteomics assumes adding a proton, that's the reason for decompensation
                         Ion targetIon = new Ion(targetComposition, 1);
                         target.TargetMz = targetIon.GetMonoIsotopicMz();
                     } 
@@ -333,8 +182,13 @@ namespace ImsInformed.Util
                     Trace.WriteLine("Targeting Mz: " + target.TargetMz);
                         
                     // Generate Theoretical Isotopic Profile
-                    IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
-                    List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
+                    List<Peak> theoreticalIsotopicProfilePeakList = null;
+                    if (targetComposition != null) 
+                    {
+                        string empiricalFormula = (targetComposition != null) ? targetComposition.ToPlainString() : string.Empty;
+                        IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                        theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
+                    }
                 
                     // Generate VoltageSeparatedAccumulatedXICs
                     VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz,     _parameters);
@@ -355,27 +209,48 @@ namespace ImsInformed.Util
                         // Peak Find Chromatogram
                         IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
 
-                        // Trace.Write("Feature Blobs: " + featureBlobs.Count());
-                            
-                        // Filter away small XIC peaks
+                        // 1st round filtering: reject small feature peaks. Fast filtering.
                         featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel);
                 
                         // Trace.WriteLine(" .After Filtering: " + featureBlobs.Count());
-                        double score = 0;
-                
                         // Find the global intensity MAX, used for noise rejection
                         double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
                 
-                        // select best feature
-                        FeatureBlob bestFeature = this.FeaturesSelection(featureBlobs, target, 1, out score);
-                
-                        // Rate the feature's confidence score. Confidence score measures how likely the feature is an ion instead of   noise.
+                        // 2st round filtering: filter out non real peaks and score using isotopic score. 
+                        FeatureBlob bestFeature = null;
+                        double bestSecondRoundFilterScore = 0;
+
+                        // Check each XIC Peak found
+                        foreach (var featureBlob in featureBlobs)
+                        {
+                            // Evalute feature scores.
+                            double intensityScore = FeatureScore.IntensityScore(this, featureBlob, voltageGroup);
+                            
+                            double isotopicScore = 0;
+                            if (targetComposition != null)
+                            {
+                                 isotopicScore = FeatureScore.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, this._uimfReader, voltageGroup);
+                            }
+                            // double peakShapeScore = FeatureScore.PeakShapeScore(featureBlobs);
+
+                            double secondRoundFilterScore = intensityScore;
+                            //double secondRoundFilterScore = isotopicScore;
+                            if (secondRoundFilterScore > bestSecondRoundFilterScore)
+                            {
+                                bestFeature = featureBlob;
+                                bestSecondRoundFilterScore = secondRoundFilterScore;
+                            }
+                        }
+
+                        // Assign the best feature to voltage group it belongs to, with the feature score as one of the criteria of that voltage group.
                         voltageGroup.BestFeature = bestFeature;
-                        voltageGroup.ConfidenceScore = MoleculeUtil.NoiseClassifier(bestFeature, globalMaxIntensity);
                 
-                        voltageGroup.BestScore = score;
-                        totalScore += score;
-                        if (voltageGroup.BestFeature == null || voltageGroup.ConfidenceScore < this.Parameters.ConfidenceThreshold) 
+                        // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the target ion.
+                        voltageGroup.VoltageGroupScore = FeatureScore.RealPeakScore(this, bestFeature, globalMaxIntensity);
+                
+                        voltageGroup.BestScore = bestSecondRoundFilterScore;
+                        totalScore += bestSecondRoundFilterScore;
+                        if (voltageGroup.BestFeature == null || voltageGroup.VoltageGroupScore < this.Parameters.ConfidenceThreshold) 
                         {
                             Console.WriteLine("Nothing is found in voltage group {0:F2} V", voltageGroup.MeanVoltageInVolts);
                             removaList.Add(voltageGroup);
@@ -398,7 +273,7 @@ namespace ImsInformed.Util
                         accumulatedXiCs.Remove(voltageGroup);
                     }
                 
-                    // Reject voltage groups without ion presense.
+                    // Reject voltage groups without ion presence.
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
                         Trace.WriteLine("Target Ion not found in this UIMF file");
@@ -500,7 +375,7 @@ namespace ImsInformed.Util
                             // Normalize the drift time to be displayed.
                             informedResult.Mobility = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
                             Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
-                            Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.ConfidenceScore));
+                            Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.VoltageGroupScore));
                             Trace.WriteLine(string.Empty);
                         }
                         Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.RSquared));

@@ -86,6 +86,11 @@
     <Compile Include="Domain\MoleculeInformedWorkflowResult.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
+    <Compile Include="Scoring\AnalysisScore.cs" />
+    <Compile Include="Scoring\FeatureScore.cs" />
+    <Compile Include="Scoring\ScoreType.cs" />
+    <Compile Include="Scoring\ScoreUtil.cs" />
+    <Compile Include="Scoring\VoltageGroupScore.cs" />
     <Compile Include="Stats\FitLine.cs" />
     <Compile Include="Domain\TargetType.cs" />
     <Compile Include="Domain\ExtractedIonChromatogram.cs" />

@@ -60,7 +60,7 @@ namespace ImsInformedTests
         /// <summary>
         /// The bps.
         /// </summary>
-        public const string Bps = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-BPS_pos2_13Sep14_Columbia_DI.uimf";
+        public const string Bps = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-BPS_neg2_28Aug14_Columbia_DI.uimf";
 
         /// <summary>
         /// The test single peptide.
@@ -1091,14 +1091,6 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestSingleMoleculeWithFormula()
         {
-            // DSA
-            string formula = "C12H10NNaO3S";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.SodiumPlus, formula);
-            Console.WriteLine("Nicotine:");
-            Console.WriteLine("Composition: " + sample.Composition);
-            Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
-            string fileLocation = AcetamipridFile;
-
             // Nicotine
             // string formula = "C10H14N2";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2Plus, formula);
@@ -1118,13 +1110,13 @@ namespace ImsInformedTests
             // string fileLocation = AcetamipridFile;
 
             // BPS Na
-            // string formula = "C12H10O4S";
-            // ImsTarget sample = new ImsTarget(1, IonizationMethod.SodiumPlus, formula);
-            // string fileLocation = Bps;
-            // Console.WriteLine("BPS:");
-            // Console.WriteLine("Composition: " + sample.Composition);
-            // Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
-            // Console.WriteLine("MZ:   " +  273.019748);
+            string formula = "C12H10O4S";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            string fileLocation = Bps;
+            Console.WriteLine("BPS:");
+            Console.WriteLine("Composition: " + sample.Composition);
+            Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
+            Console.WriteLine("MZ:   " +  273.019748);
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {

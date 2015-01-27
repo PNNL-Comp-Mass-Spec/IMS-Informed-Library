@@ -115,7 +115,7 @@ namespace ImsInformed.Domain
         /// <summary>
         /// Gets or sets the confidence score.
         /// </summary>
-        public double ConfidenceScore { get; set; }
+        public double VoltageGroupScore { get; set; }
 
         /// <summary>
         /// Gets or sets the best feature.

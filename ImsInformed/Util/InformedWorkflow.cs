@@ -45,7 +45,7 @@ namespace ImsInformed.Util
     public class InformedWorkflow
     {
         protected readonly DataReader _uimfReader;
-        protected readonly InformedParameters _parameters;
+        
         protected readonly SavitzkyGolaySmoother _smoother;
         protected readonly IterativeTFF _msFeatureFinder;
         protected readonly ITheorFeatureGenerator _theoreticalFeatureGenerator;
@@ -55,8 +55,9 @@ namespace ImsInformed.Util
 
         private readonly IInterpolation _netAlignment;
 
-        protected readonly double _numFrames;
-        protected readonly double _numScans;
+        public readonly InformedParameters _parameters;
+        public readonly double NumberOfFrames;
+        public readonly double NumberOfScans;
 
         protected Stopwatch _buildWatershedStopWatch;
         protected Stopwatch _smoothStopwatch;
@@ -105,8 +106,8 @@ namespace ImsInformed.Util
                 ToleranceInPPM = parameters.MassToleranceInPpm
             };
             _msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
-            _numFrames = _uimfReader.GetGlobalParams().NumFrames;
-            _numScans = _uimfReader.GetFrameParams(1).Scans;
+            this.NumberOfFrames = _uimfReader.GetGlobalParams().NumFrames;
+            this.NumberOfScans = _uimfReader.GetFrameParams(1).Scans;
         }
 
         public ChargeStateCorrelationResult RunInformedWorkflow(ImsTarget target)
@@ -129,8 +130,8 @@ namespace ImsInformed.Util
                 reverseAlignedNetMax = reverseAlignedNet + _parameters.NetTolerance;
             }
 
-            int scanLcSearchMin = (int)Math.Floor(reverseAlignedNetMin * _numFrames);
-            int scanLcSearchMax = (int)Math.Ceiling(reverseAlignedNetMax * _numFrames);
+            int scanLcSearchMin = (int)Math.Floor(reverseAlignedNetMin * this.NumberOfFrames);
+            int scanLcSearchMax = (int)Math.Ceiling(reverseAlignedNetMax * this.NumberOfFrames);
 
             int iteration = (targetComposition == null) ? 1 : _parameters.ChargeStateMax;
             for (int chargeState = 1; chargeState <= iteration; chargeState++)
@@ -239,7 +240,7 @@ namespace ImsInformed.Util
                     int scanImsRep = statistics.ScanImsRep;
 
                     // Calculate NET using aligned data if applicable
-                    double net = scanLcRep / _numFrames;
+                    double net = scanLcRep / this.NumberOfFrames;
                     if (_netAlignment != null)
                     {
                         net = _netAlignment.Interpolate(net);
@@ -256,7 +257,7 @@ namespace ImsInformed.Util
                     result.XicFeature = featureToUseForResult;
 
                     // Don't consider bogus results
-                    if (scanImsRep < 5 || scanImsRep > _numScans - 5)
+                    if (scanImsRep < 5 || scanImsRep > this.NumberOfScans - 5)
                     {
                         result.AnalysisStatus = AnalysisStatus.DriftTimeError;
                         continue;
@@ -264,7 +265,7 @@ namespace ImsInformed.Util
 
 
                         // Don't consider bogus results
-                        if (scanLcRep < 3 || scanLcRep > _numFrames - 4)
+                        if (scanLcRep < 3 || scanLcRep > this.NumberOfFrames - 4)
                         {
                             result.AnalysisStatus = AnalysisStatus.ElutionTimeError;
                             continue;
@@ -449,8 +450,8 @@ namespace ImsInformed.Util
                     reverseAlignedNetMax = reverseAlignedNet + _parameters.NetTolerance;
                 }
 
-                int scanLcSearchMin = (int)Math.Floor(reverseAlignedNetMin * _numFrames);
-                int scanLcSearchMax = (int)Math.Ceiling(reverseAlignedNetMax * _numFrames);
+                int scanLcSearchMin = (int)Math.Floor(reverseAlignedNetMin * this.NumberOfFrames);
+                int scanLcSearchMax = (int)Math.Ceiling(reverseAlignedNetMax * this.NumberOfFrames);
 
                 for (int chargeState = 1; chargeState <= _parameters.ChargeStateMax; chargeState++)
                 {
@@ -513,7 +514,7 @@ namespace ImsInformed.Util
         }
 
         // Find the target Mz across a range of frames.
-        protected IEnumerable<FeatureBlob> FindFeatures(double targetMz, int scanLcMin, int scanLcMax)
+        public IEnumerable<FeatureBlob> FindFeatures(double targetMz, int scanLcMin, int scanLcMax)
         {
             // Generate Chromatogram
             List<IntensityPoint> intensityPointList = _uimfReader.GetXic(targetMz, _parameters.MassToleranceInPpm, scanLcMin, scanLcMax, 0, 360, DataReader.FrameType.MS1, DataReader.ToleranceType.PPM);

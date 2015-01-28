@@ -12,12 +12,11 @@ namespace ImsInformed.Scoring
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
 
     using DeconTools.Backend.Core;
 
     using ImsInformed.Domain;
+    using ImsInformed.Stats;
     using ImsInformed.Util;
 
     using MultiDimensionalPeakFinding.PeakDetection;
@@ -65,9 +64,73 @@ namespace ImsInformed.Scoring
             return ScoreUtil.MapToZeroOne(score, false, 1E6);
         }
 
-        public static double PeakShapeScore(List<Peak> TICwindow)
+        /// <summary>
+        /// The Peak shape score. Evaluating how "good" the peak looks. A good
+        /// peak shape score indicates that the peak is not a result of noise
+        /// or instrument errors. Mostly the feature intensity along is sufficient
+        /// to exclude noise but a good shape score helps evaluating the experiment
+        /// and thus the reliability of the data analysis result.
+        /// </summary>
+        /// <param name="workflow">
+        /// The workflow.
+        /// </param>
+        /// <param name="statistics">
+        /// The statistics.
+        /// </param>
+        /// <param name="reader">
+        /// The reader.
+        /// </param>
+        /// <param name="voltageGroup">
+        /// The voltage group.
+        /// </param>
+        /// <param name="targetMz">
+        /// The target mz.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double PeakShapeScore(InformedWorkflow workflow, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz)
         {
-            return 0;
+            int scanRep = statistics.ScanImsRep;
+            double toleranceInMZ = workflow._parameters.MassToleranceInPpm / 1e6 * targetMz;
+            int scanWindowSize = workflow._parameters.ScanWindowWidth;
+
+            if (scanRep - scanWindowSize / 2 < 0 || scanRep + scanWindowSize / 2 >= (int)workflow.NumberOfScans)
+            {
+                return 0;
+            }
+
+            int scanNumberMin = scanRep - scanWindowSize / 2;
+            int scanNumberMax = scanRep + scanWindowSize / 2;
+                                  
+            int[][] intensityWindow = workflow._uimfReader.GetFramesAndScanIntensitiesForAGivenMz(
+                voltageGroup.FirstFrameNumber,
+                voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount,
+                DataReader.FrameType.MS1, 
+                scanNumberMin,
+                scanNumberMax,
+                targetMz,
+                toleranceInMZ);
+
+            // Average the intensity window across frames
+            int frames = intensityWindow.GetLength(0);
+            int scans = scanWindowSize / 2 * 2 + 1;
+            double[] averagedPeak = new double[scans];
+            double highestPeak = 0;
+            for (int i = 0; i < scans; i++)
+            {
+                for (int j = 0; j < frames; j++)
+                {
+                    averagedPeak[i] += intensityWindow[j][i];
+                }
+
+                averagedPeak[i] /= frames;
+                highestPeak = (averagedPeak[i] > highestPeak) ? averagedPeak[i] : highestPeak;
+            }
+
+            // Perform a statistical normality test
+            double normalityScore = NormalityTest.PeakNormalityTest(averagedPeak, NormalityTest.JaqueBeraTest, 100);
+            return normalityScore;
         }
 
         /// <summary>
@@ -96,7 +159,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, DataReader reader, VoltageGroup voltageGroup)
+        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
@@ -130,10 +193,10 @@ namespace ImsInformed.Scoring
             {
                 // Isotopic Mz
                 double Mz = isotopicPeakList[i].XValue;
-                int scanWindowSize = 4;
+                int scanWindowSize = workflow._parameters.ScanWindowWidth;
                 int scanNumberMin = (scanNumber - scanWindowSize / 2 > 0) ? scanNumber - scanWindowSize / 2 : 0;
                 int scanNumberMax = (scanNumber + scanWindowSize / 2 < (int)workflow.NumberOfScans) ? scanNumber + scanWindowSize / 2 : (int)workflow.NumberOfScans - 1;
-                var peakList = reader.GetXic(Mz, 
+                var peakList = workflow._uimfReader.GetXic(Mz, 
                     workflow._parameters.MassToleranceInPpm / 10,
                     voltageGroup.FirstFrameNumber,
                     voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1,

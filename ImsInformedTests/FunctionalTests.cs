@@ -21,12 +21,15 @@ namespace ImsInformedTests
     using ImsInformed.Domain;
     using ImsInformed.IO;
     using ImsInformed.Parameters;
+    using ImsInformed.Stats;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Composition;
     using InformedProteomics.Backend.Data.Sequence;
 
+    using MathNet.Numerics.Distributions;
     using MathNet.Numerics.Interpolation;
+    using MathNet.Numerics.Statistics;
 
     using NUnit.Framework;
 
@@ -76,6 +79,7 @@ namespace ImsInformedTests
                 NetTolerance = 0.1,
                 IsotopicFitScoreMax = 0.15,
                 MassToleranceInPpm = 30,
+                ScanWindowWidth = 4,
                 NumPointForSmoothing = 9
             };
 
@@ -1122,7 +1126,8 @@ namespace ImsInformedTests
             {
                 IsotopicFitScoreMax = 0.15,
                 MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9
+                NumPointForSmoothing = 9,
+                ScanWindowWidth = 4,
             };
 
             MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
@@ -1161,9 +1166,9 @@ namespace ImsInformedTests
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {
-                IsotopicFitScoreMax = 0.15,
                 MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9
+                NumPointForSmoothing = 9,
+                ScanWindowWidth = 4,
             };
 
             MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
@@ -1262,6 +1267,137 @@ namespace ImsInformedTests
 
             MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
             workflow.RunMoleculeInformedWorkFlow(target);
+        }
+
+        [Test][STAThread]
+        public void NormalityTestAlgorithmTest()
+        {
+            int sampleSize = 100;
+            int numberOfMonteCarloTests = 5;
+            double result = 0;
+            NormalityTest.NormalityTestFunc normalityTestFunc = NormalityTest.JaqueBeraTest;
+            
+            // normal distribution
+            Console.WriteLine("normal var");
+            for (int i = 0; i < numberOfMonteCarloTests; i++)
+            {
+                var distribution = new Normal(50, 1);
+                distribution.RandomSource = new Random(System.DateTime.Now.Millisecond * i);
+                var normalSamples = distribution.Samples().Take(sampleSize);
+                
+
+                double[] reallIsNormalSamples = normalSamples.ToArray();
+
+                result = normalityTestFunc(reallIsNormalSamples);
+                Console.WriteLine("reallIsNormalSamples_" + i + ": " + result);
+            }
+
+            Console.WriteLine();
+
+            // random distribution.
+            Console.WriteLine("rand var");
+            Random rnd = new Random();
+            double[] randomArray = new double[sampleSize];
+            for (int i = 0; i < numberOfMonteCarloTests; i++)
+            {
+                for (int j = 0; j < sampleSize; j++)
+                {
+                    randomArray[j] = rnd.Next(1, 100);
+                }
+
+                result = normalityTestFunc(randomArray);
+                Console.WriteLine("randomArray_" + i + ": " + result);
+            }
+
+            Console.WriteLine();
+
+            // Uniform distribution
+            Console.WriteLine("rand var");
+            var uniformSamples = new Normal(100, 0).Samples().Take(sampleSize);
+
+            double[] uniformSamplesRandomVar = uniformSamples.ToArray();
+
+            result = normalityTestFunc(uniformSamplesRandomVar);
+            Console.WriteLine("uniformSamples: " + result);
+        }
+
+        [Test][STAThread]
+        public void PeakNormalityTest()
+        {
+            NormalityTest.NormalityTestFunc normalityTestFunc = NormalityTest.JaqueBeraTest;
+
+            double result = 0;
+
+            double significantLevel = 0.05;
+
+            int sampleSize = 100;
+
+            // Good shaped peaks
+            Console.WriteLine("Peaks with relatively good shape");
+
+            double[] sampleTypical = 
+            { 
+                 203, 503, 477, 621, 710, 581, 554, 329, 480, 382
+            };
+
+            result = NormalityTest.PeakNormalityTest(sampleTypical, normalityTestFunc, sampleSize);
+            Console.WriteLine("sampleTypical: " + result);
+
+            double[] sampleActualPeak = 
+            { 
+                 0.203, 0.382, 0.477, 0.48, 0.54, 0.62, 0.54, 0.48, 0.382, 0.203
+            };
+
+            result = NormalityTest.PeakNormalityTest(sampleActualPeak, normalityTestFunc, sampleSize);
+            Console.WriteLine("sampleActualPeak: " + result);
+
+            // Subjective shapes
+            Console.WriteLine();
+            Console.WriteLine("Peaks with subjective shapes");
+
+             double[] sampleAll1s =
+            { 
+                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            };
+
+            result = NormalityTest.PeakNormalityTest(sampleAll1s, normalityTestFunc, sampleSize);
+            Console.WriteLine("sampleAll1s: " + result);
+            
+            double[] sampleAll0s =
+            { 
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            };
+
+            result = NormalityTest.PeakNormalityTest(sampleAll0s, normalityTestFunc, sampleSize);
+            Console.WriteLine("sampleAll0s: " + result);
+
+            double[] smallSample =
+            { 
+                 0, 1, 0
+            };
+
+            result = NormalityTest.PeakNormalityTest(smallSample, normalityTestFunc, sampleSize);
+            Console.WriteLine("smallSample: " + result);
+
+            // Bad shaped peaks
+            Console.WriteLine();
+            Console.WriteLine("Peaks with relatively bad shape");
+
+            double[] doublePeak =
+            { 
+                  0.203, 0.382, 200, 1, 0.54, 200, 0, 0.48, 0.382, 0.203
+            };
+
+            result = NormalityTest.PeakNormalityTest(doublePeak, normalityTestFunc, sampleSize);
+            Console.WriteLine("doublePeak: " + result);
+
+            double[] kindaLikeNoise =
+            { 
+                 0.203, 0.503, 0.477, 0.621, 0.710, 200, 0.554, 0.329, 0.480, 0.382
+            };
+
+            result = NormalityTest.PeakNormalityTest(kindaLikeNoise, normalityTestFunc, sampleSize);
+            Console.WriteLine("kindaLikeNoise: " + result);
         }
     }
 }

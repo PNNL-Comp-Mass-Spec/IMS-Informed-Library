@@ -191,7 +191,7 @@ namespace ImsInformed.Util
                     }
                 
                     // Generate VoltageSeparatedAccumulatedXICs
-                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz,     _parameters);
+                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz, _parameters);
                         
                     // For each voltage, find 2D XIC features 
                     double totalScore = 0;
@@ -229,9 +229,10 @@ namespace ImsInformed.Util
                             double isotopicScore = 0;
                             if (targetComposition != null)
                             {
-                                 isotopicScore = FeatureScore.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, this._uimfReader, voltageGroup);
+                                 isotopicScore = FeatureScore.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup);
                             }
-                            // double peakShapeScore = FeatureScore.PeakShapeScore(featureBlobs);
+                            
+                            double peakShapeScore = FeatureScore.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz);
 
                             double secondRoundFilterScore = intensityScore;
                             //double secondRoundFilterScore = isotopicScore;
@@ -386,8 +387,11 @@ namespace ImsInformed.Util
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                // Print result
+                Console.WriteLine(e.Message);
+
                 // create the error result
                 MoleculeInformedWorkflowResult informedResult;
                 informedResult.DatasetName = this.DatasetName;

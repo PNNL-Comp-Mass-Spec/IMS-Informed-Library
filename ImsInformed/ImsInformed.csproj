@@ -88,12 +88,14 @@
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
     <Compile Include="Scoring\FeatureScore.cs" />
+    <Compile Include="Scoring\FeatureScoreHolder.cs" />
     <Compile Include="Scoring\ScoreType.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
     <Compile Include="Scoring\VoltageGroupScore.cs" />
     <Compile Include="Stats\FitLine.cs" />
     <Compile Include="Domain\TargetType.cs" />
     <Compile Include="Domain\ExtractedIonChromatogram.cs" />
+    <Compile Include="Stats\NormalityTest.cs" />
     <Compile Include="Stats\UnitConversion.cs" />
     <Compile Include="Domain\VoltageGroup.cs" />
     <Compile Include="Domain\VoltageSeparatedAccumulatedXICs.cs" />

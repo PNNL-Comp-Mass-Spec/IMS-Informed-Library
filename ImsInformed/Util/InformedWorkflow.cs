@@ -44,43 +44,124 @@ namespace ImsInformed.Util
     /// </summary>
     public class InformedWorkflow
     {
-        protected readonly DataReader _uimfReader;
-        
+        /// <summary>
+        /// The _uimf reader.
+        /// </summary>
+        public readonly DataReader _uimfReader;
+
+        /// <summary>
+        /// The _smoother.
+        /// </summary>
         protected readonly SavitzkyGolaySmoother _smoother;
+
+        /// <summary>
+        /// The _ms feature finder.
+        /// </summary>
         protected readonly IterativeTFF _msFeatureFinder;
+
+        /// <summary>
+        /// The _theoretical feature generator.
+        /// </summary>
         protected readonly ITheorFeatureGenerator _theoreticalFeatureGenerator;
+
+        /// <summary>
+        /// The _left of mono peak looker.
+        /// </summary>
         protected readonly LeftOfMonoPeakLooker _leftOfMonoPeakLooker;
+
+        /// <summary>
+        /// The _peak detector.
+        /// </summary>
         protected readonly ChromPeakDetector _peakDetector;
+
+        /// <summary>
+        /// The _isotopic peak fit score calculator.
+        /// </summary>
         protected readonly PeakLeastSquaresFitter _isotopicPeakFitScoreCalculator;
 
+        /// <summary>
+        /// The _net alignment.
+        /// </summary>
         private readonly IInterpolation _netAlignment;
 
+        /// <summary>
+        /// The _parameters.
+        /// </summary>
         public readonly InformedParameters _parameters;
+
+        /// <summary>
+        /// The number of frames.
+        /// </summary>
         public readonly double NumberOfFrames;
+
+        /// <summary>
+        /// The number of scans.
+        /// </summary>
         public readonly double NumberOfScans;
 
         protected Stopwatch _buildWatershedStopWatch;
+
+        /// <summary>
+        /// The _smooth stopwatch.
+        /// </summary>
         protected Stopwatch _smoothStopwatch;
+
+        /// <summary>
+        /// The _feature find stop watch.
+        /// </summary>
         protected Stopwatch _featureFindStopWatch;
+
+        /// <summary>
+        /// The _uimf file location.
+        /// </summary>
         protected string _uimfFileLocation;
+
+        /// <summary>
+        /// The _feature find count.
+        /// </summary>
         protected double _featureFindCount;
+
+        /// <summary>
+        /// The _point count.
+        /// </summary>
         protected double _pointCount;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InformedWorkflow"/> class.
+        /// </summary>
+        /// <param name="uimfFileLocation">
+        /// The uimf file location.
+        /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
+        /// <param name="netAlignment">
+        /// The net alignment.
+        /// </param>
         public InformedWorkflow(string uimfFileLocation, InformedParameters parameters, IInterpolation netAlignment) : this(uimfFileLocation, parameters)
         {
             _netAlignment = netAlignment;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InformedWorkflow"/> class.
+        /// </summary>
+        /// <param name="uimfFileLocation">
+        /// The uimf file location.
+        /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
         public InformedWorkflow(string uimfFileLocation, InformedParameters parameters)
         {
-            _buildWatershedStopWatch = new Stopwatch();
-            _smoothStopwatch = new Stopwatch();
-            _featureFindStopWatch = new Stopwatch();
-            _featureFindCount = 0;
-            _pointCount = 0;
-            _uimfFileLocation = uimfFileLocation;
+            this._buildWatershedStopWatch = new Stopwatch();
+            this._smoothStopwatch = new Stopwatch();
+            this._featureFindStopWatch = new Stopwatch();
+            this._featureFindCount = 0;
+            this._pointCount = 0;
+            this._uimfFileLocation = uimfFileLocation;
 
-            _uimfReader = new DataReader(uimfFileLocation);
+            this._uimfReader = new DataReader(uimfFileLocation);
 
             // Append bin-centric table to the uimf if not present.
             if (!_uimfReader.DoesContainBinCentricData())
@@ -89,12 +170,12 @@ namespace ImsInformed.Util
                 dataWriter.CreateBinCentricTables();
             }
             
-            _parameters = parameters;
-            _smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
-            _theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
-            _leftOfMonoPeakLooker = new LeftOfMonoPeakLooker();
-            _peakDetector = new ChromPeakDetector(0.0001, 0.0001);
-            _isotopicPeakFitScoreCalculator = new PeakLeastSquaresFitter();
+            this._parameters = parameters;
+            this._smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
+            this._theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
+            this._leftOfMonoPeakLooker = new LeftOfMonoPeakLooker();
+            this._peakDetector = new ChromPeakDetector(0.0001, 0.0001);
+            this._isotopicPeakFitScoreCalculator = new PeakLeastSquaresFitter();
 
             IterativeTFFParameters msFeatureFinderParameters = new IterativeTFFParameters
             {
@@ -105,11 +186,20 @@ namespace ImsInformed.Util
                 PeakDetectorSigNoiseRatioThreshold = 0.0001,
                 ToleranceInPPM = parameters.MassToleranceInPpm
             };
-            _msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
+            this._msFeatureFinder = new IterativeTFF(msFeatureFinderParameters);
             this.NumberOfFrames = _uimfReader.GetGlobalParams().NumFrames;
             this.NumberOfScans = _uimfReader.GetFrameParams(1).Scans;
         }
 
+        /// <summary>
+        /// The run informed workflow.
+        /// </summary>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <returns>
+        /// The <see cref="ChargeStateCorrelationResult"/>.
+        /// </returns>
         public ChargeStateCorrelationResult RunInformedWorkflow(ImsTarget target)
         {
             Composition targetComposition = target.Composition;
@@ -117,23 +207,23 @@ namespace ImsInformed.Util
             string empiricalFormula = targetComposition.ToPlainString();
 
             double targetNet = target.NormalizedElutionTime;
-            double targetNetMin = targetNet - _parameters.NetTolerance;
-            double targetNetMax = targetNet + _parameters.NetTolerance;
+            double targetNetMin = targetNet - this._parameters.NetTolerance;
+            double targetNetMax = targetNet + this._parameters.NetTolerance;
 
             double reverseAlignedNetMin = targetNetMin;
             double reverseAlignedNetMax = targetNetMax;
 
-            if (_netAlignment != null)
+            if (this._netAlignment != null)
             {
-                double reverseAlignedNet = GetReverseAlignedNet(targetNet);
-                reverseAlignedNetMin = reverseAlignedNet - _parameters.NetTolerance;
-                reverseAlignedNetMax = reverseAlignedNet + _parameters.NetTolerance;
+                double reverseAlignedNet = this.GetReverseAlignedNet(targetNet);
+                reverseAlignedNetMin = reverseAlignedNet - this._parameters.NetTolerance;
+                reverseAlignedNetMax = reverseAlignedNet + this._parameters.NetTolerance;
             }
 
             int scanLcSearchMin = (int)Math.Floor(reverseAlignedNetMin * this.NumberOfFrames);
             int scanLcSearchMax = (int)Math.Ceiling(reverseAlignedNetMax * this.NumberOfFrames);
 
-            int iteration = (targetComposition == null) ? 1 : _parameters.ChargeStateMax;
+            int iteration = (targetComposition == null) ? 1 : this._parameters.ChargeStateMax;
             for (int chargeState = 1; chargeState <= iteration; chargeState++)
             {
                 if (targetComposition != null) 
@@ -146,11 +236,12 @@ namespace ImsInformed.Util
                 double maxMzForSpectrum = target.TargetMz + (4.6 / chargeState);
                 
                 // Generate Theoretical Isotopic Profile
-                IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
+                IsotopicProfile theoreticalIsotopicProfile = this._theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
                 List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
                 // Find XIC Features
-                IEnumerable<FeatureBlob> featureBlobs = FindFeatures(target.TargetMz, scanLcSearchMin, scanLcSearchMax);
+                IEnumerable<FeatureBlob> featureBlobs = this.FindFeatures(target.TargetMz, scanLcSearchMin, scanLcSearchMax);
+
                 // Filter away small XIC peaks
                 featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.25);
 
@@ -253,7 +344,7 @@ namespace ImsInformed.Util
                     result.IsSaturated = unsaturatedIsotope > 0;
                     result.ScanLcRep = statistics.ScanLcRep;
                     result.NormalizedElutionTime = net;
-                    result.DriftTime = _uimfReader.GetDriftTime(statistics.ScanLcRep, statistics.ScanImsRep);
+                    result.DriftTime = this._uimfReader.GetDriftTime(statistics.ScanLcRep, statistics.ScanImsRep);
                     result.XicFeature = featureToUseForResult;
 
                     // Don't consider bogus results

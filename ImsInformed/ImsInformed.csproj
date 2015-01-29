@@ -66,8 +66,9 @@
     <Reference Include="OxyPlot.Xps">
       <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net45\OxyPlot.Xps.dll</HintPath>
     </Reference>
-    <Reference Include="PNNLOmics">
-      <HintPath>..\..\..\..\TrackedProjects\MultidimensionalFeatureFinding\lib\PNNLOmics.dll</HintPath>
+    <Reference Include="PNNLOmics, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\PNNLOmics.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

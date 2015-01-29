@@ -1120,11 +1120,9 @@ namespace ImsInformedTests
             Console.WriteLine("BPS:");
             Console.WriteLine("Composition: " + sample.Composition);
             Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
-            Console.WriteLine("MZ:   " +  273.019748);
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {
-                IsotopicFitScoreMax = 0.15,
                 MassToleranceInPpm = 10,
                 NumPointForSmoothing = 9,
                 ScanWindowWidth = 4,
@@ -1141,7 +1139,7 @@ namespace ImsInformedTests
         public void TestSingleMoleculeMzOnly()
         {
             // Good BPS data
-            double mz = 273.0192006876;
+            double mz = 249.02160599;
             string uimfFile = Bps;
 
             // Acetaminophen

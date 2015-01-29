@@ -12,6 +12,7 @@ namespace ImsInformed.Domain
 {
     using System;
 
+    using ImsInformed.Scoring;
     using ImsInformed.Stats;
 
     using MultiDimensionalPeakFinding.PeakDetection;
@@ -58,7 +59,10 @@ namespace ImsInformed.Domain
             this.AverageTofWidthInSeconds = 0;
             this.VariancePressure = 0;
             this.BestFeature = null;
-            this.BestScore = 0;
+            
+            this.BestFeatureScores.IntensityScore = 0;
+            this.BestFeatureScores.IsotopicScore = 0;
+            this.BestFeatureScores.PeakShapeScore = 0;
         }
 
         /// <summary>
@@ -107,10 +111,10 @@ namespace ImsInformed.Domain
         public double AverageTofWidthInSeconds {get; private set; }
 
         /// <summary>
-        /// Gets or sets the BestScore.
+        /// Gets or sets the AverageBestFeatureScores.
         /// stores ion detection as the following result 
         /// </summary>
-        public double BestScore { get; set; }
+        public FeatureScoreHolder BestFeatureScores;
 
         /// <summary>
         /// Gets or sets the confidence score.

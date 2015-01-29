@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FeatureScoreHolder.cs" company="PNNL">
+// <copyright file="AnalysisScoresHolder.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the FeatureScoreHolder type.
+//   The analysis scores holder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -13,24 +13,24 @@ namespace ImsInformed.Scoring
     using System;
 
     /// <summary>
-    /// The feature score holder.
+    /// The analysis scores holder.
     /// </summary>
     [Serializable]
-    public struct FeatureScoreHolder
+    public struct AnalysisScoresHolder
     {
         /// <summary>
-        /// The intensity score.
+        /// The best feature score.
         /// </summary>
-        public double IntensityScore;
+        public FeatureScoreHolder AverageBestFeatureScores;
 
         /// <summary>
-        /// The isotopic score.
+        /// The voltage group stability score.
         /// </summary>
-        public double IsotopicScore;
+        public double AverageVoltageGroupStabilityScore;
 
         /// <summary>
-        /// The peak shape score.
+        /// The analysis score.
         /// </summary>
-        public double PeakShapeScore;
+        public double AnalysisScore;
     }
 }

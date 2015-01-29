@@ -12,6 +12,8 @@ namespace ImsInformed.Domain
 {
     using System;
 
+    using ImsInformed.Scoring;
+
     /// <summary>
     /// The molecule informed workflow result.
     /// </summary>
@@ -51,6 +53,6 @@ namespace ImsInformed.Domain
         /// <summary>
         /// The r squared.
         /// </summary>
-        public double RSquared;
+        public AnalysisScoresHolder AnalysisScoresHolder;
     }
 }

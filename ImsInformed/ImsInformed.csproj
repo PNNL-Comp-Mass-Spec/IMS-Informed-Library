@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,9 +10,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ImsInformed</RootNamespace>
     <AssemblyName>ImsInformed</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>6482a9ab</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +22,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -29,11 +31,15 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DeconTools.Backend, Version=1.0.5044.25138, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\DeconTools\DeconTools.Backend.dll</HintPath>
+    </Reference>
+    <Reference Include="FalkorSignalPlotter">
+      <HintPath>..\lib\FalkorSignalPlotter\FalkorSignalPlotter.dll</HintPath>
     </Reference>
     <Reference Include="InformedProteomics.Backend, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -49,11 +55,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MultiDimensionalPeakFinding\MultiDimensionalPeakFinding.dll</HintPath>
     </Reference>
-    <Reference Include="OxyPlot">
+    <Reference Include="OxyPlot, Version=2014.1.546.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\OxyPlot.Core.2014.1.546\lib\portable-net4+sl4+wp71+win8\OxyPlot.dll</HintPath>
     </Reference>
-    <Reference Include="OxyPlot.Wpf">
-      <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net40\OxyPlot.Wpf.dll</HintPath>
+    <Reference Include="OxyPlot.Wpf, Version=2014.1.546.0, Culture=neutral, PublicKeyToken=75e952ba404cdbb0, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net45\OxyPlot.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="OxyPlot.Xps">
+      <HintPath>..\packages\OxyPlot.Wpf.2014.1.546\lib\net45\OxyPlot.Xps.dll</HintPath>
     </Reference>
     <Reference Include="PNNLOmics">
       <HintPath>..\..\..\..\TrackedProjects\MultidimensionalFeatureFinding\lib\PNNLOmics.dll</HintPath>
@@ -87,7 +98,9 @@
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
-    <Compile Include="Scoring\FeatureScore.cs" />
+    <Compile Include="Scoring\AnalysisScoresHolder.cs" />
+    <Compile Include="Scoring\FeatureLikelihoodFunctions.cs" />
+    <Compile Include="Scoring\FeatureScores.cs" />
     <Compile Include="Scoring\FeatureScoreHolder.cs" />
     <Compile Include="Scoring\ScoreType.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />

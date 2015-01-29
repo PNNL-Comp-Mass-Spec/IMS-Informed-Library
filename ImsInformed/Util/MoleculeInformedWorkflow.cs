@@ -11,11 +11,13 @@
 namespace ImsInformed.Util
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Net.Sockets;
 
     using DeconTools.Backend.Core;
 
@@ -31,6 +33,8 @@ namespace ImsInformed.Util
     using Microsoft.SqlServer.Server;
 
     using MultiDimensionalPeakFinding.PeakDetection;
+
+    using PNNLOmics.Data.Features;
 
     /// <summary>
     /// Find molecules with a known formula and know ionization methods. metabolites and pipetides alike.
@@ -84,6 +88,8 @@ namespace ImsInformed.Util
             }
 
             this.OutputPath = outputDirectory;
+            
+            this.LikelihoodFunc = FeatureLikelihoodFunctions.IntensityDependentLikelyhoodFunction;
         }
 
         /// <summary>
@@ -105,6 +111,11 @@ namespace ImsInformed.Util
         /// Gets or sets the output path.
         /// </summary>
         public string OutputPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the likelihood func.
+        /// </summary>
+        public ScoreUtil.LikelihoodFunc LikelihoodFunc { get; set; }
 
         /// <summary>
         /// The target ion.
@@ -192,12 +203,11 @@ namespace ImsInformed.Util
                 
                     // Generate VoltageSeparatedAccumulatedXICs
                     VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz, _parameters);
-                        
-                    // For each voltage, find 2D XIC features 
-                    double totalScore = 0;
                 
                     // Because we can't delete keys while iterating over a dictionary, and thus removalList
                     List<VoltageGroup> removaList = new List<VoltageGroup>();
+
+                    // For each voltage, find 2D XIC features 
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
                         // The filters below were written for 3D XICs, but they should work for 2D XICs.
@@ -211,35 +221,34 @@ namespace ImsInformed.Util
 
                         // 1st round filtering: reject small feature peaks. Fast filtering.
                         featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel);
-                
-                        // Trace.WriteLine(" .After Filtering: " + featureBlobs.Count());
-                        // Find the global intensity MAX, used for noise rejection
-                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
-                
+
                         // 2st round filtering: filter out non real peaks and score using isotopic score. 
                         FeatureBlob bestFeature = null;
-                        double bestSecondRoundFilterScore = 0;
+                        FeatureScoreHolder mostLikelyPeakScores;
+                        mostLikelyPeakScores.IntensityScore = 0;
+                        mostLikelyPeakScores.IsotopicScore = 0;
+                        mostLikelyPeakScores.PeakShapeScore = 0;
 
                         // Check each XIC Peak found
                         foreach (var featureBlob in featureBlobs)
                         {
+                            FeatureScoreHolder currentScoreHolder;
+
                             // Evalute feature scores.
-                            double intensityScore = FeatureScore.IntensityScore(this, featureBlob, voltageGroup);
+                            currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup);
                             
-                            double isotopicScore = 0;
+                            currentScoreHolder.IsotopicScore = 0;
                             if (targetComposition != null)
                             {
-                                 isotopicScore = FeatureScore.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup);
+                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup);
                             }
                             
-                            double peakShapeScore = FeatureScore.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz);
+                            currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz);
 
-                            double secondRoundFilterScore = intensityScore;
-                            //double secondRoundFilterScore = isotopicScore;
-                            if (secondRoundFilterScore > bestSecondRoundFilterScore)
+                            if (ScoreUtil.MoreLikelyThan(currentScoreHolder, mostLikelyPeakScores, this.LikelihoodFunc))
                             {
                                 bestFeature = featureBlob;
-                                bestSecondRoundFilterScore = secondRoundFilterScore;
+                                mostLikelyPeakScores = currentScoreHolder;
                             }
                         }
 
@@ -247,46 +256,41 @@ namespace ImsInformed.Util
                         voltageGroup.BestFeature = bestFeature;
                 
                         // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the target ion.
-                        voltageGroup.VoltageGroupScore = FeatureScore.RealPeakScore(this, bestFeature, globalMaxIntensity);
+                        voltageGroup.VoltageGroupScore = VoltageGroupScore.ComoputeVoltageGroupStabilityScore(voltageGroup);
                 
-                        voltageGroup.BestScore = bestSecondRoundFilterScore;
-                        totalScore += bestSecondRoundFilterScore;
-                        if (voltageGroup.BestFeature == null || voltageGroup.VoltageGroupScore < this.Parameters.ConfidenceThreshold) 
+                        voltageGroup.BestFeatureScores = mostLikelyPeakScores;
+                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
+                        double realPeakConfidence = FeatureScores.RealPeakScore(this, voltageGroup.BestFeature, globalMaxIntensity);
+                        if (voltageGroup.BestFeature == null || realPeakConfidence < this.Parameters.ConfidenceThreshold) 
                         {
-                            Console.WriteLine("Nothing is found in voltage group {0:F2} V", voltageGroup.MeanVoltageInVolts);
+                            Trace.WriteLine(String.Format("Nothing is found in voltage group {0:F2} V", voltageGroup.MeanVoltageInVolts));
                             removaList.Add(voltageGroup);
                         } 
                     }
-                
-                    double averageScore = totalScore / accumulatedXiCs.Keys.Count;
-                    double threshold = averageScore / 10;
-                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
-                    {
-                        if (voltageGroup.BestScore < threshold)
-                        {
-                            removaList.Add(voltageGroup);
-                        }
-                    }
-                        
-                    // Remove stuff
+
                     foreach (VoltageGroup voltageGroup in removaList)
                     {
                         accumulatedXiCs.Remove(voltageGroup);
                     }
                 
-                    // Reject voltage groups without ion presence.
+                    // Reject voltage groups without ion presence at all.
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
                         Trace.WriteLine("Target Ion not found in this UIMF file");
                         informedResult.AnalysisStatus = AnalysisStatus.NEG;
-                        informedResult.Mobility = 0;
-                        informedResult.CrossSectionalArea = 0;
-                        informedResult.RSquared = 0;
+                        informedResult.Mobility = -1;
+                        informedResult.CrossSectionalArea = -1;
+                        informedResult.AnalysisScoresHolder.AnalysisScore = 1; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
+
+                        // quantize the VG score from VGs in the removal list.
+                        informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(removaList);
+                        IEnumerable<FeatureScoreHolder> featureScores = removaList.Select(x => x.BestFeatureScores);
+                        informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
                         return informedResult;
                     }
                 
                     // Calculate the fit line 
-                    HashSet<ContinuousXYPoint> fitPoints = new HashSet<ContinuousXYPoint>();
+                    HashSet<ContinuousXYPoint> fitPointsWithOutliers = new HashSet<ContinuousXYPoint>();
                     foreach (VoltageGroup group in accumulatedXiCs.Keys)
                     {
                         // convert drift time to SI unit seconds
@@ -297,16 +301,25 @@ namespace ImsInformed.Util
                                    / group.MeanTemperatureNondimensionalized;
                          
                         ContinuousXYPoint point = new ContinuousXYPoint(x, y);
-                        fitPoints.Add(point);
+
+                        fitPointsWithOutliers.Add(point);
+
+                        // Add fit point to voltage group
                         group.FitPoint = point;
                     }
                 
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    FitLine line = new FitLine(fitPoints, 3);            
+                    FitLine line = new FitLine(fitPointsWithOutliers);            
                 
+                    // Remove the voltage group with outliers
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList() ) 
+                    {
+                        accumulatedXiCs.Remove(voltageGroup);
+                    }
+
                     // Mark outliers and compute the fitline without using the outliers.
                     HashSet<ContinuousXYPoint> newPoints = new HashSet<ContinuousXYPoint>();
-                    foreach (ContinuousXYPoint point in fitPoints)
+                    foreach (ContinuousXYPoint point in fitPointsWithOutliers)
                     {
                         if (!point.IsOutlier)
                         {
@@ -320,9 +333,12 @@ namespace ImsInformed.Util
                     {
                         Trace.WriteLine("Not enough points are qualified for perform linear fit. Abort identification.");
                         informedResult.AnalysisStatus = AnalysisStatus.NSP;
-                        informedResult.Mobility = 0;
-                        informedResult.CrossSectionalArea = 0;
-                        informedResult.RSquared = 0;
+                        informedResult.Mobility = -1;
+                        informedResult.CrossSectionalArea = -1;
+                        informedResult.AnalysisScoresHolder.AnalysisScore = 0;
+                        informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
+                        IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
+                        informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
                         return informedResult;
                     }
                     else 
@@ -355,12 +371,15 @@ namespace ImsInformed.Util
                         globalMeanTemperature /= frameCount;
                 
                         double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
-                
+
                         // Initialize the result struct.
                         informedResult.AnalysisStatus = AnalysisStatus.POS;
                         informedResult.Mobility = mobility;
                         informedResult.CrossSectionalArea = crossSection;
-                        informedResult.RSquared = rSquared;
+                        informedResult.AnalysisScoresHolder.AnalysisScore = rSquared;
+                        informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
+                        IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
+                        informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
                 
                         // Printout results
                         foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
@@ -368,7 +387,6 @@ namespace ImsInformed.Util
                             Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
                             Trace.WriteLine(String.Format("Mean voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
                             Trace.WriteLine(String.Format("Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
-                            Trace.WriteLine(String.Format("score: {0:F2}",  voltageGroup.BestScore));
                             Trace.WriteLine(String.Format("Scan number: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
                             Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
                             // FOR COMPARISON WITH MATT"S RESULT, UNCOMMENT IF YOU SEE IT
@@ -376,10 +394,21 @@ namespace ImsInformed.Util
                             // Normalize the drift time to be displayed.
                             informedResult.Mobility = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
                             Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
-                            Trace.WriteLine(String.Format("Confidence: {0:F2}", voltageGroup.VoltageGroupScore));
+                            Trace.WriteLine(String.Format("VoltageGroupScore: {0:F2}", voltageGroup.VoltageGroupScore));
+                            Trace.WriteLine(String.Format("AverageBestFeatureScores.IntensityScore: {0:F2}", voltageGroup.BestFeatureScores.IntensityScore));
+                            Trace.WriteLine(String.Format("AverageBestFeatureScores.IsotopicScore: {0:F2}", voltageGroup.BestFeatureScores.IsotopicScore));
+                            Trace.WriteLine(String.Format("AverageBestFeatureScores.PeakShapeScore: {0:F2}", voltageGroup.BestFeatureScores.PeakShapeScore));
                             Trace.WriteLine(string.Empty);
                         }
-                        Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.RSquared));
+                        Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.AnalysisScoresHolder.AnalysisScore));
+                        Trace.WriteLine(String.Format("Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
+                        Trace.WriteLine(String.Format("Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore));
+                        
+                        if (targetComposition != null)
+                        {
+                            Trace.WriteLine(String.Format("Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore));
+                        }
+
                         Trace.WriteLine(String.Format("Mobility: {0:F2} cm^2/(s*V)", informedResult.Mobility));
                         Trace.WriteLine(String.Format("Cross Sectional Area: {0:F2} Å^2", informedResult.CrossSectionalArea));
 
@@ -391,6 +420,7 @@ namespace ImsInformed.Util
             {
                 // Print result
                 Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
 
                 // create the error result
                 MoleculeInformedWorkflowResult informedResult;
@@ -398,9 +428,13 @@ namespace ImsInformed.Util
                 informedResult.TargetDescriptor = null;
                 informedResult.IonizationMethod = target.IonizationType;
                 informedResult.AnalysisStatus = AnalysisStatus.ERR;
-                informedResult.Mobility = 0;
-                informedResult.CrossSectionalArea = 0;
-                informedResult.RSquared = 0;
+                informedResult.Mobility = -1;
+                informedResult.CrossSectionalArea = -1;
+                informedResult.AnalysisScoresHolder.AnalysisScore = -1;
+                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore = -1;
+                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore = -1;
+                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore = -1;
+                informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = -1;
                 return informedResult;
             }
         }

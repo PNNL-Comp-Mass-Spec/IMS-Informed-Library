@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FeatureScore.cs" company="PNNL">
+// <copyright file="FeatureScores.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the FeatureScore type.
+//   Defines the FeatureScores type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ namespace ImsInformed.Scoring
     /// <summary>
     /// The feature score.
     /// </summary>
-    public class FeatureScore
+    public class FeatureScores
     {
         /// <summary>
         /// The intensity score.
@@ -171,15 +171,11 @@ namespace ImsInformed.Scoring
             // Find Isotopic Profile
             // List<Peak> massSpectrumPeaks;
             // IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
-            int unsaturatedIsotope = 0;
-
             if (target.Composition == null)
             {
                 throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims target without Composition provided.");
             }
 
-            FeatureBlob isotopeFeature = null;
-            
             // Bad Feature, so get out
             if (statistics == null)
             {
@@ -258,6 +254,11 @@ namespace ImsInformed.Scoring
 
         public static double RealPeakScore(InformedWorkflow workflow, FeatureBlob bestFeature, double globalMaxIntensities)
         {
+            if (bestFeature == null)
+            {
+                return 0;
+            }
+
             double featureMaxIntensity = bestFeature.Statistics.IntensityMax;
             if (featureMaxIntensity * 10 >= globalMaxIntensities)
             {
@@ -271,6 +272,56 @@ namespace ImsInformed.Scoring
             {
                 return featureMaxIntensity * 10 / globalMaxIntensities;
             }
+        }
+
+        /// <summary>
+        /// The sum feature scores.
+        /// </summary>
+        /// <param name="a">
+        /// The a.
+        /// </param>
+        /// <param name="b">
+        /// The b.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static FeatureScoreHolder AddFeatureScores(FeatureScoreHolder a, FeatureScoreHolder b)
+        {
+            FeatureScoreHolder c;
+            c.IntensityScore = a.IntensityScore + b.IntensityScore;
+            c.IsotopicScore = a.IsotopicScore + b.IsotopicScore;
+            c.PeakShapeScore = a.PeakShapeScore + b.PeakShapeScore;
+            return c;
+        }
+
+        /// <summary>
+        /// The average feature scores.
+        /// </summary>
+        /// <param name="scoreHolders">
+        /// The score holders.
+        /// </param>
+        /// <returns>
+        /// The <see cref="FeatureScoreHolder"/>.
+        /// </returns>
+        public static FeatureScoreHolder AverageFeatureScores(IEnumerable<FeatureScoreHolder> scoreHolders)
+        {
+            int count = 0;
+            FeatureScoreHolder averageFeatureScores;
+            averageFeatureScores.IntensityScore = 0;
+            averageFeatureScores.IsotopicScore = 0;
+            averageFeatureScores.PeakShapeScore = 0;
+
+            foreach (var scoreHolder in scoreHolders)
+            {
+                count++;
+                averageFeatureScores = AddFeatureScores(averageFeatureScores, scoreHolder);
+            }
+
+            averageFeatureScores.IntensityScore /= count;
+            averageFeatureScores.IsotopicScore /= count;
+            averageFeatureScores.PeakShapeScore /= count;
+            return averageFeatureScores;
         }
     }
 }

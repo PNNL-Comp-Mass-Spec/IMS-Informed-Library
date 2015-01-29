@@ -21,9 +21,9 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double ComputeAnalysisScore()
+        public static double ComputeAnalysisScore(double rSquared)
         {
-            return 0;
+            return rSquared;
         }
     }
 }

@@ -10,9 +10,9 @@
 
 namespace ImsInformed.Scoring
 {
-    using ImsInformed.Domain;
+    using System.Collections.Generic;
 
-    using MultiDimensionalPeakFinding.PeakDetection;
+    using ImsInformed.Domain;
 
     /// <summary>
     /// The voltage group score.
@@ -29,10 +29,36 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double VoltageGroupStabilityScore(VoltageGroup group)
+        public static double ComoputeVoltageGroupStabilityScore(VoltageGroup group)
         {
             double stability = group.VariancePressure * group.VarianceTemperature * group.VarianceVoltage;
-            return ScoreUtil.MapToZeroOne(stability, false, 1.0);
+            return ScoreUtil.MapToZeroOne(stability, true, 0.00000000000000001);
+        }
+
+        /// <summary>
+        /// A voltage group has stability higher score if the voltage group has more accumulations, less variations
+        /// on voltage, temperature and pressure.
+        /// </summary>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double AverageVoltageGroupStabilityScore(IEnumerable<VoltageGroup> groups)
+        {
+            int count = 0;
+            double averageStabilityScore;
+            averageStabilityScore = 0;
+
+            foreach (var group in groups)
+            {
+                count++;
+                averageStabilityScore += ComoputeVoltageGroupStabilityScore(group);
+            }
+
+            averageStabilityScore /= count;
+            return averageStabilityScore;
         }
     }
 }

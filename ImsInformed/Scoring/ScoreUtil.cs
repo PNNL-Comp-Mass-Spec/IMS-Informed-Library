@@ -11,12 +11,67 @@
 namespace ImsInformed.Scoring
 {
     using System;
+    using System.Collections.Generic;
+
+    using ImsInformed.Domain;
 
     /// <summary>
     /// The score util.
     /// </summary>
     public class ScoreUtil
     {
+        /// <summary>
+        /// The compare features function.
+        /// </summary>
+        /// <param name="a">
+        /// The a.
+        /// </param>
+        /// <param name="b">
+        /// The b.
+        /// </param>
+        public delegate double LikelihoodFunc(FeatureScoreHolder featureScores);
+
+        /// <summary>
+        /// The compare feature score.
+        /// </summary>
+        /// <param name="a">
+        /// The a.
+        /// </param>
+        /// <param name="b">
+        /// The b.
+        /// </param>
+        /// <param name="likelihoodFunc">
+        /// The likelyhood Func.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int CompareFeatureScore(FeatureScoreHolder a, FeatureScoreHolder b, LikelihoodFunc likelihoodFunc)
+        {
+            return likelihoodFunc(a).CompareTo(likelihoodFunc(b));
+        }
+
+        /// <summary>
+        /// The more likely than.
+        /// </summary>
+        /// <param name="a">
+        /// The a.
+        /// </param>
+        /// <param name="b">
+        /// The b.
+        /// </param>
+        /// <param name="likelihoodFunc">
+        /// The likelyhood func.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool MoreLikelyThan(FeatureScoreHolder a, FeatureScoreHolder b, LikelihoodFunc likelihoodFunc)
+        {
+            int result = CompareFeatureScore(a, b, likelihoodFunc);
+            return result > 0;
+        }
+
         /// <summary>
         /// The map to zero one.
         /// </summary>

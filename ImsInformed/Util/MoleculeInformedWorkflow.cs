@@ -396,7 +396,10 @@ namespace ImsInformed.Util
                             Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
                             Trace.WriteLine(String.Format("VoltageGroupScore: {0:F2}", voltageGroup.VoltageGroupScore));
                             Trace.WriteLine(String.Format("AverageBestFeatureScores.IntensityScore: {0:F2}", voltageGroup.BestFeatureScores.IntensityScore));
-                            Trace.WriteLine(String.Format("AverageBestFeatureScores.IsotopicScore: {0:F2}", voltageGroup.BestFeatureScores.IsotopicScore));
+                            if (targetComposition != null)
+                            {
+                                Trace.WriteLine(String.Format("AverageBestFeatureScores.IsotopicScore: {0:F2}", voltageGroup.BestFeatureScores.IsotopicScore));
+                            }
                             Trace.WriteLine(String.Format("AverageBestFeatureScores.PeakShapeScore: {0:F2}", voltageGroup.BestFeatureScores.PeakShapeScore));
                             Trace.WriteLine(string.Empty);
                         }

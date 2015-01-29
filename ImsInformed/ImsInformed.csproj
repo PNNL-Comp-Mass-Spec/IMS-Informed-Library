@@ -38,9 +38,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\DeconTools\DeconTools.Backend.dll</HintPath>
     </Reference>
-    <Reference Include="FalkorSignalPlotter">
-      <HintPath>..\lib\FalkorSignalPlotter\FalkorSignalPlotter.dll</HintPath>
-    </Reference>
     <Reference Include="InformedProteomics.Backend, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\InformedProteomics\InformedProteomics.Backend.dll</HintPath>

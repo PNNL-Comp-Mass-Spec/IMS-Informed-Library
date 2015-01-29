@@ -18,6 +18,9 @@ namespace ImsInformed.Scoring
         /// <summary>
         /// The compute analysis score.
         /// </summary>
+        /// <param name="rSquared">
+        /// The r Squared.
+        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>

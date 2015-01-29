@@ -89,7 +89,7 @@ namespace ImsInformed.Util
 
             this.OutputPath = outputDirectory;
             
-            this.LikelihoodFunc = FeatureLikelihoodFunctions.IntensityDependentLikelyhoodFunction;
+            this.LikelihoodFunc = FeatureLikelihoodFunctions.IntensityDependentLikelihoodFunction;
         }
 
         /// <summary>

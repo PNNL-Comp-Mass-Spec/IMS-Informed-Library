@@ -10,10 +10,13 @@
 
 namespace ImsInformed.Scoring
 {
+    /// <summary>
+    /// The feature likelihood functions.
+    /// </summary>
     public class FeatureLikelihoodFunctions
     {
         /// <summary>
-        /// The intensity only likelyhood function.
+        /// The intensity only likelihood function.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -21,13 +24,13 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityOnlyLikelyhoodFunction(FeatureScoreHolder featureScores)
+        public static double IntensityOnlyLikelihoodFunction(FeatureScoreHolder featureScores)
         {
             return featureScores.IntensityScore;
         }
 
         /// <summary>
-        /// The intensity independent likelyhood function.
+        /// The intensity independent likelihood function.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -35,13 +38,13 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityIndependentLikelyhoodFunction(FeatureScoreHolder featureScores)
+        public static double IntensityIndependentLikelihoodFunction(FeatureScoreHolder featureScores)
         {
             return featureScores.IsotopicScore* 3 + featureScores.PeakShapeScore;
         }
 
         /// <summary>
-        /// The intensity dependent likelyhood function.
+        /// The intensity dependent likelihood function.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -49,7 +52,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityDependentLikelyhoodFunction(FeatureScoreHolder featureScores)
+        public static double IntensityDependentLikelihoodFunction(FeatureScoreHolder featureScores)
         {
             if (featureScores.IsotopicScore != 0)
             {

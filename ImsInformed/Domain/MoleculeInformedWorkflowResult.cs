@@ -51,6 +51,11 @@ namespace ImsInformed.Domain
         public double CrossSectionalArea;
 
         /// <summary>
+        /// The cross sectional area.
+        /// </summary>
+        public double LastVoltageGroupAverageDriftTime;
+
+        /// <summary>
         /// The r squared.
         /// </summary>
         public AnalysisScoresHolder AnalysisScoresHolder;

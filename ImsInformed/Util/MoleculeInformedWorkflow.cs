@@ -281,6 +281,7 @@ namespace ImsInformed.Util
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.AnalysisScore = 1; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
+                        informedResult.LastVoltageGroupAverageDriftTime = -1;
 
                         // quantize the VG score from VGs in the removal list.
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(removaList);
@@ -336,6 +337,7 @@ namespace ImsInformed.Util
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.AnalysisScore = 0;
+                        informedResult.LastVoltageGroupAverageDriftTime = -1;
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                         IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                         informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
@@ -380,19 +382,22 @@ namespace ImsInformed.Util
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                         IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                         informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
+                        informedResult.LastVoltageGroupAverageDriftTime = -1;
                 
                         // Printout results
                         foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                         {
+                            // FOR COMPARISON WITH MATT"S RESULT, not terribly important
+                            informedResult.LastVoltageGroupAverageDriftTime = voltageGroup.FitPoint.x * 1000;
+                            // Normalize the drift time to be displayed.
+                            informedResult.LastVoltageGroupAverageDriftTime = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
+
                             Trace.WriteLine(String.Format("Target presence found:\nVariance: {0:F2}.", voltageGroup.VarianceVoltage));
                             Trace.WriteLine(String.Format("Mean voltage {0:F2} V", voltageGroup.MeanVoltageInVolts));
                             Trace.WriteLine(String.Format("Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
                             Trace.WriteLine(String.Format("Scan number: {0}", voltageGroup.BestFeature.Statistics.ScanImsRep));
                             Trace.WriteLine(String.Format("ImsTime: {0:F2} ms", voltageGroup.FitPoint.x * 1000));
-                            // FOR COMPARISON WITH MATT"S RESULT, UNCOMMENT IF YOU SEE IT
-                            informedResult.Mobility = voltageGroup.FitPoint.x * 1000;
-                            // Normalize the drift time to be displayed.
-                            informedResult.Mobility = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
+                            
                             Trace.WriteLine(String.Format("Cook's distance: {0:F2}", voltageGroup.FitPoint.CooksD));
                             Trace.WriteLine(String.Format("VoltageGroupScore: {0:F2}", voltageGroup.VoltageGroupScore));
                             Trace.WriteLine(String.Format("AverageBestFeatureScores.IntensityScore: {0:F2}", voltageGroup.BestFeatureScores.IntensityScore));
@@ -440,6 +445,7 @@ namespace ImsInformed.Util
                 informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore = -1;
                 informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore = -1;
                 informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = -1;
+                informedResult.LastVoltageGroupAverageDriftTime = -1;
                 return informedResult;
             }
         }

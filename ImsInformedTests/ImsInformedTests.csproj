@@ -89,7 +89,8 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FunctionalTests.cs" />
+    <Compile Include="LCMSPeptidesTest.cs" />
+    <Compile Include="DirectInjectionMoleculeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

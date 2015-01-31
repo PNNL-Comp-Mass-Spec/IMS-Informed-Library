@@ -280,7 +280,7 @@ namespace ImsInformed.Util
                         informedResult.AnalysisStatus = AnalysisStatus.NEG;
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
-                        informedResult.AnalysisScoresHolder.AnalysisScore = 1; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
+                        informedResult.AnalysisScoresHolder.AnalysisScore = 0.5; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
                         informedResult.LastVoltageGroupAverageDriftTime = -1;
 
                         // quantize the VG score from VGs in the removal list.

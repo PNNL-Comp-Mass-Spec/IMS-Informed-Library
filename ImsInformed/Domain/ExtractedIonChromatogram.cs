@@ -1,21 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace ImsInformed.Domain
+﻿namespace ImsInformed.Domain
 {
+    using System;
+    using System.Collections.Generic;
+
     using UIMFLibrary;
 
-    // This is the total ion chromatograph summed over the mz but not mobilityScan axis.
-    // Which is not currently represented in the UIMF library. So I'll just implement it here.
+    /// <summary>
+    /// This is the XIC summed over the mz but not mobilityScan axis.
+    /// </summary>
     public class ExtractedIonChromatogram 
     {
+        /// <summary>
+        /// Gets the MZ.
+        /// </summary>
         public double Mz {get; private set; }
+
+        /// <summary>
+        /// Gets the intensity points.
+        /// </summary>
         public List<IntensityPoint> IntensityPoints { get; private set; }
+
+        /// <summary>
+        /// Gets the number of mobility scans.
+        /// </summary>
         public int NumberOfMobilityScans { get; private set; }
 
-        // XIC is a list of intensity points sorted by Mobility Scan number from low to high.
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// XIC is a list of intensity points sorted by Mobility Scan number from low to high.
+        /// </summary>
+        /// <param name="A">
+        /// The a.
+        /// </param>
+        /// <param name="B">
+        /// The b.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// </exception>
         private ExtractedIonChromatogram(ExtractedIonChromatogram A, ExtractedIonChromatogram B)
         {
             if (A.NumberOfMobilityScans != B.NumberOfMobilityScans || !A.Mz.Equals(B.Mz))
@@ -25,7 +46,7 @@ namespace ImsInformed.Domain
             this.IntensityPoints = addSortedIntensityPointList(A.IntensityPoints, B.IntensityPoints, this.NumberOfMobilityScans);
         }
 
-        // XIC is a list of intensity points sorted by Mobility Scan number from low to high.
+        // XIC is a dictionary represented TIC sorted by Mobility Scan number from low to high.
         public ExtractedIonChromatogram(List<IntensityPoint> XIC, DataReader uimfReader, int frameNumber, double Mz)
         {
             this.Mz = Mz;
@@ -34,12 +55,38 @@ namespace ImsInformed.Domain
             IntensityPoints = XIC;
         }
 
+        /// <summary>
+        /// The +.
+        /// </summary>
+        /// <param name="A">
+        /// The a.
+        /// </param>
+        /// <param name="B">
+        /// The b.
+        /// </param>
+        /// <returns>
+        /// </returns>
         public static ExtractedIonChromatogram operator +(ExtractedIonChromatogram A, ExtractedIonChromatogram B)
         {
             ExtractedIonChromatogram result = new ExtractedIonChromatogram(A, B);
             return result;
         }
 
+        /// <summary>
+        /// Add sorted intensity point list. Classical algorithm for merging 2 sorted list.
+        /// </summary>
+        /// <param name="A">
+        /// The a.
+        /// </param>
+        /// <param name="B">
+        /// The b.
+        /// </param>
+        /// <param name="numberOfMobilityScans">
+        /// The number of mobility scans.
+        /// </param>
+        /// <returns>
+        /// The <see cref="List"/>.
+        /// </returns>
         public static List<IntensityPoint> addSortedIntensityPointList (List<IntensityPoint> A, List<IntensityPoint> B, int numberOfMobilityScans)
         {
             List<IntensityPoint> result = new List<IntensityPoint>();
@@ -78,6 +125,17 @@ namespace ImsInformed.Domain
             return result;
         }
 
+        /// <summary>
+        /// The verify frame number.
+        /// </summary>
+        /// <param name="point">
+        /// The point.
+        /// </param>
+        /// <param name="frameNumber">
+        /// The frame number.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// </exception>
         public static void VerifyFrameNumber(IntensityPoint point, int frameNumber)
         {
             if (point.ScanLc != frameNumber)

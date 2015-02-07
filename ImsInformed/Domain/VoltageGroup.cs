@@ -215,13 +215,13 @@ namespace ImsInformed.Domain
         /// </returns>
         public bool AddSimilarVoltage(double newVoltage, double newPressure, double newTemperature, double newTOFWidth)
         {
-            bool success = this.VoltageGroupClassifier(newVoltage);
-            if (success)
+            bool newVoltageGroupFlag = this.VoltageGroupClassifier(newVoltage);
+            if (newVoltageGroupFlag)
             {
                 this.AddVoltage(newVoltage, newPressure, newTemperature, newTOFWidth);
             }
 
-            return success;
+            return newVoltageGroupFlag;
         }
 
         /// <summary>

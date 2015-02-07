@@ -61,6 +61,7 @@ namespace ImsInformed.Domain
                         currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
                         this.Add(currentVoltageGroup, extractedIonChromatogram);
                     } 
+
                     if (!this.ContainsKey(currentVoltageGroup)) 
                     {
                         this.Add(currentVoltageGroup, extractedIonChromatogram);
@@ -69,6 +70,15 @@ namespace ImsInformed.Domain
                     {
                         this[currentVoltageGroup] += extractedIonChromatogram;
                     }
+                }
+            }
+
+            // Average all the XICs to have the intensity range of a single frame.
+            foreach (var voltageGroup in this.Keys)
+            {
+                foreach (var item in this[voltageGroup].IntensityPoints)   
+                {
+                    item.Intensity /= voltageGroup.AccumulationCount;
                 }
             }
         }

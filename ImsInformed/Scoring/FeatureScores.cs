@@ -41,7 +41,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityScore(InformedWorkflow workflow, FeatureBlob featureBlob, VoltageGroup voltageGroup)
+        public static double IntensityScore(InformedWorkflow workflow, FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
         {
             // Sort features by relative intensity
             FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
@@ -61,7 +61,7 @@ namespace ImsInformed.Scoring
             double score = summedIntensities / voltageGroup.AccumulationCount;
             
             // normalize the score
-            return ScoreUtil.MapToZeroOne(score, false, 1E6);
+            return ScoreUtil.MapToZeroOne(score, false, globalMaxIntensity / 3);
         }
 
         /// <summary>

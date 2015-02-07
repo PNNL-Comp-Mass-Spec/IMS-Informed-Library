@@ -228,14 +228,16 @@ namespace ImsInformed.Util
                         mostLikelyPeakScores.IntensityScore = 0;
                         mostLikelyPeakScores.IsotopicScore = 0;
                         mostLikelyPeakScores.PeakShapeScore = 0;
+                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
+
 
                         // Check each XIC Peak found
                         foreach (var featureBlob in featureBlobs)
                         {
                             FeatureScoreHolder currentScoreHolder;
 
-                            // Evalute feature scores.
-                            currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup);
+                            // Evaluate feature scores.
+                            currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup, globalMaxIntensity);
                             
                             currentScoreHolder.IsotopicScore = 0;
                             if (targetComposition != null)
@@ -259,7 +261,7 @@ namespace ImsInformed.Util
                         voltageGroup.VoltageGroupScore = VoltageGroupScore.ComoputeVoltageGroupStabilityScore(voltageGroup);
                 
                         voltageGroup.BestFeatureScores = mostLikelyPeakScores;
-                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
+
                         double realPeakConfidence = FeatureScores.RealPeakScore(this, voltageGroup.BestFeature, globalMaxIntensity);
                         if (voltageGroup.BestFeature == null || realPeakConfidence < this.Parameters.ConfidenceThreshold) 
                         {

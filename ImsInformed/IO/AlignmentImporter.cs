@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+
 using MathNet.Numerics.Interpolation;
-using MathNet.Numerics.Interpolation.Algorithms;
 
 namespace ImsInformed.IO
 {
@@ -32,7 +29,7 @@ namespace ImsInformed.IO
 				}
 			}
 
-			IInterpolation interpolation = new LinearSplineInterpolation(xValues, yValues);
+			IInterpolation interpolation = new StepInterpolation(xValues.ToArray(), yValues.ToArray());
 
 			return interpolation;
 		}

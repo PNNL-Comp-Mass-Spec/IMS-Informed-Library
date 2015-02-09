@@ -12,8 +12,12 @@ namespace ImsInformed.Scoring
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Windows.Navigation;
 
     using DeconTools.Backend.Core;
+
+    using MathNet.Numerics.Statistics;
 
     using ImsInformed.Domain;
     using ImsInformed.Stats;
@@ -139,14 +143,8 @@ namespace ImsInformed.Scoring
         /// <param name="workflow">
         /// The workflow.
         /// </param>
-        /// <param name="featureBlob">
-        /// The feature blob.
-        /// </param>
         /// <param name="target">
         /// The target.
-        /// </param>
-        /// <param name="chargeState">
-        /// The charge state.
         /// </param>
         /// <param name="statistics">
         /// The statistics.
@@ -154,12 +152,18 @@ namespace ImsInformed.Scoring
         /// <param name="isotopicPeakList">
         /// The isotopic peak list.
         /// </param>
+        /// <param name="voltageGroup">
+        /// The voltage Group.
+        /// </param>
+        /// <param name="selectedMethod">
+        /// The selected Method.
+        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup)
+        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
@@ -225,25 +229,72 @@ namespace ImsInformed.Scoring
                 observedIsotopicPeakList[i] /= firstMz;
             }
 
+            if (selectedMethod == IsotopicScoreMethod.Angle)
+            {
+                return IsotopicProfileScoreAngle(observedIsotopicPeakList, isotopicPeakList);
+            }
+            else if (selectedMethod == IsotopicScoreMethod.EuclideanDistance)
+            {
+                return IsotopicProfileScoreEuclidean(observedIsotopicPeakList, isotopicPeakList);
+            }
+            else 
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// The score feature using isotopic profile.
+        /// </summary>
+        /// <param name="observedIsotopicPeakList">
+        /// </param>
+        /// <param name="actualIsotopicPeakList">
+        /// The isotopic peak list.
+        /// </param>
+        /// <param name="voltageGroup">
+        /// The voltage Group.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// </exception>
+        private static double IsotopicProfileScoreEuclidean(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        {
             // calculate the euclidean distance between theoretical distribution and observed pattern
-            // double isotopicScore = 0;
-            // for (int i = 1; i < isotopicPeakList.Count; i++)
-            // {
-            //     double diff = (observedIsotopicPeakList[i] - isotopicPeakList[i].Height);
-            //     isotopicScore += diff * diff;
-            // }
+            double isotopicScore = 0;
+            for (int i = 1; i < actualIsotopicPeakList.Count; i++)
+            {
+                double diff = observedIsotopicPeakList[i] - actualIsotopicPeakList[i].Height;
+                isotopicScore += diff * diff;
+            }
 
             // Map the score to [0, 1]
-            // return ScoreUtil.MapToZeroOne(Math.Sqrt(isotopicScore), true, 0.03);
+            return ScoreUtil.MapToZeroOne(Math.Sqrt(isotopicScore), true, 0.03);
+        }
 
+        /// <summary>
+        /// The isotopic profile score angle.
+        /// </summary>
+        /// <param name="observedIsotopicPeakList">
+        /// The observed isotopic peak list.
+        /// </param>
+        /// <param name="actualIsotopicPeakList">
+        /// The actual isotopic peak list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        private static double IsotopicProfileScoreAngle(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        {
             // calculate angle between two isotopic vectors in the isotopic space
             double dot = 0;
             double theoreticalLength = 0;
             double observedLength = 0;
-            for (int i = 0; i < isotopicPeakList.Count; i++)
+            for (int i = 0; i < actualIsotopicPeakList.Count; i++)
             {
-                dot += observedIsotopicPeakList[i] * isotopicPeakList[i].Height;
-                theoreticalLength += isotopicPeakList[i].Height * isotopicPeakList[i].Height;
+                dot += observedIsotopicPeakList[i] * actualIsotopicPeakList[i].Height;
+                theoreticalLength += actualIsotopicPeakList[i].Height * actualIsotopicPeakList[i].Height;
                 observedLength += observedIsotopicPeakList[i] * observedIsotopicPeakList[i];
             }
 
@@ -252,6 +303,28 @@ namespace ImsInformed.Scoring
             return 1 - isotopicScore / referenceScore;
         }
 
+        private static double PearsonCorrelation(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        {
+            // calculate angle between two isotopic vectors in the isotopic space
+            IEnumerable<double> actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height);
+            return 0;
+        }
+
+        /// <summary>
+        /// The real peak score.
+        /// </summary>
+        /// <param name="workflow">
+        /// The workflow.
+        /// </param>
+        /// <param name="bestFeature">
+        /// The best feature.
+        /// </param>
+        /// <param name="globalMaxIntensities">
+        /// The global max intensities.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double RealPeakScore(InformedWorkflow workflow, FeatureBlob bestFeature, double globalMaxIntensities)
         {
             if (bestFeature == null)

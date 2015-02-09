@@ -11,13 +11,11 @@
 namespace ImsInformed.Util
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Net.Sockets;
 
     using DeconTools.Backend.Core;
 
@@ -30,11 +28,7 @@ namespace ImsInformed.Util
     using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
 
-    using Microsoft.SqlServer.Server;
-
     using MultiDimensionalPeakFinding.PeakDetection;
-
-    using PNNLOmics.Data.Features;
 
     /// <summary>
     /// Find molecules with a known formula and know ionization methods. metabolites and pipetides alike.
@@ -155,7 +149,7 @@ namespace ImsInformed.Util
                 informedResult.DatasetName = this.DatasetName;
                 informedResult.IonizationMethod = target.IonizationType;
                 
-                // ImsTarget assumes proton+ ionization. Get rid of it here.
+                // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
                 Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(target.Composition, target.IonizationType);
                 informedResult.TargetDescriptor = (targetComposition == null) ? target.TargetMz.ToString(CultureInfo.InvariantCulture) : target.EmpiricalFormula;
                 
@@ -196,7 +190,7 @@ namespace ImsInformed.Util
                     List<Peak> theoreticalIsotopicProfilePeakList = null;
                     if (targetComposition != null) 
                     {
-                        string empiricalFormula = (targetComposition != null) ? targetComposition.ToPlainString() : string.Empty;
+                        string empiricalFormula = targetComposition.ToPlainString();
                         IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
                         theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                     }
@@ -242,7 +236,7 @@ namespace ImsInformed.Util
                             currentScoreHolder.IsotopicScore = 0;
                             if (targetComposition != null)
                             {
-                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup);
+                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle);
                             }
                             
                             currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz);
@@ -258,7 +252,7 @@ namespace ImsInformed.Util
                         voltageGroup.BestFeature = bestFeature;
                 
                         // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the target ion.
-                        voltageGroup.VoltageGroupScore = VoltageGroupScore.ComoputeVoltageGroupStabilityScore(voltageGroup);
+                        voltageGroup.VoltageGroupScore = VoltageGroupScore.ComputeVoltageGroupStabilityScore(voltageGroup);
                 
                         voltageGroup.BestFeatureScores = mostLikelyPeakScores;
 
@@ -312,10 +306,10 @@ namespace ImsInformed.Util
                     }
                 
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    FitLine line = new FitLine(fitPointsWithOutliers);            
-                
+                    FitLine line = new FitLine(fitPointsWithOutliers);
+
                     // Remove the voltage group with outliers
-                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList() ) 
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList())
                     {
                         accumulatedXiCs.Remove(voltageGroup);
                     }

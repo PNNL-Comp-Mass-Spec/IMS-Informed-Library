@@ -12,19 +12,28 @@ namespace ImsInformedTests
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Threading;
 
+    using DeconTools.Backend.Core;
+    using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
     using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain;
     using ImsInformed.Parameters;
+    using ImsInformed.Scoring;
     using ImsInformed.Stats;
     using ImsInformed.Util;
 
+    using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
 
     using MathNet.Numerics.Distributions;
+
+    using MultiDimensionalPeakFinding;
+    using MultiDimensionalPeakFinding.PeakDetection;
 
     using NUnit.Framework;
 
@@ -437,6 +446,123 @@ namespace ImsInformedTests
         {
             string formula = "NotAFormula";
             Assert.Throws<Exception>(() => new ImsTarget(1, IonizationMethod.ProtonMinus, formula));
+        }
+
+        /// <summary>
+        /// The test scoring.
+        /// </summary>
+        [Test][STAThread]
+        public void TestScoring()
+        {
+            string formula = "C12H10O4S";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            string fileLocation = Bps;
+            Console.WriteLine("BPS:");
+            Console.WriteLine("Composition: " + sample.Composition);
+            Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
+
+            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
+            {
+                MassToleranceInPpm = 10,
+                NumPointForSmoothing = 9,
+                ScanWindowWidth = 4,
+            };
+
+            var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
+
+            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
+
+            // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
+            Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(sample.Composition, sample.IonizationType);
+            targetComposition = MoleculeUtil.IonizationCompositionDecompensation(targetComposition, IonizationMethod.ProtonPlus);
+
+            // Setup target object
+            if (targetComposition != null) 
+            {
+                // Because Ion class from Informed Proteomics assumes adding a proton, that's the reason for decompensation
+                Ion targetIon = new Ion(targetComposition, 1);
+                sample.TargetMz = targetIon.GetMonoIsotopicMz();
+            } 
+            
+            Console.WriteLine("Ionization method: " + sample.IonizationType);
+            Console.WriteLine("Targeting Mz: " + sample.TargetMz);
+                
+            // Generate Theoretical Isotopic Profile
+            List<Peak> theoreticalIsotopicProfilePeakList = null;
+            if (targetComposition != null) 
+            {
+                string empiricalFormula = targetComposition.ToPlainString();
+                var theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
+                IsotopicProfile theoreticalIsotopicProfile = theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
+            }
+            
+            // Generate VoltageSeparatedAccumulatedXICs
+            var uimfReader = new DataReader(fileLocation);
+            Console.WriteLine("Input file: {0}", fileLocation);
+            VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, sample.TargetMz, parameters);
+            
+            // Because we can't delete keys while iterating over a dictionary, and thus removalList
+            List<VoltageGroup> removaList = new List<VoltageGroup>();
+
+            Console.WriteLine();
+
+            // For each voltage, find 2D XIC features 
+            foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+            {
+                Console.WriteLine("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount);
+
+                // Smooth Chromatogram
+                IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
+                smoother.Smooth(ref pointList);
+                
+                // Peak Find Chromatogram
+                IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
+
+                // 1st round filtering: reject small feature peaks. Fast filtering.
+                featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
+
+                // 2st round filtering: filter out non real peaks and score using isotopic score. 
+                FeatureBlob bestFeature = null;
+                FeatureScoreHolder mostLikelyPeakScores;
+                mostLikelyPeakScores.IntensityScore = 0;
+                mostLikelyPeakScores.IsotopicScore = 0;
+                mostLikelyPeakScores.PeakShapeScore = 0;
+                double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
+                // Check each XIC Peak found
+                foreach (var featureBlob in featureBlobs)
+                {
+                    // Evaluate feature scores.
+                    double intensityScore = FeatureScores.IntensityScore(informedWorkflow, featureBlob, voltageGroup, globalMaxIntensity);
+                    
+                    double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.Angle);
+
+                    double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistance);
+                    
+                    double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz);
+                    
+                    // Report all features.
+                    Console.WriteLine(" feature found at scan number {0} (offset: {1})", featureBlob.Statistics.ScanImsRep, featureBlob.Statistics.ScanImsRepOffset);
+                    // Console.WriteLine("     IntensityScore: {0}", intensityScore);
+                    // Console.WriteLine("     peakShapeScore: {0}", peakShapeScore);
+                    Console.WriteLine("     isotopicScore - Angle:    {0}", isotopicScoreAngle);
+                    Console.WriteLine("     isotopicScore - Distance: {0}", isotopicScoreDistance);
+                    
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine();
+            }
         }
     }
 }

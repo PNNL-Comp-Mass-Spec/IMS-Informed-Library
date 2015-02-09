@@ -29,7 +29,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double ComoputeVoltageGroupStabilityScore(VoltageGroup group)
+        public static double ComputeVoltageGroupStabilityScore(VoltageGroup group)
         {
             double stability = group.VariancePressure * group.VarianceTemperature * group.VarianceVoltage;
             return ScoreUtil.MapToZeroOne(stability, true, 0.00000000000000001);
@@ -54,7 +54,7 @@ namespace ImsInformed.Scoring
             foreach (var group in groups)
             {
                 count++;
-                averageStabilityScore += ComoputeVoltageGroupStabilityScore(group);
+                averageStabilityScore += ComputeVoltageGroupStabilityScore(group);
             }
 
             averageStabilityScore /= count;

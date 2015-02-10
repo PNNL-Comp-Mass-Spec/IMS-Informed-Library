@@ -50,13 +50,13 @@ namespace ImsInformed.Domain
 
                 // Add to the VXICs
                 ExtractedIonChromatogram extractedIonChromatogram = new ExtractedIonChromatogram(XIC, uimfReader, i, targetMz);
-                bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts,driftTubePressureNondimensionalized,driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
+                bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
                 
                 // And when a new but unsimilar voltage appears 
                 if (!similarVoltage)
                 {
                     currentVoltageGroup = new VoltageGroup(i);
-                    currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized,driftTubeTemperatureNondimensionalized,tofWidthInSeconds);
+                    currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
                     this.Add(currentVoltageGroup, extractedIonChromatogram);
                 } 
 

@@ -5,7 +5,9 @@ using MathNet.Numerics.Interpolation;
 
 namespace ImsInformed.IO
 {
-	public class AlignmentImporter
+    using MathNet.Numerics.Interpolation.Algorithms;
+
+    public class AlignmentImporter
 	{
 		public static IInterpolation ReadFile(string fileLocation)
 		{
@@ -29,7 +31,7 @@ namespace ImsInformed.IO
 				}
 			}
 
-			IInterpolation interpolation = new StepInterpolation(xValues.ToArray(), yValues.ToArray());
+			IInterpolation interpolation = new LinearSplineInterpolation(xValues.ToArray(), yValues.ToArray());
 
 			return interpolation;
 		}

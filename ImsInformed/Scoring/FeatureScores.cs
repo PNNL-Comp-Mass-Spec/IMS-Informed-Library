@@ -15,8 +15,12 @@ namespace ImsInformed.Scoring
     using System.Linq;
     using System.Windows.Navigation;
 
-    using DeconTools.Backend.Core;
+    using InformedProteomics.Backend.Data.Spectrometry;
 
+    using MathNet.Numerics.Integration.Algorithms;
+    using MathNet.Numerics.LinearAlgebra;
+    using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Generic;
     using MathNet.Numerics.Statistics;
 
     using ImsInformed.Domain;
@@ -25,7 +29,11 @@ namespace ImsInformed.Scoring
 
     using MultiDimensionalPeakFinding.PeakDetection;
 
+    using PNNLOmics.Algorithms.Distance;
+
     using UIMFLibrary;
+
+    using Peak = DeconTools.Backend.Core.Peak;
 
     /// <summary>
     /// The feature score.
@@ -222,13 +230,6 @@ namespace ImsInformed.Scoring
                 return 0;
             }
 
-            // get the first isotope and use it to normalize the list
-            double firstMz = observedIsotopicPeakList[0];
-            for (int i = 0; i < isotopicPeakList.Count; i++)
-            {
-                observedIsotopicPeakList[i] /= firstMz;
-            }
-
             if (selectedMethod == IsotopicScoreMethod.Angle)
             {
                 return IsotopicProfileScoreAngle(observedIsotopicPeakList, isotopicPeakList);
@@ -236,6 +237,18 @@ namespace ImsInformed.Scoring
             else if (selectedMethod == IsotopicScoreMethod.EuclideanDistance)
             {
                 return IsotopicProfileScoreEuclidean(observedIsotopicPeakList, isotopicPeakList);
+            }
+            else if (selectedMethod == IsotopicScoreMethod.PearsonCorrelation)
+            {
+                return PearsonCorrelation(observedIsotopicPeakList, isotopicPeakList);
+            }
+            else if (selectedMethod == IsotopicScoreMethod.Bhattacharyya)
+            {
+                return BhattacharyyaDistance(observedIsotopicPeakList, isotopicPeakList);
+            }
+            else if (selectedMethod == IsotopicScoreMethod.EuclideanDistanceAlternative)
+            {
+                return EuclideanAlternative(observedIsotopicPeakList, isotopicPeakList);
             }
             else 
             {
@@ -261,6 +274,13 @@ namespace ImsInformed.Scoring
         /// </exception>
         private static double IsotopicProfileScoreEuclidean(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
         {
+            // get the first isotope and use it to normalize the list
+            double firstMz = observedIsotopicPeakList[0];
+            for (int i = 0; i < observedIsotopicPeakList.Count; i++)
+            {
+                observedIsotopicPeakList[i] /= firstMz;
+            }
+
             // calculate the euclidean distance between theoretical distribution and observed pattern
             double isotopicScore = 0;
             for (int i = 1; i < actualIsotopicPeakList.Count; i++)
@@ -298,16 +318,87 @@ namespace ImsInformed.Scoring
                 observedLength += observedIsotopicPeakList[i] * observedIsotopicPeakList[i];
             }
 
-            double isotopicScore = Math.Acos(dot / Math.Sqrt(theoreticalLength * observedLength));
-            double referenceScore = Math.Acos(1 / theoreticalLength);
-            return 1 - isotopicScore / referenceScore;
-        }
+            // Return the cosine distance
+            return dot / Math.Sqrt(theoreticalLength * observedLength);
 
+            // double isotopicScore = Math.Acos();
+            // double referenceScore = Math.Acos(1 / theoreticalLength);
+            // return 1 - isotopicScore / referenceScore;
+        }
         private static double PearsonCorrelation(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
         {
             // calculate angle between two isotopic vectors in the isotopic space
             IEnumerable<double> actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height);
-            return 0;
+            return Correlation.Pearson(actualIsotopicPeakListArray, observedIsotopicPeakList);
+        }
+                /// <summary>
+        /// The bhattacharyya distance.
+        /// </summary>
+        /// <param name="observedIsotopicPeakList">
+        /// The observed isotopic peak list.
+        /// </param>
+        /// <param name="actualIsotopicPeakList">
+        /// The actual isotopic peak list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        private static double EuclideanAlternative(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        {
+            // calculate angle between two isotopic vectors in the isotopic space
+            double[] actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height).ToArray();
+            Vector<double> A = new DenseVector(observedIsotopicPeakList.ToArray());
+            Vector<double> B = new DenseVector(actualIsotopicPeakListArray);
+            A = A.Normalize(2);
+            B = B.Normalize(2);
+
+            // calculate the euclidean distance between theoretical distribution and observed pattern
+            double isotopicScore = 0;
+            for (int i = 1; i < actualIsotopicPeakList.Count; i++)
+            {
+                double diff = A[i] - B[i];
+                isotopicScore += diff * diff;
+            }
+
+            // Map the score to [0, 1]
+            return Math.Sqrt(isotopicScore);
+        }
+
+        /// <summary>
+        /// The bhattacharyya distance.
+        /// </summary>
+        /// <param name="observedIsotopicPeakList">
+        /// The observed isotopic peak list.
+        /// </param>
+        /// <param name="actualIsotopicPeakList">
+        /// The actual isotopic peak list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        private static double BhattacharyyaDistance(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        {
+            // calculate angle between two isotopic vectors in the isotopic space
+            double[] actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height).ToArray();
+            Vector<double> A = new DenseVector(observedIsotopicPeakList.ToArray());
+            Vector<double> B = new DenseVector(actualIsotopicPeakListArray);
+            A = A.Normalize(2);
+            B = B.Normalize(2);
+            Vector<double> C = A.PointwiseMultiply(B);
+            
+            // Pointwise sqrt. Implements here because Math.Net.2.5 doesn't supports Pointwise exp getting Math.Net 3.5 introducces 
+            // package compatibility issues with Informed Proteomics / Multidimensional peak finding, etc.
+            // TODO: Use PointwiseExponent after getting Math.net 3.5
+            double[] cArray = C.ToArray();
+            int size = cArray.Count();
+            double sum = 0;
+            for (int i = 0; i < size; i++)
+            {
+                cArray[i] = Math.Sqrt(cArray[i]);
+                sum += cArray[i];
+            }
+
+            return sum;
         }
 
         /// <summary>

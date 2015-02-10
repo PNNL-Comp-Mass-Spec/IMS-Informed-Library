@@ -454,7 +454,7 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestScoring()
         {
-            string formula = "C12H10O4S";
+            string formula = "C12H10O4S2";
             ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             string fileLocation = Bps;
             Console.WriteLine("BPS:");
@@ -548,15 +548,39 @@ namespace ImsInformedTests
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
                             voltageGroup, IsotopicScoreMethod.EuclideanDistance);
+
+                    double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation);
+
+                    double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.Bhattacharyya);
+
+                    double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative);
                     
                     double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz);
                     
                     // Report all features.
                     Console.WriteLine(" feature found at scan number {0} (offset: {1})", featureBlob.Statistics.ScanImsRep, featureBlob.Statistics.ScanImsRepOffset);
-                    // Console.WriteLine("     IntensityScore: {0}", intensityScore);
-                    // Console.WriteLine("     peakShapeScore: {0}", peakShapeScore);
+                    Console.WriteLine("     IntensityScore: {0}", intensityScore);
+                    Console.WriteLine("     peakShapeScore: {0}", peakShapeScore);
                     Console.WriteLine("     isotopicScore - Angle:    {0}", isotopicScoreAngle);
                     Console.WriteLine("     isotopicScore - Distance: {0}", isotopicScoreDistance);
+                    Console.WriteLine("     isotopicScore - Distance2:{0}", isotopicScoreDistanceAlternative);
+                    Console.WriteLine("     isotopicScore - Pearson:  {0}", isotopicScorePerson);
+                    Console.WriteLine("     isotopicScore - Bhattacharyya: {0}", isotopicScoreBhattacharyya);
                     
                     Console.WriteLine();
                 }

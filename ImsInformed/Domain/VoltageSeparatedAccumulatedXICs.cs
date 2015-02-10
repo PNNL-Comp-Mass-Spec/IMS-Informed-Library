@@ -48,28 +48,25 @@ namespace ImsInformed.Domain
                     DataReader.FrameType.MS1,
                     DataReader.ToleranceType.PPM);
 
-                // For non empty XICs, add to the VXIC
-                if (XIC.Count != 0)
+                // Add to the VXICs
+                ExtractedIonChromatogram extractedIonChromatogram = new ExtractedIonChromatogram(XIC, uimfReader, i, targetMz);
+                bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts,driftTubePressureNondimensionalized,driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
+                
+                // And when a new but unsimilar voltage appears 
+                if (!similarVoltage)
                 {
-                    ExtractedIonChromatogram extractedIonChromatogram = new ExtractedIonChromatogram(XIC, uimfReader, i, targetMz);
-                    bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
-                    
-                    // And when a new but unsimilar voltage appears 
-                    if (!similarVoltage)
-                    {
-                        currentVoltageGroup = new VoltageGroup(i);
-                        currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
-                        this.Add(currentVoltageGroup, extractedIonChromatogram);
-                    } 
+                    currentVoltageGroup = new VoltageGroup(i);
+                    currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized,driftTubeTemperatureNondimensionalized,tofWidthInSeconds);
+                    this.Add(currentVoltageGroup, extractedIonChromatogram);
+                } 
 
-                    if (!this.ContainsKey(currentVoltageGroup)) 
-                    {
-                        this.Add(currentVoltageGroup, extractedIonChromatogram);
-                    } 
-                    else 
-                    {
-                        this[currentVoltageGroup] += extractedIonChromatogram;
-                    }
+                if (!this.ContainsKey(currentVoltageGroup)) 
+                {
+                    this.Add(currentVoltageGroup, extractedIonChromatogram);
+                } 
+                else 
+                {
+                    this[currentVoltageGroup] += extractedIonChromatogram;
                 }
             }
 

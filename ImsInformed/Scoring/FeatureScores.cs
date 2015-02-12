@@ -56,7 +56,7 @@ namespace ImsInformed.Scoring
         public static double IntensityScore(InformedWorkflow workflow, FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
         {
             // Sort features by relative intensity
-            FeatureBlobStatistics statistics = featureBlob.CalculateStatistics();
+            FeatureBlobStatistics statistics = featureBlob.Statistics;
             int scanImsRep = statistics.ScanImsRep;
 
             // Nullify the intensity score if the Scan is in unwanted areas.
@@ -68,12 +68,9 @@ namespace ImsInformed.Scoring
 
             // sum the intensities
             double summedIntensities = statistics.SumIntensities;
-
-            // Average the intensities
-            double score = summedIntensities / voltageGroup.AccumulationCount;
             
             // normalize the score
-            return ScoreUtil.MapToZeroOne(score, false, globalMaxIntensity / 3);
+            return ScoreUtil.MapToZeroOne(summedIntensities, false, globalMaxIntensity / 3);
         }
 
         /// <summary>
@@ -319,11 +316,8 @@ namespace ImsInformed.Scoring
             }
 
             // Return the cosine distance
-            return dot / Math.Sqrt(theoreticalLength * observedLength);
-
-            // double isotopicScore = Math.Acos();
-            // double referenceScore = Math.Acos(1 / theoreticalLength);
-            // return 1 - isotopicScore / referenceScore;
+            double cosine = dot / Math.Sqrt(theoreticalLength * observedLength);
+            return (Math.PI / 2  - Math.Acos(cosine)) / (Math.PI / 2);
         }
         private static double PearsonCorrelation(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
         {

@@ -83,6 +83,15 @@ namespace ImsInformed.IO
             }
         }
 
+        /// <summary>
+        /// The mobility fit line plot.
+        /// </summary>
+        /// <param name="fitline">
+        /// The fitline.
+        /// </param>
+        /// <returns>
+        /// The <see cref="PlotModel"/>.
+        /// </returns>
         private static PlotModel MobilityFitLinePlot(FitLine fitline)
         {
             IEnumerable<ContinuousXYPoint> pointList = fitline.PointCollection;

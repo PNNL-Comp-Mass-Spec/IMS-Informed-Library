@@ -27,7 +27,6 @@ namespace ImsInformed.Parameters
             this.NumPointForSmoothing = 9;
             this.ConfidenceThreshold = 0.5;
             this.FeatureFilterLevel = 0.25;
-            this.FeatureScoreThreshold = 2;
         }
 
         /// <summary>
@@ -35,14 +34,6 @@ namespace ImsInformed.Parameters
         /// </summary>
         public double FeatureFilterLevel { get; set; }
 
-        /// <summary>
-        /// Gets or sets the confidence threshold.
-        /// </summary>
         public double ConfidenceThreshold { get; set; }
-
-        /// <summary>
-        /// Gets or sets the feature score threshold.
-        /// </summary>
-        public int FeatureScoreThreshold { get; set; }
     }
 }

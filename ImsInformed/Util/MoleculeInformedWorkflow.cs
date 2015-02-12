@@ -230,6 +230,9 @@ namespace ImsInformed.Util
                         {
                             FeatureScoreHolder currentScoreHolder;
 
+                            // Calculate feature stats.
+                            featureBlob.CalculateStatistics();
+
                             // Evaluate feature scores.
                             currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup, globalMaxIntensity);
                             

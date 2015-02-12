@@ -92,36 +92,36 @@
             List<IntensityPoint> result = new List<IntensityPoint>();
             int AIndex = 0;
             int BIndex = 0;
-            int frameNumber = (A.Count != 0) ? A[0].ScanLc : (B.Count != 0) ? B[0].ScanLc : 0;
             while (AIndex < A.Count || BIndex < B.Count) 
             {
                 if (BIndex >= B.Count && AIndex < A.Count)
                 {
-                    result.Add(A[AIndex]); 
+                    result.Add(new IntensityPoint(0, A[AIndex].ScanIms, A[AIndex].Intensity));
                     AIndex++;
                 }
                 else if (BIndex < B.Count && AIndex >= A.Count)
                 {
-                    result.Add(B[BIndex]); 
+                    result.Add(new IntensityPoint(0, B[BIndex].ScanIms, B[BIndex].Intensity)); 
                     BIndex++;
                 }
                 else if (A[AIndex].ScanIms < B[BIndex].ScanIms)
                 {
-                    result.Add(A[AIndex]); 
+                    result.Add(new IntensityPoint(0, A[AIndex].ScanIms, A[AIndex].Intensity));
                     AIndex++;
                 } 
                 else if (A[AIndex].ScanIms > B[BIndex].ScanIms)
                 {
-                    result.Add(B[BIndex]);
+                    result.Add(new IntensityPoint(0, B[BIndex].ScanIms, B[BIndex].Intensity)); 
                     BIndex++;
                 }
                 else if (A[AIndex].ScanIms == B[BIndex].ScanIms)
                 {
-                    result.Add(new IntensityPoint(A[AIndex].ScanLc, A[AIndex].ScanIms, A[AIndex].Intensity + B[BIndex].Intensity));
+                    result.Add(new IntensityPoint(0, A[AIndex].ScanIms, A[AIndex].Intensity + B[BIndex].Intensity));
                     AIndex++;
                     BIndex++;
                 }
             }
+
             return result;
         }
 

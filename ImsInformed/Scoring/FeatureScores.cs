@@ -88,13 +88,13 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double PeakShapeScore(InformedWorkflow workflow, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz)
+        public static double PeakShapeScore(InformedWorkflow workflow, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz, double globalMaxIntensities)
         {
             int scanRep = statistics.ScanImsRep;
-            double toleranceInMZ = workflow._parameters.MassToleranceInPpm / 1e6 * targetMz;
+            double toleranceInMz = workflow._parameters.MassToleranceInPpm / 1e6 * targetMz;
             int scanWindowSize = workflow._parameters.ScanWindowWidth;
 
-            if (scanRep - scanWindowSize / 2 < 0 || scanRep + scanWindowSize / 2 >= (int)workflow.NumberOfScans)
+            if ((scanRep - scanWindowSize / 2) < 0 || (scanRep + scanWindowSize / 2) >= (int)workflow.NumberOfScans)
             {
                 return 0;
             }
@@ -109,7 +109,7 @@ namespace ImsInformed.Scoring
                 scanNumberMin,
                 scanNumberMax,
                 targetMz,
-                toleranceInMZ);
+                toleranceInMz);
 
             // Average the intensity window across frames
             int frames = intensityWindow.GetLength(0);
@@ -128,7 +128,7 @@ namespace ImsInformed.Scoring
             }
 
             // Perform a statistical normality test
-            double normalityScore = NormalityTest.PeakNormalityTest(averagedPeak, NormalityTest.JaqueBeraTest, 100);
+            double normalityScore = NormalityTest.PeakNormalityTest(averagedPeak, NormalityTest.JaqueBeraTest, 100, globalMaxIntensities);
             return normalityScore;
         }
 

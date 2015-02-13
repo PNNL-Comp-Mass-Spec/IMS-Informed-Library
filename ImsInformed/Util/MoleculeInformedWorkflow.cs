@@ -198,6 +198,8 @@ namespace ImsInformed.Util
                     VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz, _parameters);
 
                     // For each voltage, find 2D XIC features 
+
+                    Trace.WriteLine("Feature detection and scoring: ");
                     IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {    
@@ -212,8 +214,6 @@ namespace ImsInformed.Util
 
                         // Preliminary filtering: reject small feature peaks.
                         featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel).ToList();
-
-                        Trace.WriteLine("Feature detection and scoring: ");
 
                         // Calculate feature statistics and discard features with 
                         foreach (FeatureBlob feature in featureBlobs)
@@ -234,32 +234,39 @@ namespace ImsInformed.Util
                             FeatureScoreHolder currentScoreHolder;
                             currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup, globalMaxIntensity);
                             
-                            currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz);
+                            currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz, globalMaxIntensity);
 
                             currentScoreHolder.IsotopicScore = 0;
                             if (targetComposition != null)
                             {
                                  currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle);
                             }
-                            
-                            Trace.WriteLine(String.Format("    Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
-                            Trace.WriteLine(String.Format("        IntensityScore: {0}", currentScoreHolder.IntensityScore));
-                            Trace.WriteLine(String.Format("        peakShapeScore: {0}", currentScoreHolder.PeakShapeScore));
-                            if (targetComposition != null)
-                            {
-                                Trace.WriteLine(String.Format("        isotopicScore:  {0}", currentScoreHolder.IsotopicScore));
-                            }
-                            Trace.WriteLine("");
 
                             scoresTable.Add(featureBlob, currentScoreHolder);
                         }
-                        Trace.WriteLine("");
 
                         // 2st round filtering: filter out non target peaks and noise. 
                         Predicate<FeatureBlob> intensityThreshold = blob => FeatureFilters.FilterLowIntensity(blob, scoresTable[blob].IntensityScore, this.Parameters.IntensityThreshold);
+
+                        featureBlobs.RemoveAll(intensityThreshold);
+
+                        // Print out candidate features that pass the intensity threshold.
+                        foreach (var featureBlob in featureBlobs)
+                        {  
+                            FeatureScoreHolder currentScoreHolder = scoresTable[featureBlob];
+                            Trace.WriteLine(String.Format("    Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
+                            Trace.WriteLine(String.Format("        IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
+                            Trace.WriteLine(String.Format("        peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
+                            if (targetComposition != null)
+                            {
+                                Trace.WriteLine(String.Format("        isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
+                            }
+                            Trace.WriteLine("");
+                        }
+                         
                         Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
                         Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicFitScoreThreshold);
-                        featureBlobs.RemoveAll(intensityThreshold);
+                        
                         featureBlobs.RemoveAll(shapeThreshold);
                         if (targetComposition != null)
                         {
@@ -279,7 +286,9 @@ namespace ImsInformed.Util
                         }
                         else 
                         {
-                            Trace.WriteLine(String.Format("Nothing is found in voltage group {0:F2} V", voltageGroup.MeanVoltageInVolts));
+                            Trace.WriteLine(String.Format("(All features were rejected in voltage group {0:F4} V)", voltageGroup.MeanVoltageInVolts));
+                            Trace.WriteLine("");
+                            Trace.WriteLine("");
 
                             // Select the one of the better features from the features rejected to represent the voltage group.
                             ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDependentLikelihoodFunction;
@@ -300,7 +309,7 @@ namespace ImsInformed.Util
 
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
-                        Trace.WriteLine("Target Ion not found in this UIMF file");
+                        Trace.WriteLine("Conclude target Ion not found in this dataset");
                         informedResult.AnalysisStatus = AnalysisStatus.NEG;
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
@@ -417,19 +426,19 @@ namespace ImsInformed.Util
                             // Normalize the drift time to be displayed.
                             informedResult.LastVoltageGroupAverageDriftTime = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
 
-                            Trace.WriteLine(String.Format("Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));
-                            Trace.WriteLine(String.Format("Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
-                            Trace.WriteLine(String.Format("Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.x * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
-                            
-                            Trace.WriteLine(String.Format("Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
-                            Trace.WriteLine(String.Format("VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
-                            Trace.WriteLine(String.Format("IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
+                            Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));
+                            Trace.WriteLine(String.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
+                            Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.x * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
+                                                                   
+                            Trace.WriteLine(String.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
+                            Trace.WriteLine(String.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
+                            Trace.WriteLine(String.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
                             if (targetComposition != null)
                             {
-                                Trace.WriteLine(String.Format("IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
+                                Trace.WriteLine(String.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
                             }
 
-                            Trace.WriteLine(String.Format("PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
+                            Trace.WriteLine(String.Format("        PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
                             Trace.WriteLine(string.Empty);
                         }
 

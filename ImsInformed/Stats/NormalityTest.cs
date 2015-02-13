@@ -47,12 +47,15 @@ namespace ImsInformed.Stats
         /// <param name="numberOfSamples">
         /// The number of samples.
         /// </param>
+        /// <param name="globalMaxIntensities">
+        /// The global Max Intensities.
+        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double PeakNormalityTest(double[] peak, NormalityTestFunc normalityTestFunc, int numberOfSamples)
+        public static double PeakNormalityTest(double[] peak, NormalityTestFunc normalityTestFunc, int numberOfSamples, double globalMaxIntensities)
         {
-            double[] peakRandomVar = PeakToRandomVariable(peak, numberOfSamples);
+            double[] peakRandomVar = PeakToRandomVariable(peak, numberOfSamples, globalMaxIntensities);
             if (peakRandomVar == null)
             {
                 return 0;
@@ -115,14 +118,15 @@ namespace ImsInformed.Stats
         /// <param name="numberOfSamples">
         /// The number of samples.
         /// </param>
+        /// <param name="globalMaxIntensities"></param>
         /// <returns>
         /// The <see cref="int[]"/>.
         /// </returns>
-        public static double[] PeakToRandomVariable(double[] peakDescriptor, int numberOfSamples)
+        public static double[] PeakToRandomVariable(double[] peakDescriptor, int numberOfSamples, double globalMaxIntensities)
         {
             double sum = peakDescriptor.Sum();
 
-            if (sum == 0)
+            if (sum < globalMaxIntensities * 0.0001)
             {
                 return null;
             }

@@ -201,6 +201,7 @@ namespace ImsInformedTests
         {
             // Good BPS data
             double mz = 249.02160599;
+            mz = 399;
             string uimfFile = DirectInjectionMoleculeTest.Bps;
 
             // Acetaminophen
@@ -378,7 +379,7 @@ namespace ImsInformedTests
                  203, 503, 477, 621, 710, 581, 554, 329, 480, 382
             };
 
-            result = NormalityTest.PeakNormalityTest(sampleTypical, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(sampleTypical, normalityTestFunc, sampleSize, 10000);
             Console.WriteLine("sampleTypical: " + result);
 
             double[] sampleActualPeak = 
@@ -386,7 +387,7 @@ namespace ImsInformedTests
                  0.203, 0.382, 0.477, 0.48, 0.54, 0.62, 0.54, 0.48, 0.382, 0.203
             };
 
-            result = NormalityTest.PeakNormalityTest(sampleActualPeak, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(sampleActualPeak, normalityTestFunc, sampleSize, 100);
             Console.WriteLine("sampleActualPeak: " + result);
 
             // Subjective shapes
@@ -398,7 +399,7 @@ namespace ImsInformedTests
                  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
             };
 
-            result = NormalityTest.PeakNormalityTest(sampleAll1s, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(sampleAll1s, normalityTestFunc, sampleSize, 100);
             Console.WriteLine("sampleAll1s: " + result);
             
             double[] sampleAll0s =
@@ -406,7 +407,7 @@ namespace ImsInformedTests
                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             };
 
-            result = NormalityTest.PeakNormalityTest(sampleAll0s, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(sampleAll0s, normalityTestFunc, sampleSize, 100);
             Console.WriteLine("sampleAll0s: " + result);
 
             double[] smallSample =
@@ -414,7 +415,7 @@ namespace ImsInformedTests
                  0, 1, 0
             };
 
-            result = NormalityTest.PeakNormalityTest(smallSample, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(smallSample, normalityTestFunc, sampleSize, 100);
             Console.WriteLine("smallSample: " + result);
 
             // Bad shaped peaks
@@ -426,7 +427,7 @@ namespace ImsInformedTests
                   0.203, 0.382, 200, 1, 0.54, 200, 0, 0.48, 0.382, 0.203
             };
 
-            result = NormalityTest.PeakNormalityTest(doublePeak, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(doublePeak, normalityTestFunc, sampleSize, 100);
             Console.WriteLine("doublePeak: " + result);
 
             double[] kindaLikeNoise =
@@ -434,7 +435,7 @@ namespace ImsInformedTests
                  0.203, 0.503, 0.477, 0.621, 0.710, 200, 0.554, 0.329, 0.480, 0.382
             };
 
-            result = NormalityTest.PeakNormalityTest(kindaLikeNoise, normalityTestFunc, sampleSize);
+            result = NormalityTest.PeakNormalityTest(kindaLikeNoise, normalityTestFunc, sampleSize, 100);
             Console.WriteLine("kindaLikeNoise: " + result);
         }
 
@@ -568,7 +569,7 @@ namespace ImsInformedTests
                             theoreticalIsotopicProfilePeakList, 
                             voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz);
+                    double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity);
                     
                     // Report all features.
                     Console.WriteLine(" feature found at scan number {0}", featureBlob.Statistics.ScanImsRep);

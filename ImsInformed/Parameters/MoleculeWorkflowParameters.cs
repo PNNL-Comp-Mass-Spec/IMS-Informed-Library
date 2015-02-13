@@ -22,11 +22,12 @@ namespace ImsInformed.Parameters
         public MoleculeWorkflowParameters()
         {
             // default values
-            this.IsotopicFitScoreMax = 0.15;
             this.MassToleranceInPpm = 10;
             this.NumPointForSmoothing = 9;
-            this.ConfidenceThreshold = 0.5;
             this.FeatureFilterLevel = 0.25;
+            this.IntensityThreshold = 0.5;
+            this.PeakShapeThreshold = 0.4;
+            this.IsotopicFitScoreThreshold = 0.4;
         }
 
         /// <summary>
@@ -34,6 +35,19 @@ namespace ImsInformed.Parameters
         /// </summary>
         public double FeatureFilterLevel { get; set; }
 
-        public double ConfidenceThreshold { get; set; }
+        /// <summary>
+        /// Gets or sets the confidence threshold.
+        /// </summary>
+        public double IntensityThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence threshold.
+        /// </summary>
+        public double PeakShapeThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence threshold.
+        /// </summary>
+        public double IsotopicThreshold { get; set; }
     }
 }

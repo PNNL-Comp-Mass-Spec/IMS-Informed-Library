@@ -463,7 +463,7 @@ namespace ImsInformed.Util
                     result.IsotopicFitScore = isotopicFitScore;
 
                     // Filter out bad isotopic fit scores
-                    if (isotopicFitScore > _parameters.IsotopicFitScoreMax && unsaturatedIsotope == 0)
+                    if (isotopicFitScore > _parameters.IsotopicFitScoreThreshold && unsaturatedIsotope == 0)
                     {
                         result.AnalysisStatus = AnalysisStatus.IsotopicFitScoreError;
                         continue;

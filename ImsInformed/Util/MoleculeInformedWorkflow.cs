@@ -256,9 +256,9 @@ namespace ImsInformed.Util
                         Trace.WriteLine("");
 
                         // 2st round filtering: filter out non target peaks and noise. 
-                        Predicate<FeatureBlob> intensityThreshold = blob => FeatureFilters.FilterLowIntensity(blob, scoresTable[blob].IntensityScore);
-                        Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore);
-                        Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore);
+                        Predicate<FeatureBlob> intensityThreshold = blob => FeatureFilters.FilterLowIntensity(blob, scoresTable[blob].IntensityScore, this.Parameters.IntensityThreshold);
+                        Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
+                        Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicFitScoreThreshold);
                         featureBlobs.RemoveAll(intensityThreshold);
                         featureBlobs.RemoveAll(shapeThreshold);
                         if (targetComposition != null)

@@ -13,7 +13,7 @@
         /// <summary>
         /// Gets or sets the isotopic fit score max.
         /// </summary>
-        public double IsotopicFitScoreMax { get; set; }
+        public double IsotopicFitScoreThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the mass tolerance in ppm.

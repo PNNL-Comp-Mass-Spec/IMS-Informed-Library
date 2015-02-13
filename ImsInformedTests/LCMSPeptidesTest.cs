@@ -57,7 +57,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 ScanWindowWidth = 4,
                 NumPointForSmoothing = 9
@@ -84,7 +84,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.2,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -117,7 +117,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 2,
                 NetTolerance = 0.03,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -143,7 +143,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 2,
                 NetTolerance = 0.1,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -169,7 +169,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -208,7 +208,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
-                IsotopicFitScoreMax = 0.2,
+                IsotopicFitScoreThreshold = 0.2,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -254,7 +254,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -267,7 +267,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
-                IsotopicFitScoreMax = 0.2,
+                IsotopicFitScoreThreshold = 0.2,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -450,7 +450,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -462,7 +462,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
-                IsotopicFitScoreMax = 0.2,
+                IsotopicFitScoreThreshold = 0.2,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -642,7 +642,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -785,7 +785,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.2,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -821,7 +821,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -855,7 +855,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };
@@ -882,7 +882,7 @@ namespace ImsInformedTests
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
-                IsotopicFitScoreMax = 0.2,
+                IsotopicFitScoreThreshold = 0.2,
                 MassToleranceInPpm = 30,
                 NumPointForSmoothing = 9
             };

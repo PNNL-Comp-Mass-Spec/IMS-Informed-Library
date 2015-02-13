@@ -12,8 +12,6 @@ namespace ImsInformed.Filters
 {
     using System;
 
-    using ImsInformed.Scoring;
-
     using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
@@ -54,14 +52,29 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterLowIntensity(FeatureBlob feature, double intensityScore)
+        public static bool FilterLowIntensity(FeatureBlob feature, double intensityScore, double intensityThreshold = 0.5)
         {
-            return intensityScore < 0.5;
+            return intensityScore < intensityThreshold;
         }
 
-        public static bool FilterBadPeakShape(FeatureBlob feature, double peakShapeScore)
+        /// <summary>
+        /// The filter bad peak shape.
+        /// </summary>
+        /// <param name="feature">
+        /// The feature.
+        /// </param>
+        /// <param name="peakShapeScore">
+        /// The peak shape score.
+        /// </param>
+        /// <param name="peakShapeThreshold">
+        /// The peak shape t hreshold.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool FilterBadPeakShape(FeatureBlob feature, double peakShapeScore, double peakShapeThreshold = 0.4)
         {
-            return peakShapeScore < 0.4;
+            return peakShapeScore < peakShapeThreshold;
         }
 
 
@@ -77,9 +90,9 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterBadIsotopicProfile(FeatureBlob feature, double isotopicScore)
+        public static bool FilterBadIsotopicProfile(FeatureBlob feature, double isotopicScore, double isotopicThreshold = 0.4)
         {
-            return isotopicScore < 0.4;
+            return isotopicScore < isotopicThreshold;
         }
     }
 }

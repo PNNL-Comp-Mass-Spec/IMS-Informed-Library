@@ -277,7 +277,7 @@ namespace ImsInformedTests
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 10,
                 NumPointForSmoothing = 9
             };
@@ -298,7 +298,7 @@ namespace ImsInformedTests
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {
-                IsotopicFitScoreMax = 0.15,
+                IsotopicFitScoreThreshold = 0.15,
                 MassToleranceInPpm = 10,
                 NumPointForSmoothing = 9
             };

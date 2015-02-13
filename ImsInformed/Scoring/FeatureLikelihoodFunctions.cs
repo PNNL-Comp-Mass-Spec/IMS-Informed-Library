@@ -40,7 +40,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double IntensityIndependentLikelihoodFunction(FeatureScoreHolder featureScores)
         {
-            return featureScores.IsotopicScore* 3 + featureScores.PeakShapeScore;
+            return featureScores.IsotopicScore;
         }
 
         /// <summary>
@@ -56,11 +56,11 @@ namespace ImsInformed.Scoring
         {
             if (featureScores.IsotopicScore != 0)
             {
-                return featureScores.IntensityScore * featureScores.IsotopicScore * featureScores.PeakShapeScore;
+                return 2 * featureScores.IntensityScore + featureScores.IsotopicScore;
             } 
             else 
             {
-                return featureScores.IntensityScore * featureScores.PeakShapeScore; 
+                return featureScores.IntensityScore; 
             }
         }
     }

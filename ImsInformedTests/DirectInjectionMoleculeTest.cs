@@ -454,7 +454,7 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestScoring()
         {
-            string formula = "C12H10O4S2";
+            string formula = "C12H10O4S";
             ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             string fileLocation = Bps;
             Console.WriteLine("BPS:");
@@ -463,7 +463,7 @@ namespace ImsInformedTests
 
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {
-                MassToleranceInPpm = 10,
+                MassToleranceInPpm = 5,
                 NumPointForSmoothing = 9,
                 ScanWindowWidth = 4,
             };
@@ -519,16 +519,17 @@ namespace ImsInformedTests
                 // Peak Find Chromatogram
                 IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
 
-                // 1st round filtering: reject small feature peaks. Fast filtering.
+                // pre-filtering: reject small feature peaks. Fast filtering.
                 featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
 
-                // 2st round filtering: filter out non real peaks and score using isotopic score. 
+                // feature scorings and target selection.
                 FeatureBlob bestFeature = null;
                 FeatureScoreHolder mostLikelyPeakScores;
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;
                 mostLikelyPeakScores.PeakShapeScore = 0;
                 double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
+
                 // Check each XIC Peak found
                 foreach (var featureBlob in featureBlobs)
                 {

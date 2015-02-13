@@ -12,8 +12,11 @@ namespace ImsInformed.Scoring
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using ImsInformed.Domain;
+
+    using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
     /// The score util.
@@ -41,7 +44,7 @@ namespace ImsInformed.Scoring
         /// The b.
         /// </param>
         /// <param name="likelihoodFunc">
-        /// The likelyhood Func.
+        /// The likelihood Func.
         /// </param>
         /// <returns>
         /// The <see cref="int"/>.
@@ -70,6 +73,42 @@ namespace ImsInformed.Scoring
         {
             int result = CompareFeatureScore(a, b, likelihoodFunc);
             return result > 0;
+        }
+
+        /// <summary>
+        /// The select most likely feature.
+        /// </summary>
+        /// <param name="scores">
+        /// The scores.
+        /// </param>
+        /// <param name="likelihoodFunc">
+        /// The likelihood func.
+        /// </param>
+        /// <returns>
+        /// The <see cref="FeatureBlob"/>.
+        /// </returns>
+        public static FeatureBlob SelectMostLikelyFeature(IDictionary<FeatureBlob, FeatureScoreHolder> scores, LikelihoodFunc likelihoodFunc)
+        {
+            // Select the feature with the highest isotopic score
+            FeatureBlob bestFeature = null;
+            FeatureScoreHolder mostLikelyPeakScores;
+            mostLikelyPeakScores.IntensityScore = 0;
+            mostLikelyPeakScores.IsotopicScore = 0;
+            mostLikelyPeakScores.PeakShapeScore = 0;
+
+            foreach (var featureBlob in scores.Keys)
+            {
+                FeatureScoreHolder currentScoreHolder = scores[featureBlob];
+            
+                // Evaluate feature scores.
+                if (MoreLikelyThan(currentScoreHolder, mostLikelyPeakScores, likelihoodFunc))
+                {
+                    bestFeature = featureBlob;
+                    mostLikelyPeakScores = currentScoreHolder;
+                }
+            }
+
+            return bestFeature;
         }
 
         /// <summary>

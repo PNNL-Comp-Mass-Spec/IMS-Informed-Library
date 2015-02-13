@@ -57,16 +57,6 @@ namespace ImsInformed.Scoring
         {
             // Sort features by relative intensity
             FeatureBlobStatistics statistics = featureBlob.Statistics;
-            int scanImsRep = statistics.ScanImsRep;
-
-            // Nullify the intensity score if the Scan is in unwanted areas.
-            int errorMargin = (int)Math.Round(workflow.NumberOfScans * 0.01);
-            if (scanImsRep < errorMargin || scanImsRep > workflow.NumberOfScans - errorMargin)
-            {
-                return 0;
-            }
-
-            // sum the intensities
             double summedIntensities = statistics.SumIntensities;
             
             // normalize the score
@@ -319,13 +309,27 @@ namespace ImsInformed.Scoring
             double cosine = dot / Math.Sqrt(theoreticalLength * observedLength);
             return (Math.PI / 2  - Math.Acos(cosine)) / (Math.PI / 2);
         }
+
+        /// <summary>
+        /// The pearson correlation.
+        /// </summary>
+        /// <param name="observedIsotopicPeakList">
+        /// The observed isotopic peak list.
+        /// </param>
+        /// <param name="actualIsotopicPeakList">
+        /// The actual isotopic peak list.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         private static double PearsonCorrelation(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
         {
             // calculate angle between two isotopic vectors in the isotopic space
             IEnumerable<double> actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height);
             return Correlation.Pearson(actualIsotopicPeakListArray, observedIsotopicPeakList);
         }
-                /// <summary>
+        
+        /// <summary>
         /// The bhattacharyya distance.
         /// </summary>
         /// <param name="observedIsotopicPeakList">
@@ -393,43 +397,6 @@ namespace ImsInformed.Scoring
             }
 
             return sum;
-        }
-
-        /// <summary>
-        /// The real peak score.
-        /// </summary>
-        /// <param name="workflow">
-        /// The workflow.
-        /// </param>
-        /// <param name="bestFeature">
-        /// The best feature.
-        /// </param>
-        /// <param name="globalMaxIntensities">
-        /// The global max intensities.
-        /// </param>
-        /// <returns>
-        /// The <see cref="double"/>.
-        /// </returns>
-        public static double RealPeakScore(InformedWorkflow workflow, FeatureBlob bestFeature, double globalMaxIntensities)
-        {
-            if (bestFeature == null)
-            {
-                return 0;
-            }
-
-            double featureMaxIntensity = bestFeature.Statistics.IntensityMax;
-            if (featureMaxIntensity * 10 >= globalMaxIntensities)
-            {
-                return 1;
-            } 
-            else if (featureMaxIntensity <= 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return featureMaxIntensity * 10 / globalMaxIntensities;
-            }
         }
 
         /// <summary>

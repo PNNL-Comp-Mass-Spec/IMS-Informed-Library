@@ -501,9 +501,6 @@ namespace ImsInformedTests
             var uimfReader = new DataReader(fileLocation);
             Console.WriteLine("Input file: {0}", fileLocation);
             VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, sample.TargetMz, parameters);
-            
-            // Because we can't delete keys while iterating over a dictionary, and thus removalList
-            List<VoltageGroup> removaList = new List<VoltageGroup>();
 
             Console.WriteLine();
 
@@ -574,7 +571,7 @@ namespace ImsInformedTests
                     double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz);
                     
                     // Report all features.
-                    Console.WriteLine(" feature found at scan number {0} (offset: {1})", featureBlob.Statistics.ScanImsRep, featureBlob.Statistics.ScanImsRepOffset);
+                    Console.WriteLine(" feature found at scan number {0}", featureBlob.Statistics.ScanImsRep);
                     Console.WriteLine("     IntensityScore: {0}", intensityScore);
                     Console.WriteLine("     peakShapeScore: {0}", peakShapeScore);
                     Console.WriteLine("     isotopicScore - Angle:    {0}", isotopicScoreAngle);

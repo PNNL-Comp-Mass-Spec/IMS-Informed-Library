@@ -183,8 +183,12 @@ namespace ImsInformed.Scoring
             
             int scanNumber = statistics.ScanImsRep;
             List<double> observedIsotopicPeakList = new List<double>();
+
+            int totalIsotopicIndex = isotopicPeakList.Count;
+            int[] isotopicIndexMask = new int[totalIsotopicIndex];
+
             // Find an unsaturated peak in the isotopic profile
-            for (int i = 0; i < isotopicPeakList.Count; i++)
+            for (int i = 0; i < totalIsotopicIndex; i++)
             {
                 // Isotopic Mz
                 double Mz = isotopicPeakList[i].XValue;
@@ -205,14 +209,18 @@ namespace ImsInformed.Scoring
                 foreach (var point in peakList)
                 {
                     sumIntensities += point.Intensity;
+                    if (point.IsSaturated)
+                    {
+                        isotopicIndexMask[i] = 1;
+                    }
                 }
 
                 sumIntensities /= voltageGroup.AccumulationCount;
                 observedIsotopicPeakList.Add(sumIntensities);
             }
 
-            // If nothing is found get out
-            if (observedIsotopicPeakList.Count < 1)
+            // If the unsaturated isotopes are below a certain threshold
+            if (totalIsotopicIndex - isotopicIndexMask.Sum() <= 1)
             {
                 return 0;
             }

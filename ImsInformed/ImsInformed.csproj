@@ -100,7 +100,7 @@
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
     <Compile Include="Scoring\AnalysisScoresHolder.cs" />
-    <Compile Include="Scoring\FeatureLikelihoodFunctions.cs" />
+    <Compile Include="Scoring\TargetPresenceLikelihoodFunctions.cs" />
     <Compile Include="Scoring\FeatureScores.cs" />
     <Compile Include="Scoring\FeatureScoreHolder.cs" />
     <Compile Include="Scoring\IsotopicScoreMethod.cs" />

@@ -456,9 +456,10 @@ namespace ImsInformedTests
         public void TestScoring()
         {
             string formula = "C12H10O4S";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             string fileLocation = Bps;
-            Console.WriteLine("BPS:");
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            
+            Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("Composition: " + sample.Composition);
             Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
 

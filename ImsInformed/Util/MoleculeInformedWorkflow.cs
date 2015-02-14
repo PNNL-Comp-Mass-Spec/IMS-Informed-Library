@@ -490,11 +490,11 @@ namespace ImsInformed.Util
                 informedResult.AnalysisStatus = AnalysisStatus.ERR;
                 informedResult.Mobility = -1;
                 informedResult.CrossSectionalArea = -1;
-                informedResult.AnalysisScoresHolder.AnalysisScore = -1;
-                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore = -1;
-                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore = -1;
-                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore = -1;
-                informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = -1;
+                informedResult.AnalysisScoresHolder.AnalysisScore = 0;
+                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore = 0;
+                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore = 0;
+                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore = 0;
+                informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = 0;
                 informedResult.LastVoltageGroupAverageDriftTime = -1;
                 return informedResult;
             }

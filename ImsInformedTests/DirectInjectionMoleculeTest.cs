@@ -256,7 +256,7 @@ namespace ImsInformedTests
         [Test]
         public void TestFileNotFound()
         {
-                        // Good BPS data
+            // Good BPS data
             double mz = 273.0192006876;
             string uimfFile = "blablabla";
 
@@ -453,9 +453,149 @@ namespace ImsInformedTests
         /// The test scoring.
         /// </summary>
         [Test][STAThread]
+        public void TestFormulaPerturbance()
+        {
+            List<string> formulas = new List<string>();
+            // truth
+            formulas.Add("C12H10O4S");
+            formulas.Add("C12H11O4S");
+            formulas.Add("C12H12O4S");
+            formulas.Add("C12H13O4S");
+            formulas.Add("C12H14O4S");
+            formulas.Add("C12H15O4S");
+            formulas.Add("C12H16O4S");
+            formulas.Add("C12H9O4S ");
+            formulas.Add("C12H8O4S ");
+            formulas.Add("C12H7O4S ");
+            formulas.Add("C12H6O4S ");
+            foreach (var form in formulas)
+            {
+                bool found = false;
+                string formula = form;
+                string fileLocation = Bps;
+                ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+                
+                MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
+                {
+                    MassToleranceInPpm = 5,
+                    NumPointForSmoothing = 9,
+                    ScanWindowWidth = 4,
+                };
+
+                var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
+
+                MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
+
+                // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
+                Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(sample.Composition, sample.IonizationType);
+                targetComposition = MoleculeUtil.IonizationCompositionDecompensation(targetComposition, IonizationMethod.ProtonPlus);
+
+                // Setup target object
+                if (targetComposition != null) 
+                {
+                    // Because Ion class from Informed Proteomics assumes adding a proton, that's the reason for decompensation
+                    Ion targetIon = new Ion(targetComposition, 1);
+                    sample.TargetMz = targetIon.GetMonoIsotopicMz();
+                } 
+                
+                // Generate Theoretical Isotopic Profile
+                List<Peak> theoreticalIsotopicProfilePeakList = null;
+                if (targetComposition != null) 
+                {
+                    string empiricalFormula = targetComposition.ToPlainString();
+                    var theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
+                    IsotopicProfile theoreticalIsotopicProfile = theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                    theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
+                }
+                
+                // Generate VoltageSeparatedAccumulatedXICs
+                var uimfReader = new DataReader(fileLocation);
+                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, sample.TargetMz, parameters);
+
+                var voltageGroup = accumulatedXiCs.Keys.First();
+                // Smooth Chromatogram
+                IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
+                smoother.Smooth(ref pointList);
+                
+                // Peak Find Chromatogram
+                IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
+
+                // pre-filtering: reject small feature peaks. Fast filtering.
+                featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
+
+                // feature scorings and target selection.
+                FeatureBlob bestFeature = null;
+                FeatureScoreHolder mostLikelyPeakScores;
+                mostLikelyPeakScores.IntensityScore = 0;
+                mostLikelyPeakScores.IsotopicScore = 0;
+                mostLikelyPeakScores.PeakShapeScore = 0;
+                double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
+
+                // Check each XIC Peak found
+                foreach (var featureBlob in featureBlobs)
+                {
+                    // Evaluate feature scores.
+                    double intensityScore = FeatureScores.IntensityScore(informedWorkflow, featureBlob, voltageGroup, globalMaxIntensity);
+                    
+                    double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.Angle);
+
+                    double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistance);
+
+                    double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation);
+
+                    double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.Bhattacharyya);
+
+                    double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
+                            informedWorkflow, 
+                            sample, 
+                            featureBlob.Statistics, 
+                            theoreticalIsotopicProfilePeakList, 
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative);
+                    
+                    double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity);
+                    
+                    // Report all features.
+                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    {
+                        Console.WriteLine("{0}", isotopicScoreBhattacharyya);
+                        found = true;
+                    }
+                }
+
+                if (!found)
+                {
+                    Console.WriteLine("0");
+                }
+            }
+        }
+
+        /// <summary>
+        /// The test scoring.
+        /// </summary>
+        [Test][STAThread]
         public void TestScoring()
         {
-            string formula = "C12H10O4S";
+            string formula = "C12H11O4S";
             string fileLocation = Bps;
             ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             

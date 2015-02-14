@@ -367,7 +367,7 @@ namespace ImsInformed.Scoring
             }
 
             // Map the score to [0, 1]
-            return Math.Sqrt(isotopicScore);
+            return ScoreUtil.MapToZeroOne(Math.Sqrt(isotopicScore), true, 0.03);
         }
 
         /// <summary>

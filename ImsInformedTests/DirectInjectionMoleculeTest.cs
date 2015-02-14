@@ -159,26 +159,26 @@ namespace ImsInformedTests
             // Nicotine
             // string formula = "C10H14N2";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2Plus, formula);
-            // Console.WriteLine("Nicotine:");
-            // Console.WriteLine("Composition: " + sample.Composition);
-            // Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
             // Console.WriteLine("MZ:   " +  221.0594);
             // string fileLocation = AcetamipridFile;
 
             // Acetamiprid
             // string formula = "C10H11ClN4";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            // Console.WriteLine("Acetamiprid:");
-            // Console.WriteLine("Composition: " + sample.Composition);
-            // Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
             // Console.WriteLine("MZ:   " +  221.0594);
             // string fileLocation = AcetamipridFile;
 
             // BPS Na
-            string formula = "C12H10O4S";
+            // string formula = "C12H10O4S";
+            // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            // string fileLocation = Bps;
+
+            string formula = "C8H18O";
             ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            string fileLocation = DirectInjectionMoleculeTest.Bps;
-            Console.WriteLine("BPS:");
+            string fileLocation = @"\\protoapps\ims08_UIMFs\EXP-2EH_neg2_2Sep14_Columbia_DI.uimf";
+
+
+            Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("Composition: " + sample.Composition);
             Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
 

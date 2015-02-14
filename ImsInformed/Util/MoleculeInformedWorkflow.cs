@@ -292,8 +292,11 @@ namespace ImsInformed.Util
 
                             // Select the one of the better features from the features rejected to represent the voltage group.
                             ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDependentLikelihoodFunction;
-                            voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
-                            voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
+                            if (voltageGroup.BestFeature != null)
+                            {
+                                voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
+                                voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
+                            }
                             rejectionList.Add(voltageGroup);
                         }
 
@@ -310,7 +313,8 @@ namespace ImsInformed.Util
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
                         informedResult.AnalysisStatus = AnalysisStatus.NEG;
-                        Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
+                        
+
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.AnalysisScore = 0.5; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
@@ -320,6 +324,16 @@ namespace ImsInformed.Util
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(rejectionList);
                         IEnumerable<FeatureScoreHolder> featureScores = rejectionList.Select(x => x.BestFeatureScores);
                         informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
+                        Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
+                        Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
+                        Trace.WriteLine(String.Format("    Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore));
+                        
+                        if (targetComposition != null)
+                        {
+                            Trace.WriteLine(String.Format("    Average Best Feature Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore));
+                        }
+
+                        Trace.WriteLine(String.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore));
                         return informedResult;
                     }
                 

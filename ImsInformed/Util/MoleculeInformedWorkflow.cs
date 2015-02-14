@@ -228,7 +228,7 @@ namespace ImsInformed.Util
                         // Score features
                         IDictionary<FeatureBlob, FeatureScoreHolder> scoresTable = new Dictionary<FeatureBlob, FeatureScoreHolder>();
 
-                        Trace.WriteLine(String.Format("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount));
+                        Trace.WriteLine(String.Format("    Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount));
                         foreach (var featureBlob in featureBlobs)
                         {   
                             FeatureScoreHolder currentScoreHolder;
@@ -254,12 +254,12 @@ namespace ImsInformed.Util
                         foreach (var featureBlob in featureBlobs)
                         {  
                             FeatureScoreHolder currentScoreHolder = scoresTable[featureBlob];
-                            Trace.WriteLine(String.Format("    Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
-                            Trace.WriteLine(String.Format("        IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
-                            Trace.WriteLine(String.Format("        peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
+                            Trace.WriteLine(String.Format("        Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
+                            Trace.WriteLine(String.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
+                            Trace.WriteLine(String.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
                             if (targetComposition != null)
                             {
-                                Trace.WriteLine(String.Format("        isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
+                                Trace.WriteLine(String.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
                             }
                             Trace.WriteLine("");
                         }
@@ -286,7 +286,7 @@ namespace ImsInformed.Util
                         }
                         else 
                         {
-                            Trace.WriteLine(String.Format("(All features were rejected in voltage group {0:F4} V)", voltageGroup.MeanVoltageInVolts));
+                            Trace.WriteLine(String.Format("    (All features were rejected in voltage group {0:F4} V)", voltageGroup.MeanVoltageInVolts));
                             Trace.WriteLine("");
                             Trace.WriteLine("");
 
@@ -309,8 +309,8 @@ namespace ImsInformed.Util
 
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
-                        Trace.WriteLine("Conclude target Ion not found in this dataset");
                         informedResult.AnalysisStatus = AnalysisStatus.NEG;
+                        Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.AnalysisScore = 0.5; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
@@ -378,7 +378,7 @@ namespace ImsInformed.Util
                     }
                     else 
                     {
-                        line.LeastSquaresFitLinear(newPoints);
+                        line = new FitLine(newPoints);
                 
                         // Export the fit line into QC oxyplot drawings
                         string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
@@ -408,7 +408,7 @@ namespace ImsInformed.Util
                         double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
 
                         // Initialize the result struct.
-                        informedResult.AnalysisStatus = AnalysisStatus.POS;
+                        informedResult.AnalysisStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.REJ : AnalysisStatus.POS;
                         informedResult.Mobility = mobility;
                         informedResult.CrossSectionalArea = crossSection;
                         informedResult.AnalysisScoresHolder.AnalysisScore = rSquared;
@@ -443,19 +443,20 @@ namespace ImsInformed.Util
                         }
 
                         Trace.WriteLine("Analysis result and metrics");
-                        Trace.WriteLine(String.Format("R Squared {0:F4}", informedResult.AnalysisScoresHolder.AnalysisScore));
-                        Trace.WriteLine(String.Format("Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                        Trace.WriteLine(String.Format("Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore));
+                        Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
+                        Trace.WriteLine(String.Format("    Anaysis score(R^2) {0:F4}", informedResult.AnalysisScoresHolder.AnalysisScore));
+                        Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
+                        Trace.WriteLine(String.Format("    Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore));
                         
                         if (targetComposition != null)
                         {
-                            Trace.WriteLine(String.Format("Average Best Feature Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore));
+                            Trace.WriteLine(String.Format("    Average Best Feature Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore));
                         }
 
-                        Trace.WriteLine(String.Format("Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore));
+                        Trace.WriteLine(String.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore));
 
-                        Trace.WriteLine(String.Format("Mobility: {0:F4} cm^2/(s*V)", informedResult.Mobility));
-                        Trace.WriteLine(String.Format("Cross Sectional Area: {0:F4} Å^2", informedResult.CrossSectionalArea));
+                        Trace.WriteLine(String.Format("    Mobility: {0:F4} cm^2/(s*V)", informedResult.Mobility));
+                        Trace.WriteLine(String.Format("    Cross Sectional Area: {0:F4} Å^2", informedResult.CrossSectionalArea));
 
                         return informedResult;
                     }

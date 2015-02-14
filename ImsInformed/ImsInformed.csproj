@@ -95,6 +95,7 @@
     <Compile Include="Domain\InjectionMethod.cs" />
     <Compile Include="Domain\IonizationMethod.cs" />
     <Compile Include="Domain\MoleculeInformedWorkflowResult.cs" />
+    <Compile Include="Filters\AnalysisFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />

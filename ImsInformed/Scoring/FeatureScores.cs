@@ -179,12 +179,6 @@ namespace ImsInformed.Scoring
             
             int scanNumber = statistics.ScanImsRep;
             List<double> observedIsotopicPeakList = new List<double>();
-            
-            // Return 0 if the intensity sum is really small
-            if (observedIsotopicPeakList.Sum() < globalMaxIntensities * 0.0001)
-            {
-                return 0;
-            }
 
             int totalIsotopicIndex = isotopicPeakList.Count;
             int[] isotopicIndexMask = new int[totalIsotopicIndex];
@@ -219,6 +213,12 @@ namespace ImsInformed.Scoring
 
                 sumIntensities /= voltageGroup.AccumulationCount;
                 observedIsotopicPeakList.Add(sumIntensities);
+            }
+
+            // Return 0 if the intensity sum is really small
+            if (observedIsotopicPeakList.Sum() < globalMaxIntensities * 0.0003)
+            {
+                return 0;
             }
 
             // If the unsaturated isotopes are below a certain threshold

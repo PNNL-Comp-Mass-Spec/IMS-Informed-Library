@@ -227,7 +227,7 @@ namespace ImsInformed.Util
                         // Score features
                         IDictionary<FeatureBlob, FeatureScoreHolder> scoresTable = new Dictionary<FeatureBlob, FeatureScoreHolder>();
 
-                        Trace.WriteLine(String.Format("    Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
+                        Trace.WriteLine(String.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
                         foreach (var featureBlob in featureBlobs)
                         {   
                             FeatureScoreHolder currentScoreHolder;

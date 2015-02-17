@@ -111,7 +111,7 @@ namespace ImsInformed.Domain
         public double AverageTofWidthInSeconds {get; private set; }
 
         /// <summary>
-        /// Gets or sets the AverageBestFeatureScores.
+        /// Gets or sets the AverageCandidateTargetScores.
         /// stores ion detection as the following result 
         /// </summary>
         public FeatureScoreHolder BestFeatureScores;

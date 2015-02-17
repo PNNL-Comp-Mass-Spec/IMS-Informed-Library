@@ -168,13 +168,13 @@ namespace ImsInformedTests
             // string fileLocation = AcetamipridFile;
 
             // BPS Na
-            string formula = "C12H10O4S";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            string fileLocation = Bps;
-
-            // string formula = "C8H18O";
+            // string formula = "C12H10O4S";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            // string fileLocation = @"\\protoapps\ims08_UIMFs\EXP-2EH_neg2_2Sep14_Columbia_DI.uimf";
+            // string fileLocation = Bps;
+
+            string formula = "C12H10O4S";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-AAP_pos_12Sep14_Columbia_DI.uimf";
 
 
             Console.WriteLine("Dataset: {0}", fileLocation);
@@ -199,8 +199,8 @@ namespace ImsInformedTests
         public void TestSingleMoleculeMzOnly()
         {
             // Good BPS data
-            double mz = 249.02160599;
-            string uimfFile = DirectInjectionMoleculeTest.Bps;
+            // double mz = 249.02160599;
+            // string uimfFile = DirectInjectionMoleculeTest.Bps;
 
             // Acetaminophen
             // double mz = 150.0555008;
@@ -215,8 +215,8 @@ namespace ImsInformedTests
             // string uimfFile = NicoFile;
 
             // AcetamipridFile
-            // double mz = 221.059395;
-            // string uimfFile = AcetamipridFile;
+            double mz = 221.059395;
+            string uimfFile = AcetamipridFile;
 
             ImsTarget target= new ImsTarget(1, IonizationMethod.ProtonMinus, mz);
             Console.WriteLine("Nicotine:");
@@ -540,35 +540,40 @@ namespace ImsInformedTests
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Angle);
+                            voltageGroup, IsotopicScoreMethod.Angle,
+                            globalMaxIntensity);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistance);
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistance,
+                            globalMaxIntensity);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation);
+                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation,
+                            globalMaxIntensity);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Bhattacharyya);
+                            voltageGroup, IsotopicScoreMethod.Bhattacharyya,
+                            globalMaxIntensity);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative);
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative,
+                            globalMaxIntensity);
                     
                     double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity);
                     
@@ -678,35 +683,40 @@ namespace ImsInformedTests
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Angle);
+                            voltageGroup, IsotopicScoreMethod.Angle,
+                            globalMaxIntensity);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistance);
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistance,
+                            globalMaxIntensity);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation);
+                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation,
+                            globalMaxIntensity);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Bhattacharyya);
+                            voltageGroup, IsotopicScoreMethod.Bhattacharyya,
+                            globalMaxIntensity);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
                             informedWorkflow, 
                             sample, 
                             featureBlob.Statistics, 
                             theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative);
+                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative,
+                            globalMaxIntensity);
                     
                     double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity);
                     

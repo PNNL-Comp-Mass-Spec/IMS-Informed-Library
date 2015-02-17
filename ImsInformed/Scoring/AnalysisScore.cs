@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AnalysisScore.cs" company="PNNL">
+// <copyright file="RSquared.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the AnalysisScore type.
+//   Defines the RSquared type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 

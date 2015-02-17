@@ -21,7 +21,7 @@ namespace ImsInformed.Scoring
         /// <summary>
         /// The best feature score.
         /// </summary>
-        public FeatureScoreHolder AverageBestFeatureScores;
+        public FeatureScoreHolder AverageCandidateTargetScores;
 
         /// <summary>
         /// The voltage group stability score.
@@ -31,6 +31,6 @@ namespace ImsInformed.Scoring
         /// <summary>
         /// The analysis score.
         /// </summary>
-        public double AnalysisScore;
+        public double RSquared;
     }
 }

@@ -220,10 +220,6 @@ namespace ImsInformed.Util
                             feature.CalculateStatistics();
                         }
 
-                        // filter out features with Ims scans at 1% left or right.
-                        Predicate<FeatureBlob> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
-                        featureBlobs.RemoveAll(scanPredicate);
-
                         // Score features
                         IDictionary<FeatureBlob, FeatureScoreHolder> scoresTable = new Dictionary<FeatureBlob, FeatureScoreHolder>();
 
@@ -238,7 +234,7 @@ namespace ImsInformed.Util
                             currentScoreHolder.IsotopicScore = 0;
                             if (targetComposition != null)
                             {
-                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle);
+                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity);
                             }
 
                             scoresTable.Add(featureBlob, currentScoreHolder);
@@ -247,25 +243,50 @@ namespace ImsInformed.Util
                         // 2st round filtering: filter out non target peaks and noise. 
                         Predicate<FeatureBlob> intensityThreshold = blob => FeatureFilters.FilterLowIntensity(blob, scoresTable[blob].IntensityScore, this.Parameters.IntensityThreshold);
 
-                        featureBlobs.RemoveAll(intensityThreshold);
+                        // filter out features with Ims scans at 1% left or right.
+                        Predicate<FeatureBlob> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
+                        Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
+                        Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicFitScoreThreshold);
 
                         // Print out candidate features that pass the intensity threshold.
                         foreach (var featureBlob in featureBlobs)
                         {  
+                            bool badScanRange = scanPredicate(featureBlob);
+                            bool lowIntenstity = intensityThreshold(featureBlob);
+                            bool badPeakShape = shapeThreshold(featureBlob);
+                            bool lowIsotopicAffinity = isotopeThreshold(featureBlob);
                             FeatureScoreHolder currentScoreHolder = scoresTable[featureBlob];
                             Trace.WriteLine(String.Format("        Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
                             Trace.WriteLine(String.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
-                            Trace.WriteLine(String.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
-                            if (targetComposition != null)
+                            if (!lowIntenstity)
                             {
-                                Trace.WriteLine(String.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
+                                Trace.WriteLine(String.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
+                            
+                                if (targetComposition != null)
+                                {
+                                    Trace.WriteLine(String.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
+                                }
+                            }
+
+                            string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
+                            rejectionReason += lowIntenstity ? "[Low Intensity] " : "";
+                            rejectionReason += !lowIntenstity && badPeakShape ? "[Bad Peak Shape] " : "";
+                            rejectionReason += !lowIntenstity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : "";
+                            if (badScanRange || lowIntenstity || lowIsotopicAffinity || badPeakShape)
+                            {
+                                Trace.WriteLine(rejectionReason);
+                            }
+                            else
+                            {
+                                Trace.WriteLine("        [PASS]");
                             }
                             Trace.WriteLine("");
                         }
-                         
-                        Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
-                        Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicFitScoreThreshold);
                         
+                        featureBlobs.RemoveAll(scanPredicate);
+
+                        featureBlobs.RemoveAll(intensityThreshold);
+
                         featureBlobs.RemoveAll(shapeThreshold);
                         if (targetComposition != null)
                         {
@@ -291,11 +312,12 @@ namespace ImsInformed.Util
 
                             // Select the one of the better features from the features rejected to represent the voltage group.
                             ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDependentLikelihoodFunction;
+                            voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
                             if (voltageGroup.BestFeature != null)
                             {
-                                voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
                                 voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
                             }
+
                             rejectionList.Add(voltageGroup);
                         }
 
@@ -307,6 +329,7 @@ namespace ImsInformed.Util
                     foreach (VoltageGroup voltageGroup in rejectionList)
                     {
                         accumulatedXiCs.Remove(voltageGroup);
+                        // Choose the best feature in the voltage group as the best feature (even if non qualified).
                     }
 
                     if (accumulatedXiCs.Keys.Count < 1)
@@ -316,23 +339,23 @@ namespace ImsInformed.Util
 
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
-                        informedResult.AnalysisScoresHolder.AnalysisScore = 0.5; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
+                        informedResult.AnalysisScoresHolder.RSquared = 0; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
                         informedResult.LastVoltageGroupAverageDriftTime = -1;
 
                         // quantize the VG score from VGs in the removal list.
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(rejectionList);
                         IEnumerable<FeatureScoreHolder> featureScores = rejectionList.Select(x => x.BestFeatureScores);
-                        informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
+                        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                         Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
                         Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                        Trace.WriteLine(String.Format("    Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore));
+                        Trace.WriteLine(String.Format("    Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                         
                         if (targetComposition != null)
                         {
-                            Trace.WriteLine(String.Format("    Average Best Feature Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore));
+                            Trace.WriteLine(String.Format("    Average Best Feature Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
                         }
 
-                        Trace.WriteLine(String.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore));
+                        Trace.WriteLine(String.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
                         return informedResult;
                     }
                 
@@ -382,11 +405,11 @@ namespace ImsInformed.Util
                         informedResult.AnalysisStatus = AnalysisStatus.NSP;
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
-                        informedResult.AnalysisScoresHolder.AnalysisScore = 0;
+                        informedResult.AnalysisScoresHolder.RSquared = 0;
                         informedResult.LastVoltageGroupAverageDriftTime = -1;
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                         IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
-                        informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
+                        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                         return informedResult;
                     }
                     else 
@@ -424,10 +447,10 @@ namespace ImsInformed.Util
                         informedResult.AnalysisStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.REJ : AnalysisStatus.POS;
                         informedResult.Mobility = mobility;
                         informedResult.CrossSectionalArea = crossSection;
-                        informedResult.AnalysisScoresHolder.AnalysisScore = rSquared;
+                        informedResult.AnalysisScoresHolder.RSquared = rSquared;
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                         IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
-                        informedResult.AnalysisScoresHolder.AverageBestFeatureScores = FeatureScores.AverageFeatureScores(featureScores);
+                        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                         informedResult.LastVoltageGroupAverageDriftTime = -1;
                 
                         // Printout results
@@ -457,16 +480,16 @@ namespace ImsInformed.Util
 
                         Trace.WriteLine("Analysis result and metrics");
                         Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
-                        Trace.WriteLine(String.Format("    Anaysis score(R^2) {0:F4}", informedResult.AnalysisScoresHolder.AnalysisScore));
+                        Trace.WriteLine(String.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
                         Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                        Trace.WriteLine(String.Format("    Average Best Feature Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore));
+                        Trace.WriteLine(String.Format("    Average Candidate Target Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                         
                         if (targetComposition != null)
                         {
-                            Trace.WriteLine(String.Format("    Average Best Feature Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore));
+                            Trace.WriteLine(String.Format("    Average Candidate Target Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
                         }
 
-                        Trace.WriteLine(String.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore));
+                        Trace.WriteLine(String.Format("    Average Candidate Target Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
 
                         Trace.WriteLine(String.Format("    Mobility: {0:F4} cm^2/(s*V)", informedResult.Mobility));
                         Trace.WriteLine(String.Format("    Cross Sectional Area: {0:F4} Å^2", informedResult.CrossSectionalArea));
@@ -489,10 +512,10 @@ namespace ImsInformed.Util
                 informedResult.AnalysisStatus = AnalysisStatus.ERR;
                 informedResult.Mobility = -1;
                 informedResult.CrossSectionalArea = -1;
-                informedResult.AnalysisScoresHolder.AnalysisScore = 0;
-                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IntensityScore = 0;
-                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.IsotopicScore = 0;
-                informedResult.AnalysisScoresHolder.AverageBestFeatureScores.PeakShapeScore = 0;
+                informedResult.AnalysisScoresHolder.RSquared = 0;
+                informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore = 0;
+                informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore = 0;
+                informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore = 0;
                 informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = 0;
                 informedResult.LastVoltageGroupAverageDriftTime = -1;
                 return informedResult;

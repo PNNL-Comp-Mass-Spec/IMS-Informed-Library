@@ -94,11 +94,6 @@ namespace ImsInformed.Scoring
             double toleranceInMz = workflow._parameters.MassToleranceInPpm / 1e6 * targetMz;
             int scanWindowSize = workflow._parameters.ScanWindowWidth;
 
-            if ((scanRep - scanWindowSize / 2) < 0 || (scanRep + scanWindowSize / 2) >= (int)workflow.NumberOfScans)
-            {
-                return 0;
-            }
-
             int scanNumberMin = scanRep - scanWindowSize / 2;
             int scanNumberMax = scanRep + scanWindowSize / 2;
                                   
@@ -153,12 +148,13 @@ namespace ImsInformed.Scoring
         /// <param name="selectedMethod">
         /// The selected Method.
         /// </param>
+        /// <param name="globalMaxIntensities"></param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod)
+        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
@@ -183,6 +179,12 @@ namespace ImsInformed.Scoring
             
             int scanNumber = statistics.ScanImsRep;
             List<double> observedIsotopicPeakList = new List<double>();
+            
+            // Return 0 if the intensity sum is really small
+            if (observedIsotopicPeakList.Sum() < globalMaxIntensities * 0.0001)
+            {
+                return 0;
+            }
 
             int totalIsotopicIndex = isotopicPeakList.Count;
             int[] isotopicIndexMask = new int[totalIsotopicIndex];

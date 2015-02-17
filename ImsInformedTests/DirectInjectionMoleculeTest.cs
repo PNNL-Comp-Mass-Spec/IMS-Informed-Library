@@ -165,17 +165,16 @@ namespace ImsInformedTests
             // Acetamiprid
             // string formula = "C10H11ClN4";
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            // Console.WriteLine("MZ:   " +  221.0594);
             // string fileLocation = AcetamipridFile;
 
             // BPS Na
-            // string formula = "C12H10O4S";
-            // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            // string fileLocation = Bps;
-
-            string formula = "C8H18O";
+            string formula = "C12H10O4S";
             ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            string fileLocation = @"\\protoapps\ims08_UIMFs\EXP-2EH_neg2_2Sep14_Columbia_DI.uimf";
+            string fileLocation = Bps;
+
+            // string formula = "C8H18O";
+            // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            // string fileLocation = @"\\protoapps\ims08_UIMFs\EXP-2EH_neg2_2Sep14_Columbia_DI.uimf";
 
 
             Console.WriteLine("Dataset: {0}", fileLocation);
@@ -201,7 +200,6 @@ namespace ImsInformedTests
         {
             // Good BPS data
             double mz = 249.02160599;
-            mz = 399;
             string uimfFile = DirectInjectionMoleculeTest.Bps;
 
             // Acetaminophen

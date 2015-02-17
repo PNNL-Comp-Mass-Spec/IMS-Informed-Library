@@ -198,7 +198,6 @@ namespace ImsInformed.Util
                     VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz, _parameters);
 
                     // For each voltage, find 2D XIC features 
-
                     Trace.WriteLine("Feature detection and scoring: ");
                     IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
@@ -228,7 +227,7 @@ namespace ImsInformed.Util
                         // Score features
                         IDictionary<FeatureBlob, FeatureScoreHolder> scoresTable = new Dictionary<FeatureBlob, FeatureScoreHolder>();
 
-                        Trace.WriteLine(String.Format("    Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount));
+                        Trace.WriteLine(String.Format("    Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
                         foreach (var featureBlob in featureBlobs)
                         {   
                             FeatureScoreHolder currentScoreHolder;

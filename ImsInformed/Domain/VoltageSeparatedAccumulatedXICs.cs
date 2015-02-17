@@ -24,7 +24,7 @@ namespace ImsInformed.Domain
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
             
             VoltageGroup currentVoltageGroup = new VoltageGroup(1);
-            for (int i = 1; i < frameNum; i++)
+            for (int i = 1; i <= frameNum; i++)
             {
                 FrameParams param = uimfReader.GetFrameParams(i);
                 double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage);

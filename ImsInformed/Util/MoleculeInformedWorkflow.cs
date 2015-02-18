@@ -398,7 +398,7 @@ namespace ImsInformed.Util
                     }
                 
                     // If not enough points
-                    bool sufficientPoints = newPoints.Count >= 3;
+                    bool sufficientPoints = newPoints.Count >= this.Parameters.MinFitPoints;
                     if (!sufficientPoints)
                     {
                         Trace.WriteLine("Not enough points are qualified to perform linear fit. Abort identification.");

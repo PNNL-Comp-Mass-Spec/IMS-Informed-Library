@@ -25,9 +25,10 @@ namespace ImsInformed.Parameters
             this.MassToleranceInPpm = 10;
             this.NumPointForSmoothing = 9;
             this.FeatureFilterLevel = 0.25;
-            this.IntensityThreshold = 0.5;
+            this.IntensityThreshold = 0.4;
             this.PeakShapeThreshold = 0.4;
             this.IsotopicFitScoreThreshold = 0.4;
+            this.MinFitPoints = 4;
         }
 
         /// <summary>
@@ -49,5 +50,10 @@ namespace ImsInformed.Parameters
         /// Gets or sets the confidence threshold.
         /// </summary>
         public double IsotopicThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confidence threshold.
+        /// </summary>
+        public double MinFitPoints { get; set; }
     }
 }

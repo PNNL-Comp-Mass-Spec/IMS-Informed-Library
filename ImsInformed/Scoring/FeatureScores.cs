@@ -59,6 +59,9 @@ namespace ImsInformed.Scoring
             FeatureBlobStatistics statistics = featureBlob.Statistics;
             double summedIntensities = statistics.SumIntensities;
             
+            // Divide intensities by accumulation (If summing instead of averaging is used)
+            // summedIntensities /= voltageGroup.AccumulationCount;
+
             // normalize the score
             return ScoreUtil.MapToZeroOne(summedIntensities, false, globalMaxIntensity / 3);
         }

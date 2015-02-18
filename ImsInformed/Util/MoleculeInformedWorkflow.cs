@@ -11,7 +11,6 @@
 namespace ImsInformed.Util
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
@@ -31,8 +30,6 @@ namespace ImsInformed.Util
     using InformedProteomics.Backend.Data.Composition;
 
     using MultiDimensionalPeakFinding.PeakDetection;
-
-    using PNNLOmics.Data.Features;
 
     /// <summary>
     /// Find molecules with a known formula and know ionization methods. metabolites and pipetides alike.

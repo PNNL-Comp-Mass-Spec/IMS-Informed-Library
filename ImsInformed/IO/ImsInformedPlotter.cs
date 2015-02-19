@@ -34,6 +34,15 @@ namespace ImsInformed.IO
     /// </summary>
     public class ImsInformedPlotter
     {
+        /// <summary>
+        /// The mobility fit line 2 png.
+        /// </summary>
+        /// <param name="outputPath">
+        /// The output path.
+        /// </param>
+        /// <param name="line">
+        /// The line.
+        /// </param>
         [STAThread]
         public static void MobilityFitLine2PNG(string outputPath, FitLine line)
         {

@@ -25,7 +25,7 @@ namespace ImsInformed.Parameters
             this.MassToleranceInPpm = 10;
             this.NumPointForSmoothing = 9;
             this.FeatureFilterLevel = 0.25;
-            this.IntensityThreshold = 0.4;
+            this.IntensityThreshold = 0.05;
             this.PeakShapeThreshold = 0.4;
             this.IsotopicFitScoreThreshold = 0.4;
             this.MinFitPoints = 4;

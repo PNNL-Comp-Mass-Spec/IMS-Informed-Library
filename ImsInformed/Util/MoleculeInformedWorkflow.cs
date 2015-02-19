@@ -18,6 +18,7 @@ namespace ImsInformed.Util
     using System.Linq;
 
     using DeconTools.Backend.Core;
+    using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain;
     using ImsInformed.Filters;
@@ -414,7 +415,7 @@ namespace ImsInformed.Util
                     {
                         if (!point.IsOutlier)
                         {
-                            newPoints.Add(point);
+                            newPoints.Add(point.Clone());
                         }
                     }
                 
@@ -435,18 +436,18 @@ namespace ImsInformed.Util
                     }
                     else 
                     {
-                        var newLine = new FitLine(newPoints);
-                
+                        line = new FitLine(newPoints);
+                        line.PointCollection = fitPointsWithOutliers;
                         // Export the fit line into QC oxyplot drawings
                         string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
                         ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
                         Console.WriteLine("Writes QC plot of fitline to " + outputPath);
                         Trace.WriteLine(string.Empty);
                 
-                        double rSquared = newLine.RSquared;
+                        double rSquared = line.RSquared;
                 
                         // Compute mobility and cross section area
-                        double mobility = driftTubeLength * driftTubeLength / (1 / newLine.Slope);
+                        double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
                         Composition bufferGas = new Composition(0, 0, 2, 0, 0);
                         double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
                         

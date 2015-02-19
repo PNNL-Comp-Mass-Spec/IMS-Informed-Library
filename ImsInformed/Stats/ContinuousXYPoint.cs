@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ImsInformed.Stats
 {
+    [Serializable]
     public class ContinuousXYPoint
     {
         public double x { get; protected set; }

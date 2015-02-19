@@ -172,9 +172,9 @@ namespace ImsInformedTests
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             // string fileLocation = Bps;
 
-            string formula = "C18H12Cl2N2O";
+            string formula = "C11H13NO4";
             ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\TunningSampels\EXP-BAD_neg_13Oct14_Columbia_DI.uimf";
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-BND_neg_26Aug14_Columbia_DI.uimf";
 
 
             Console.WriteLine("Dataset: {0}", fileLocation);
@@ -186,7 +186,7 @@ namespace ImsInformedTests
                 MassToleranceInPpm = 10,
                 NumPointForSmoothing = 9,
                 ScanWindowWidth = 4,
-                IntensityThreshold = 0,
+                IntensityThreshold = 0.0,
                 IsotopicFitScoreThreshold = 0.4,
                 PeakShapeThreshold = 0.4,
                 MinFitPoints = 3

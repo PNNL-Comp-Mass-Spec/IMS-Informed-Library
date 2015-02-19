@@ -31,7 +31,7 @@
         public int ChargeStateMax { get; set; }
 
         /// <summary>
-        /// Gets or sets the num point for smoothing.
+        /// Gets or sets the number point for smoothing.
         /// </summary>
         public int NumPointForSmoothing { get; set; }
     }

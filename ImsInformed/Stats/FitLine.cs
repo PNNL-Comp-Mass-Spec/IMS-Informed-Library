@@ -37,7 +37,7 @@ namespace ImsInformed.Stats
         /// <summary>
         /// Gets or sets the point collection.
         /// </summary>
-        public HashSet<ContinuousXYPoint> PointCollection { get; protected set; }
+        public HashSet<ContinuousXYPoint> PointCollection { get; set; }
 
         /// <summary>
         /// Gets or sets the intercept.

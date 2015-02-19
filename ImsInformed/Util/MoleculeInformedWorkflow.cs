@@ -376,7 +376,31 @@ namespace ImsInformed.Util
                     }
                 
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    FitLine line = new FitLine(fitPointsWithOutliers);
+                    FitLine line = new FitLine(fitPointsWithOutliers, 3);
+
+                    // Printout results
+                    Trace.WriteLine("Target Identification");
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                    {
+                        // FOR COMPARISON WITH MATT"S RESULT, not terribly important
+                        informedResult.LastVoltageGroupAverageDriftTime = voltageGroup.FitPoint.x * 1000;
+                        // Normalize the drift time to be displayed.
+                        informedResult.LastVoltageGroupAverageDriftTime = MoleculeUtil.NormalizeDriftTime(informedResult.LastVoltageGroupAverageDriftTime, voltageGroup);
+                        Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));
+                        Trace.WriteLine(String.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
+                        Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.x * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
+                                                               
+                        Trace.WriteLine(String.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
+                        Trace.WriteLine(String.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
+                        Trace.WriteLine(String.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
+                        if (targetComposition != null)
+                        {
+                            Trace.WriteLine(String.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
+                        }
+
+                        Trace.WriteLine(String.Format("        PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
+                        Trace.WriteLine(string.Empty);
+                    }
 
                     // Remove the voltage group with outliers
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList())
@@ -411,7 +435,7 @@ namespace ImsInformed.Util
                     }
                     else 
                     {
-                        line = new FitLine(newPoints);
+                        var newLine = new FitLine(newPoints);
                 
                         // Export the fit line into QC oxyplot drawings
                         string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
@@ -419,10 +443,10 @@ namespace ImsInformed.Util
                         Console.WriteLine("Writes QC plot of fitline to " + outputPath);
                         Trace.WriteLine(string.Empty);
                 
-                        double rSquared = line.RSquared;
+                        double rSquared = newLine.RSquared;
                 
                         // Compute mobility and cross section area
-                        double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
+                        double mobility = driftTubeLength * driftTubeLength / (1 / newLine.Slope);
                         Composition bufferGas = new Composition(0, 0, 2, 0, 0);
                         double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
                         
@@ -449,31 +473,6 @@ namespace ImsInformed.Util
                         IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                         informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                         informedResult.LastVoltageGroupAverageDriftTime = -1;
-                
-                        // Printout results
-                        Trace.WriteLine("Target Identification");
-                        foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
-                        {
-                            // FOR COMPARISON WITH MATT"S RESULT, not terribly important
-                            informedResult.LastVoltageGroupAverageDriftTime = voltageGroup.FitPoint.x * 1000;
-                            // Normalize the drift time to be displayed.
-                            informedResult.LastVoltageGroupAverageDriftTime = MoleculeUtil.NormalizeDriftTime(informedResult.Mobility, voltageGroup);
-
-                            Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));
-                            Trace.WriteLine(String.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
-                            Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.x * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
-                                                                   
-                            Trace.WriteLine(String.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
-                            Trace.WriteLine(String.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
-                            Trace.WriteLine(String.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
-                            if (targetComposition != null)
-                            {
-                                Trace.WriteLine(String.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
-                            }
-
-                            Trace.WriteLine(String.Format("        PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
-                            Trace.WriteLine(string.Empty);
-                        }
 
                         Trace.WriteLine("Analysis result and metrics");
                         Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));

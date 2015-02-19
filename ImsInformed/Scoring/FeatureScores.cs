@@ -13,23 +13,16 @@ namespace ImsInformed.Scoring
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Windows.Navigation;
-
-    using InformedProteomics.Backend.Data.Spectrometry;
-
-    using MathNet.Numerics.Integration.Algorithms;
-    using MathNet.Numerics.LinearAlgebra;
-    using MathNet.Numerics.LinearAlgebra.Double;
-    using MathNet.Numerics.LinearAlgebra.Generic;
-    using MathNet.Numerics.Statistics;
 
     using ImsInformed.Domain;
     using ImsInformed.Stats;
     using ImsInformed.Util;
 
-    using MultiDimensionalPeakFinding.PeakDetection;
+    using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Generic;
+    using MathNet.Numerics.Statistics;
 
-    using PNNLOmics.Algorithms.Distance;
+    using MultiDimensionalPeakFinding.PeakDetection;
 
     using UIMFLibrary;
 
@@ -49,7 +42,11 @@ namespace ImsInformed.Scoring
         /// <param name="featureBlob">
         /// The feature blob.
         /// </param>
-        /// <param name="voltageGroup"></param>
+        /// <param name="voltageGroup">
+        /// </param>
+        /// <param name="globalMaxIntensity">
+        /// The global Max Intensity.
+        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
@@ -123,6 +120,15 @@ namespace ImsInformed.Scoring
 
                 averagedPeak[i] /= frames;
                 highestPeak = (averagedPeak[i] > highestPeak) ? averagedPeak[i] : highestPeak;
+            }
+
+            // For peaks with peak width lower than 3, return a peak score of 0
+            // TODO get the intensity threshold here from the noise level instead.
+            if (averagedPeak[scanRep - scanNumberMin] < globalMaxIntensities * 0.0001 
+                || averagedPeak[scanRep - scanNumberMin - 1] < globalMaxIntensities * 0.0001
+                || averagedPeak[scanRep - scanNumberMin + 1] < globalMaxIntensities * 0.0001)
+            {
+                return 0;
             }
 
             // Perform a statistical normality test

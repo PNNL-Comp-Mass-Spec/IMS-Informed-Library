@@ -157,7 +157,7 @@ namespace ImsInformed.Stats
             foreach (ContinuousXYPoint point in this.PointCollection)
             {
                 point.CooksD = CooksDistance(point, SSx, meanX, pointsCount);
-                if (point.CooksD >= 2)
+                if (point.CooksD >= this.OutlierThreshold)
                 {
                     point.IsOutlier = true;
                 }

@@ -11,6 +11,7 @@
 namespace ImsInformed.Scoring
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     using ImsInformed.Domain;
 
@@ -55,6 +56,11 @@ namespace ImsInformed.Scoring
             {
                 count++;
                 averageStabilityScore += ComputeVoltageGroupStabilityScore(group);
+            }
+
+            if (count == 0)
+            {
+                return 0;
             }
 
             averageStabilityScore /= count;

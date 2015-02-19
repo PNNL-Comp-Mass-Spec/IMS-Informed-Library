@@ -403,20 +403,27 @@ namespace ImsInformed.Util
                         Trace.WriteLine(string.Empty);
                     }
 
-                    // Remove the voltage group with outliers
-                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList())
-                    {
-                        accumulatedXiCs.Remove(voltageGroup);
-                    }
-
                     // Mark outliers and compute the fitline without using the outliers.
                     HashSet<ContinuousXYPoint> newPoints = new HashSet<ContinuousXYPoint>();
-                    foreach (ContinuousXYPoint point in fitPointsWithOutliers)
+                    if (accumulatedXiCs.Count > 3)
                     {
-                        if (!point.IsOutlier)
+                        // Remove the voltage group with outliers
+                        foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList())
                         {
-                            newPoints.Add(point.Clone());
+                            accumulatedXiCs.Remove(voltageGroup);
                         }
+
+                        foreach (ContinuousXYPoint point in fitPointsWithOutliers)
+                        {
+                            if (!point.IsOutlier)
+                            {
+                                newPoints.Add(point.Clone());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        newPoints = fitPointsWithOutliers;
                     }
                 
                     // If not enough points

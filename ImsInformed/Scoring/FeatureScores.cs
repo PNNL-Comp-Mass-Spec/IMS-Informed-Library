@@ -462,10 +462,20 @@ namespace ImsInformed.Scoring
                 averageFeatureScores = AddFeatureScores(averageFeatureScores, scoreHolder);
             }
 
-            averageFeatureScores.IntensityScore /= count;
-            averageFeatureScores.IsotopicScore /= count;
-            averageFeatureScores.PeakShapeScore /= count;
-            return averageFeatureScores;
+            if (count == 0)
+            {
+                averageFeatureScores.IntensityScore = 0;
+                averageFeatureScores.IsotopicScore  = 0;
+                averageFeatureScores.PeakShapeScore = 0;
+                return averageFeatureScores;
+            }
+            else
+            {
+                averageFeatureScores.IntensityScore /= count;
+                averageFeatureScores.IsotopicScore /= count;
+                averageFeatureScores.PeakShapeScore /= count;
+                return averageFeatureScores;
+            }
         }
     }
 }

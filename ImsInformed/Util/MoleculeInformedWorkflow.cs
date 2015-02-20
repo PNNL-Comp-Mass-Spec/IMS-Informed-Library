@@ -358,7 +358,7 @@ namespace ImsInformed.Util
                     }
                 
                     // Calculate the fit line from the remaining voltage groups with reliable drift time measurement.
-                    HashSet<ContinuousXYPoint> fitPointsWithOutliers = new HashSet<ContinuousXYPoint>();
+                    HashSet<ContinuousXYPoint> allFitPoints = new HashSet<ContinuousXYPoint>();
                     foreach (VoltageGroup group in accumulatedXiCs.Keys)
                     {
                         // convert drift time to SI unit seconds
@@ -370,26 +370,26 @@ namespace ImsInformed.Util
                          
                         ContinuousXYPoint point = new ContinuousXYPoint(x, y);
 
-                        fitPointsWithOutliers.Add(point);
+                        allFitPoints.Add(point);
 
                         // Add fit point to voltage group
                         group.FitPoint = point;
                     }
                 
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    FitLine line = new FitLine(fitPointsWithOutliers, 3);
+                    FitLine line = new FitLine(allFitPoints);
 
                     // Printout results
                     Trace.WriteLine("Target Identification");
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
                         // FOR COMPARISON WITH MATT"S RESULT, not terribly important
-                        informedResult.LastVoltageGroupAverageDriftTime = voltageGroup.FitPoint.x * 1000;
+                        informedResult.LastVoltageGroupAverageDriftTime = voltageGroup.FitPoint.X * 1000;
                         // Normalize the drift time to be displayed.
                         informedResult.LastVoltageGroupAverageDriftTime = MoleculeUtil.NormalizeDriftTime(informedResult.LastVoltageGroupAverageDriftTime, voltageGroup);
                         Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));
                         Trace.WriteLine(String.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
-                        Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.x * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
+                        Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.X * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
                                                                
                         Trace.WriteLine(String.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
                         Trace.WriteLine(String.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
@@ -403,31 +403,9 @@ namespace ImsInformed.Util
                         Trace.WriteLine(string.Empty);
                     }
 
-                    // Mark outliers and compute the fitline without using the outliers.
-                    HashSet<ContinuousXYPoint> newPoints = new HashSet<ContinuousXYPoint>();
-                    if (accumulatedXiCs.Count > 3)
-                    {
-                        // Remove the voltage group with outliers
-                        foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => p.FitPoint.IsOutlier).ToList())
-                        {
-                            accumulatedXiCs.Remove(voltageGroup);
-                        }
-
-                        foreach (ContinuousXYPoint point in fitPointsWithOutliers)
-                        {
-                            if (!point.IsOutlier)
-                            {
-                                newPoints.Add(point.Clone());
-                            }
-                        }
-                    }
-                    else
-                    {
-                        newPoints = fitPointsWithOutliers;
-                    }
-                
                     // If not enough points
-                    bool sufficientPoints = newPoints.Count >= this.Parameters.MinFitPoints;
+                    int minFitPoints = this.Parameters.MinFitPoints;
+                    bool sufficientPoints = allFitPoints.Count >= minFitPoints;
                     if (!sufficientPoints)
                     {
                         Trace.WriteLine("Not enough points are qualified to perform linear fit. Abort identification.");
@@ -441,65 +419,76 @@ namespace ImsInformed.Util
                         informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                         return informedResult;
                     }
-                    else 
+
+                    // Remove outliers with high influence.
+                    line.RemoveOutliersAboveThreshold(3, minFitPoints);
+
+                    // Remove outliers until min fit point is reached or good R2 is achieved.
+                    while (AnalysisFilter.FilterLowR2(line.RSquared) && line.FitPointCollection.Count > minFitPoints)
                     {
-                        line = new FitLine(newPoints);
-                        line.PointCollection = fitPointsWithOutliers;
-                        // Export the fit line into QC oxyplot drawings
-                        string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
-                        ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
-                        Console.WriteLine("Writes QC plot of fitline to " + outputPath);
-                        Trace.WriteLine(string.Empty);
-                
-                        double rSquared = line.RSquared;
-                
-                        // Compute mobility and cross section area
-                        double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
-                        Composition bufferGas = new Composition(0, 0, 2, 0, 0);
-                        double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
-                        
-                        // Find the average temperature across from various voltage groups.
-                        double globalMeanTemperature = 0;
-                        int frameCount = 0;
-                        foreach (VoltageGroup group in accumulatedXiCs.Keys)
-                        {
-                            double voltageGroupTemperature = UnitConversion.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
-                            globalMeanTemperature += voltageGroupTemperature * group.AccumulationCount;
-                            frameCount += group.AccumulationCount;
-                        }
-                
-                        globalMeanTemperature /= frameCount;
-                
-                        double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
-
-                        // Initialize the result struct.
-                        informedResult.AnalysisStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.REJ : AnalysisStatus.POS;
-                        informedResult.Mobility = mobility;
-                        informedResult.CrossSectionalArea = crossSection;
-                        informedResult.AnalysisScoresHolder.RSquared = rSquared;
-                        informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
-                        IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
-                        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
-                        informedResult.LastVoltageGroupAverageDriftTime = -1;
-
-                        Trace.WriteLine("Analysis result and metrics");
-                        Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
-                        Trace.WriteLine(String.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
-                        Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                        Trace.WriteLine(String.Format("    Average Candidate Target Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
-                        
-                        if (targetComposition != null)
-                        {
-                            Trace.WriteLine(String.Format("    Average Candidate Target Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
-                        }
-
-                        Trace.WriteLine(String.Format("    Average Candidate Target Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
-
-                        Trace.WriteLine(String.Format("    Mobility: {0:F4} cm^2/(s*V)", informedResult.Mobility));
-                        Trace.WriteLine(String.Format("    Cross Sectional Area: {0:F4} Å^2", informedResult.CrossSectionalArea));
-
-                        return informedResult;
+                        line.RemoveOutlierWithHighestCookDistance(minFitPoints);
                     }
+
+                    // Remove the voltage considered outliers
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => line.OutlierCollection.Contains(p.FitPoint)).ToList())
+                    {
+                        accumulatedXiCs.Remove(voltageGroup);
+                    }
+                        
+                    // Export the fit line into QC oxyplot drawings
+                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
+                    ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
+                    Console.WriteLine("Writes QC plot of fitline to " + outputPath);
+                    Trace.WriteLine(string.Empty);
+                
+                    double rSquared = line.RSquared;
+                
+                    // Compute mobility and cross section area
+                    double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
+                    Composition bufferGas = new Composition(0, 0, 2, 0, 0);
+                    double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
+                    
+                    // Find the average temperature across various non outlier voltage groups.
+                    double globalMeanTemperature = 0;
+                    int frameCount = 0;
+                    foreach (VoltageGroup group in accumulatedXiCs.Keys)
+                    {
+                        double voltageGroupTemperature = UnitConversion.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
+                        globalMeanTemperature += voltageGroupTemperature * group.AccumulationCount;
+                        frameCount += group.AccumulationCount;
+                    }
+                
+                    globalMeanTemperature /= frameCount;
+                
+                    double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
+
+                    // Initialize the result struct.
+                    informedResult.AnalysisStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.REJ : AnalysisStatus.POS;
+                    informedResult.Mobility = mobility;
+                    informedResult.CrossSectionalArea = crossSection;
+                    informedResult.AnalysisScoresHolder.RSquared = rSquared;
+                    informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
+                    IEnumerable<FeatureScoreHolder> scores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
+                    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(scores);
+                    informedResult.LastVoltageGroupAverageDriftTime = -1;
+
+                    Trace.WriteLine("Analysis result and metrics");
+                    Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
+                    Trace.WriteLine(String.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
+                    Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
+                    Trace.WriteLine(String.Format("    Average Candidate Target Intensity Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
+                    
+                    if (targetComposition != null)
+                    {
+                        Trace.WriteLine(String.Format("    Average Candidate Target Isotopic Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
+                    }
+
+                    Trace.WriteLine(String.Format("    Average Candidate Target Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
+
+                    Trace.WriteLine(String.Format("    Mobility: {0:F4} cm^2/(s*V)", informedResult.Mobility));
+                    Trace.WriteLine(String.Format("    Cross Sectional Area: {0:F4} Å^2", informedResult.CrossSectionalArea));
+
+                    return informedResult;
                 }
             }
             catch (Exception e)

@@ -662,8 +662,8 @@ namespace ImsInformedTests
                 if (correlationResult == null || !correlationResult.CorrelatedResults.Any()) continue;
 
                 ImsTargetResult result = correlationResult.CorrelatedResults.OrderByDescending(x => x.Intensity).First();
-                //ImsTargetResult result = correlationResult.CorrelatedResults.OrderByDescending(x => x.Intensity * (1 - Math.Abs(x.NormalizedElutionTime - imsTarget.NormalizedElutionTime))).First();
-                //ImsTargetResult result = correlationResult.CorrelatedResults.OrderBy(x => x.NormalizedElutionTime).First();
+                //ImsTargetResult result = correlationResult.CorrelatedResults.OrderByDescending(X => X.Intensity * (1 - Math.Abs(X.NormalizedElutionTime - imsTarget.NormalizedElutionTime))).First();
+                //ImsTargetResult result = correlationResult.CorrelatedResults.OrderBy(X => X.NormalizedElutionTime).First();
 
                 //if (netAlignmentInput.Count == 0 || Math.Abs(netAlignmentInput.Last().Item1 - imsTarget.NormalizedElutionTime) > 0.0001)
                 //{
@@ -682,13 +682,13 @@ namespace ImsInformedTests
             massAlignmentInput = massAlignmentInput.OrderBy(x => x.Item1).ToList();
 
             var groupedNetTuple = netAlignmentInputGroup.Select(x => x.OrderBy(y => Math.Abs(y.Item1 - y.Item2)).First()).ToArray();
-            //var groupedNetTuple = netAlignmentInputGroup.Select(x => x.Average(y => y.Item2)).ToArray();
+            //var groupedNetTuple = netAlignmentInputGroup.Select(X => X.Average(Y => Y.Item2)).ToArray();
             var groupedMassTuple = massAlignmentInputGroup.Select(x => x.First()).ToArray();
 
             var loessInterpolatorForNetAlignment = new LoessInterpolator(0.1, 4);
             var loessInterpolatorForMassAlignment = new LoessInterpolator(0.2, 1);
 
-            //double[] newNetValues = loessInterpolatorForNetAlignment.Smooth(netAlignmentInputGroup.Select(x => x.Key).ToArray(), netAlignmentInputGroup.Select(x => x.Average(y => y.Item2)).ToArray());
+            //double[] newNetValues = loessInterpolatorForNetAlignment.Smooth(netAlignmentInputGroup.Select(X => X.Key).ToArray(), netAlignmentInputGroup.Select(X => X.Average(Y => Y.Item2)).ToArray());
             double[] newNetValues = loessInterpolatorForNetAlignment.Smooth(groupedNetTuple.Select(x => x.Item1).ToArray(), groupedNetTuple.Select(x => x.Item2).ToArray());
             double[] newMassValues = loessInterpolatorForMassAlignment.Smooth(groupedMassTuple.Select(x => x.Item1).ToArray(), groupedMassTuple.Select(x => x.Item2).ToArray());
 
@@ -946,7 +946,7 @@ namespace ImsInformedTests
 
                 // Actual
                 //Random random = new Random();
-                //informedWorkflow.ExtractData(targetList.OrderBy(x => random.Next()).Take(100));
+                //informedWorkflow.ExtractData(targetList.OrderBy(X => random.Next()).Take(100));
                 //informedWorkflow.ExtractData(targetList);
             }
         }

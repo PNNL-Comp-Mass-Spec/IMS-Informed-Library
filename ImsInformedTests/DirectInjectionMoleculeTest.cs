@@ -172,9 +172,9 @@ namespace ImsInformedTests
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             // string fileLocation = Bps;
 
-            string formula = "C10H10Cl2O3";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.SodiumPlus, formula);
-            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-24DB_pos_12Sep14_Columbia_DI.uimf";
+            string formula = "C10H12N3O3PS2";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf";
 
 
             Console.WriteLine("Dataset: {0}", fileLocation);
@@ -249,7 +249,7 @@ namespace ImsInformedTests
             Int32 c =  0x010000000;
             array = BitConverter.GetBytes(c);
             Console.WriteLine("{0:x8} vs {1:x8}", b, c);
-            Console.WriteLine( 0x01 == 0x010000000 );
+            Console.WriteLine(0x01 == 0x010000000);
         }
 
         /// <summary>

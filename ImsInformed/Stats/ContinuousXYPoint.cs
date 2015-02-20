@@ -1,32 +1,74 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ImsInformed.Stats
 {
-    [Serializable]
-    public class ContinuousXYPoint
-    {
-        public double x { get; protected set; }
-        public double y { get; protected set; }
-        public double CooksD { get; set; }
-        public bool IsOutlier { get; set; }
+    using InformedProteomics.Backend.Data.Biology;
 
+    /// <summary>
+    /// The continuous xy point.
+    /// </summary>
+    [Serializable]
+    public class ContinuousXYPoint : IEquatable<ContinuousXYPoint>
+    {
+        /// <summary>
+        /// Gets or sets the X.
+        /// </summary>
+        public double X { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the Y.
+        /// </summary>
+        public double Y { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the cooks d.
+        /// </summary>
+        public double CooksD { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContinuousXYPoint"/> class.
+        /// </summary>
         public ContinuousXYPoint()
         {
-            this.x = 0;
-            this.y = 0;
-            CooksD = 0;
-            IsOutlier = false;
+            this.X = 0;
+            this.Y = 0;
+            this.CooksD = 0;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContinuousXYPoint"/> class.
+        /// </summary>
+        /// <param name="x">
+        /// The X.
+        /// </param>
+        /// <param name="y">
+        /// The Y.
+        /// </param>
         public ContinuousXYPoint(double x, double y)
         {
-            this.x = x;
-            this.y = y;
-            CooksD = 0;
-            IsOutlier = false;
+            this.X = x;
+            this.Y = y;
+            this.CooksD = 0;
+        }
+
+        public bool Equals(ContinuousXYPoint other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return this.X.Equals(other.X) && this.Y.Equals(other.Y);
+        }
+
+        public override bool Equals(object other) 
+        {
+            return this.Equals(other as ContinuousXYPoint);
+        }
+
+        public override int GetHashCode() 
+        {
+            int result = 29;
+            result = result * 13 + this.X.GetHashCode();
+            result = result * 13 + this.Y.GetHashCode();
+            return result;
         }
     }
 }

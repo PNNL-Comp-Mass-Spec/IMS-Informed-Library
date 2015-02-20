@@ -121,7 +121,7 @@ namespace ImsInformed.Scoring
         /// The inverse mapping.
         /// </param>
         /// <param name="ninetyPercentX">
-        /// The x value to map to 0.9. Used to define a "good" score.
+        /// The X value to map to 0.9. Used to define a "good" score.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
@@ -134,12 +134,12 @@ namespace ImsInformed.Scoring
 
             if (inverseMapping)
             {
-                // Solve (Pi/2 - atan(x)) / (PI/2) = 0.9
+                // Solve (Pi/2 - atan(X)) / (PI/2) = 0.9
                 scale = Math.Tan(0.1 * Math.PI / 2) / ninetyPercentX;
             }
             else
             {
-                // Solve atan(x) / (PI/2) = 0.9
+                // Solve atan(X) / (PI/2) = 0.9
                 scale = Math.Tan(0.9 * Math.PI / 2) / ninetyPercentX;
             }
 

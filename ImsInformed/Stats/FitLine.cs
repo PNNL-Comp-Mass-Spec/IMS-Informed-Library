@@ -12,6 +12,12 @@ namespace ImsInformed.Stats
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+
+    using DeconTools.Backend.Utilities;
+
+    using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
     /// The fit line.
@@ -27,17 +33,26 @@ namespace ImsInformed.Stats
         /// <param name="outlierThreshold">
         /// The cook's distance threshold for a point to be identified as outliers.
         /// </param>
-        public FitLine(HashSet<ContinuousXYPoint> fitPoints, double outlierThreshold = 3)
+        public FitLine(IEnumerable<ContinuousXYPoint> fitPoints)
         {
-            this.OutlierThreshold = outlierThreshold;
-            this.PointCollection = fitPoints;
+            this.MSE = 0;
+            this.RSquared = 0;
+            this.Slope = 0;
+            this.Intercept = 0;
+            this.OutlierCollection = new HashSet<ContinuousXYPoint>();
+            this.FitPointCollection = new HashSet<ContinuousXYPoint>();
             this.LeastSquaresFitLinear(fitPoints);
         }
 
         /// <summary>
         /// Gets or sets the point collection.
         /// </summary>
-        public HashSet<ContinuousXYPoint> PointCollection { get; set; }
+        public HashSet<ContinuousXYPoint> FitPointCollection { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the point collection.
+        /// </summary>
+        public HashSet<ContinuousXYPoint> OutlierCollection { get; private set; }
 
         /// <summary>
         /// Gets or sets the intercept.
@@ -60,17 +75,12 @@ namespace ImsInformed.Stats
         public double RSquared { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the outlier threshold.
-        /// </summary>
-        public double OutlierThreshold { get; protected set; }
-
-        /// <summary>
         /// Computes fit line for potential voltage group and writes
         /// </summary>
         /// <param name="xyPoints">
         /// The xy points.
         /// </param>
-        public void LeastSquaresFitLinear(IEnumerable<ContinuousXYPoint> xyPoints)
+        private void LeastSquaresFitLinear(IEnumerable<ContinuousXYPoint> xyPoints)
         {
             int count = 0;
             double meanX = 0;
@@ -79,11 +89,12 @@ namespace ImsInformed.Stats
             double meanXY = 0;
             foreach (ContinuousXYPoint point in xyPoints)
             {
+                this.FitPointCollection.Add(point.Clone());
                 count++;
-                meanX += point.x;
-                meanY += point.y;
-                meanXSquared += point.x * point.x;
-                meanXY += point.x * point.y;
+                meanX += point.X;
+                meanY += point.Y;
+                meanXSquared += point.X * point.X;
+                meanXY += point.X * point.Y;
             }
             meanX = meanX / count;
             meanY = meanY / count;
@@ -110,9 +121,9 @@ namespace ImsInformed.Stats
         /// </exception>
         private double ComputeResiduel(ContinuousXYPoint point)
         {
-            if (this.PointCollection.Contains(point))
+            if (this.FitPointCollection.Contains(point))
             {
-                return Math.Abs(this.ModelPredict(point.x) - point.y);
+                return Math.Abs(this.ModelPredict(point.X) - point.Y);
             }
             else
             {
@@ -124,7 +135,7 @@ namespace ImsInformed.Stats
         /// Return the predicted Y at given X
         /// </summary>
         /// <param name="x">
-        /// The x.
+        /// The X.
         /// </param>
         /// <returns>
         /// the predicted Y at given X <see cref="double"/>.
@@ -134,33 +145,115 @@ namespace ImsInformed.Stats
             return Slope * x + Intercept;    
         }
 
-        // Calculate Cook's distance for all points
+        /// <summary>
+        /// The remove outliers above threshold.
+        /// </summary>
+        /// <param name="CooksDThreshold">
+        /// The cooks d threshold.
+        /// </param>
+        /// <param name="minFitPoints">
+        /// The min fit points.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// </exception>
+        public int RemoveOutliersAboveThreshold(double CooksDThreshold, int minFitPoints)
+        {
+            if (this.FitPointCollection.Count > minFitPoints)
+            {
+                int discretion = this.FitPointCollection.Count - minFitPoints;
+                if (this.FitPointCollection == null)
+                {
+                    throw new InvalidOperationException("Fitline has not been created");
+                }
+
+                foreach (var point in this.FitPointCollection)
+                {
+                    if (discretion < 1)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        if (point.CooksD > CooksDThreshold)
+                        {
+                            this.OutlierCollection.Add(point);
+                            discretion--;
+                        }
+                    }
+                }
+
+                foreach (var point in this.OutlierCollection)
+                {
+                    if (this.FitPointCollection.Contains(point)) 
+                    {
+                        this.FitPointCollection.Remove(point);
+                    }
+                }
+
+                this.LeastSquaresFitLinear(this.FitPointCollection);
+            }
+
+            return this.FitPointCollection.Count;
+        }
+
+        /// <summary>
+        /// The remove outlier with highest cook distance.
+        /// </summary>
+        public int RemoveOutlierWithHighestCookDistance(int minFitPoints)
+        {
+            int size = this.FitPointCollection.Count;
+            if (size >= minFitPoints)
+            {
+                if (size != 0)
+                {
+                    ContinuousXYPoint highestPoint = this.FitPointCollection.First();
+                    double highestCookD = highestPoint.CooksD;
+                    foreach (var point in this.FitPointCollection)
+                    {
+                        if (point.CooksD > highestCookD)
+                        {
+                            highestPoint = point;
+                            highestCookD = point.CooksD;
+                        }
+                    }
+
+                    this.FitPointCollection.Remove(highestPoint);
+                    this.OutlierCollection.Add(highestPoint);
+                }
+
+                this.LeastSquaresFitLinear(this.FitPointCollection);
+            }
+            return this.FitPointCollection.Count;
+        }
+
+        /// <summary>
+        /// Calculate Cook's distance for all points
+        /// </summary>
         private void CalculateCooksDistances()
         {
-            int pointsCount = this.PointCollection.Count;
+            int pointsCount = this.FitPointCollection.Count;
             // calcaulate average X
             double meanX = 0;
-            foreach (ContinuousXYPoint point in this.PointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
-                meanX += point.x;
+                meanX += point.X;
             }
             meanX /= pointsCount;
 
             // Calculate sum of squares / SSx.
             double SSx = 0;
-            foreach (ContinuousXYPoint point in this.PointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
-                SSx += (point.x - meanX) * (point.x - meanX);
+                SSx += (point.X - meanX) * (point.X - meanX);
             }
 
             // hat value = 1/n + (xi - x_bar)^2 / SSx
-            foreach (ContinuousXYPoint point in this.PointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
                 point.CooksD = CooksDistance(point, SSx, meanX, pointsCount);
-                if (point.CooksD >= this.OutlierThreshold)
-                {
-                    point.IsOutlier = true;
-                }
             }
         }
 
@@ -174,7 +267,7 @@ namespace ImsInformed.Stats
         /// The ssh.
         /// </param>
         /// <param name="meanX">
-        /// The mean x.
+        /// The mean X.
         /// </param>
         /// <param name="pointsCount">
         /// The points count.
@@ -190,7 +283,7 @@ namespace ImsInformed.Stats
             double mse = this.CalculateMSE();
             distance = residuel * residuel / p / mse;
             // Get the Hii from the hat matrix
-            double hii = 1.0 / pointsCount + (point.x - meanX) * (point.x - meanX) / ssh;
+            double hii = 1.0 / pointsCount + (point.X - meanX) * (point.X - meanX) / ssh;
             distance = distance * hii / ((1 - hii) * (1 - hii));
             return distance;
         }
@@ -199,34 +292,39 @@ namespace ImsInformed.Stats
         private double CalculateMSE()
         {
             double sum = 0;
-            foreach (ContinuousXYPoint point in this.PointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
                 double residuel = this.ComputeResiduel(point);
                 sum += residuel * residuel;
             }
 
-            return sum / this.PointCollection.Count;
+            return sum / this.FitPointCollection.Count;
         }
 
-        // Calculate R-square(Coefficient of determination)
+        /// <summary>
+        /// Calculate R-square(Coefficient of determination)
+        /// </summary>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         private double CalculateRSquared()
         {
             // Calculate average Y
             double avgY = 0;
-            foreach (ContinuousXYPoint point in this.PointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
-                avgY += point.y;
+                avgY += point.Y;
             }
             
-            avgY /= this.PointCollection.Count;
+            avgY /= this.FitPointCollection.Count;
 
             // Calculate explained sum of squares
             double SSreg = 0;
             double SStot = 0;
-            foreach (ContinuousXYPoint point in this.PointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
                 double residuel1 = this.ComputeResiduel(point);
-                double residuel2 = Math.Abs(avgY - point.y);
+                double residuel2 = Math.Abs(avgY - point.Y);
 
                 SSreg += residuel1 * residuel1;
                 SStot += residuel2 * residuel2;

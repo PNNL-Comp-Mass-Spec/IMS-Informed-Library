@@ -103,24 +103,27 @@ namespace ImsInformed.IO
         /// </returns>
         private static PlotModel MobilityFitLinePlot(FitLine fitline)
         {
-            IEnumerable<ContinuousXYPoint> pointList = fitline.PointCollection;
-            Func<object, ScatterPoint> pointMap = obj => 
+
+            IEnumerable<ContinuousXYPoint> fitPointList = fitline.FitPointCollection;
+            IEnumerable<ContinuousXYPoint> outlierList = fitline.OutlierCollection;
+            Func<object, ScatterPoint> fitPointMap = obj => 
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double size = 5;
                 double color = 0;
-                if (point.IsOutlier)
-                {
-                    color = 1;
-                }
-                else
-                {
-                    color = 0;
-                }
-
-                ScatterPoint sp = new ScatterPoint(point.y, point.x, size, color);
+                ScatterPoint sp = new ScatterPoint(point.Y, point.X, size, color);
                 return sp;
             };
+
+            Func<object, ScatterPoint> OutlierPointMap = obj => 
+            {
+                ContinuousXYPoint point = (ContinuousXYPoint)obj;
+                double size = 5;
+                double color = 1;
+                ScatterPoint sp = new ScatterPoint(point.Y, point.X, size, color);
+                return sp;
+            };
+
             PlotModel model = new PlotModel();
             model.TitlePadding = 0;
             model.Title = "Mobility Fit Line";
@@ -135,17 +138,24 @@ namespace ImsInformed.IO
                 Palette = new OxyPalette(OxyColor.FromRgb(255, 0, 0), OxyColor.FromRgb(153, 255, 54) )
             };
 
-            ScatterSeries scatterSeries = new ScatterSeries
+            ScatterSeries fitPointSeries = new ScatterSeries
             {
-                Mapping = pointMap,
-                ItemsSource = pointList,
+                Mapping = fitPointMap,
+                ItemsSource = fitPointList,
+                ColorAxisKey = "outlierAxis"
+            };
+
+            ScatterSeries outlierSeries = new ScatterSeries
+            {
+                Mapping = OutlierPointMap,
+                ItemsSource = outlierList,
                 ColorAxisKey = "outlierAxis"
             };
 
             Func<object, DataPoint> lineMap = obj => 
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
-                double x = point.x;
+                double x = point.X;
                 double y = fitline.ModelPredict(x);
                 DataPoint sp = new DataPoint(y, x);
                 return sp;
@@ -154,7 +164,7 @@ namespace ImsInformed.IO
             LineSeries fitlineSeries = new LineSeries()
             {
                 Mapping = lineMap,
-                ItemsSource = pointList,
+                ItemsSource = fitPointList,
                 Color = OxyColors.Purple
             };
 
@@ -190,7 +200,8 @@ namespace ImsInformed.IO
             model.Axes.Add(outlierAxis);
             model.Axes.Add(yAxis);
             model.Axes.Add(xAxis);
-            model.Series.Add(scatterSeries);
+            model.Series.Add(fitPointSeries);
+            model.Series.Add(outlierSeries);
             model.Series.Add(fitlineSeries);
             return model;
         }

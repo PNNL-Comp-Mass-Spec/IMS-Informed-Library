@@ -54,6 +54,6 @@ namespace ImsInformed.Parameters
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double MinFitPoints { get; set; }
+        public int MinFitPoints { get; set; }
     }
 }

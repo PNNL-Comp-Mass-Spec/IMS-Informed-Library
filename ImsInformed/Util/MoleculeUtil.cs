@@ -232,7 +232,7 @@ namespace ImsInformed.Util
                 // decompensate for extra composition difference due to different ionization method
                 if (method == IonizationMethod.ProtonPlus)
                 {
-                    return composition - new Composition(0, 1 , 0, 0, 0);
+                    return composition - new Composition(0, 1, 0, 0, 0);
                 }
                 else if (method == IonizationMethod.ProtonMinus) 
                 {

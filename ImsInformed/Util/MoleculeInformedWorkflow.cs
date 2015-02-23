@@ -137,6 +137,7 @@ namespace ImsInformed.Util
         /// </returns>
         public MoleculeInformedWorkflowResult RunMoleculeInformedWorkFlow(ImsTarget target)
         {
+            double monoisotopicMass = 0;
             try
             {
                 // Initialize the result object
@@ -144,11 +145,27 @@ namespace ImsInformed.Util
                 informedResult.DatasetName = this.DatasetName;
                 informedResult.IonizationMethod = target.IonizationType;
                 
-                // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
+                // Compensate for mass changes due to ionization
                 Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(target.Composition, target.IonizationType);
+
+                // Get the monoisotopic mass for viper
+                double targetMass = (target.Composition == null) ? target.TargetMz : targetComposition.Mass;
+                if (target.IonizationType == IonizationMethod.ProtonMinus)
+                {
+                    monoisotopicMass = targetMass + new Composition(0, 1, 0, 0, 0).Mass;
+                }
+                else
+                {
+                    monoisotopicMass = targetMass - new Composition(0, 1, 0, 0, 0).Mass;
+                }
+                
+                informedResult.MonoisotopicMass = monoisotopicMass;
+
+                // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
+                targetComposition = MoleculeUtil.IonizationCompositionDecompensation(targetComposition, IonizationMethod.ProtonPlus);
+
                 informedResult.TargetDescriptor = (targetComposition == null) ? target.TargetMz.ToString(CultureInfo.InvariantCulture) : target.EmpiricalFormula;
                 
-                // Setup result file.
                 Trace.Listeners.Clear();
                 ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
                 consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
@@ -166,8 +183,6 @@ namespace ImsInformed.Util
                     Trace.Listeners.Add(resultFileTraceListener);
                     Trace.AutoFlush = true;
                     
-                    targetComposition = MoleculeUtil.IonizationCompositionDecompensation(targetComposition, IonizationMethod.ProtonPlus);
-
                     // Setup target object
                     if (targetComposition != null) 
                     {
@@ -278,6 +293,7 @@ namespace ImsInformed.Util
                             {
                                 Trace.WriteLine("        [PASS]");
                             }
+
                             Trace.WriteLine("");
                         }
                         
@@ -338,7 +354,7 @@ namespace ImsInformed.Util
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.RSquared = 0; // TODO: Haven't thought of a way to quantize negative results. So just be confident now.
-                        informedResult.LastVoltageGroupAverageDriftTime = -1;
+                        informedResult.LastVoltageGroupDriftTimeInMs = -1;
 
                         // quantize the VG score from VGs in the removal list.
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(rejectionList);
@@ -378,15 +394,16 @@ namespace ImsInformed.Util
                 
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
                     FitLine line = new FitLine(allFitPoints);
+                    
+                    informedResult.LastVoltageGroupDriftTimeInMs = -1;
 
                     // Printout results
                     Trace.WriteLine("Target Identification");
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
-                        // FOR COMPARISON WITH MATT"S RESULT, not terribly important
-                        informedResult.LastVoltageGroupAverageDriftTime = voltageGroup.FitPoint.X * 1000;
+                        informedResult.LastVoltageGroupDriftTimeInMs = voltageGroup.FitPoint.X * 1000;
                         // Normalize the drift time to be displayed.
-                        informedResult.LastVoltageGroupAverageDriftTime = MoleculeUtil.NormalizeDriftTime(informedResult.LastVoltageGroupAverageDriftTime, voltageGroup);
+                        informedResult.LastVoltageGroupDriftTimeInMs = MoleculeUtil.NormalizeDriftTime(informedResult.LastVoltageGroupDriftTimeInMs, voltageGroup);
                         Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));
                         Trace.WriteLine(String.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber+voltageGroup.AccumulationCount - 2));
                         Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.X * 1000, voltageGroup.BestFeature.Statistics.ScanImsRep));
@@ -413,7 +430,6 @@ namespace ImsInformed.Util
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.RSquared = 0;
-                        informedResult.LastVoltageGroupAverageDriftTime = -1;
                         informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                         IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                         informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
@@ -470,7 +486,18 @@ namespace ImsInformed.Util
                     informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                     IEnumerable<FeatureScoreHolder> scores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(scores);
-                    informedResult.LastVoltageGroupAverageDriftTime = -1;
+
+                    // Check if the last voltage group still exists as fit point
+                    if (informedResult.AnalysisStatus == AnalysisStatus.REJ)
+                    {
+                        informedResult.LastVoltageGroupDriftTimeInMs = -1;
+                    }
+
+                    // Check if the last voltage remaining is the last voltage group in the experiment.
+                    if (accumulatedXiCs.Keys.Last().FirstFrameNumber + accumulatedXiCs.Keys.Last().AccumulationCount - 2 < this.NumberOfFrames - 1)
+                    {
+                        informedResult.LastVoltageGroupDriftTimeInMs = -2;
+                    }
 
                     Trace.WriteLine("Analysis result and metrics");
                     Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));
@@ -484,7 +511,7 @@ namespace ImsInformed.Util
                     }
 
                     Trace.WriteLine(String.Format("    Average Candidate Target Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
-
+                    Trace.WriteLine(String.Format("    Last VoltageGroup Drift Time: {0:F4} ms", informedResult.LastVoltageGroupDriftTimeInMs));
                     Trace.WriteLine(String.Format("    Mobility: {0:F4} cm^2/(s*V)", informedResult.Mobility));
                     Trace.WriteLine(String.Format("    Cross Sectional Area: {0:F4} Å^2", informedResult.CrossSectionalArea));
 
@@ -510,7 +537,8 @@ namespace ImsInformed.Util
                 informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore = 0;
                 informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore = 0;
                 informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = 0;
-                informedResult.LastVoltageGroupAverageDriftTime = -1;
+                informedResult.LastVoltageGroupDriftTimeInMs = -1;
+                informedResult.MonoisotopicMass = monoisotopicMass;
                 return informedResult;
             }
         }

@@ -96,6 +96,10 @@ namespace ImsInformed.Scoring
 
             int scanNumberMin = scanRep - scanWindowSize / 2;
             int scanNumberMax = scanRep + scanWindowSize / 2;
+            if ((scanNumberMin < 0) || (scanNumberMax > (int)workflow.NumberOfScans - 1))
+            {
+                return 0;
+            }
                                   
             int[][] intensityWindow = workflow._uimfReader.GetFramesAndScanIntensitiesForAGivenMz(
                 voltageGroup.FirstFrameNumber,

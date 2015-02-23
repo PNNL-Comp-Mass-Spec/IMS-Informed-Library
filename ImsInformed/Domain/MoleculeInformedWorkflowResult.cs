@@ -46,18 +46,25 @@ namespace ImsInformed.Domain
         public double Mobility;
 
         /// <summary>
+        /// The r squared.
+        /// </summary>
+        public AnalysisScoresHolder AnalysisScoresHolder;
+
+        /// <summary>
         /// The cross sectional area.
         /// </summary>
         public double CrossSectionalArea;
 
+        #region data needed by viper
         /// <summary>
         /// The cross sectional area.
         /// </summary>
-        public double LastVoltageGroupAverageDriftTime;
+        public double LastVoltageGroupDriftTimeInMs;
 
         /// <summary>
-        /// The r squared.
+        /// The monoisotopic mass.
         /// </summary>
-        public AnalysisScoresHolder AnalysisScoresHolder;
+        public double MonoisotopicMass;
+        #endregion
     }
 }

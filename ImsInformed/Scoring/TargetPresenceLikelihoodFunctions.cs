@@ -58,5 +58,19 @@ namespace ImsInformed.Scoring
         {
             return featureScores.IntensityScore + 2 * featureScores.IsotopicScore;
         }
+
+        /// <summary>
+        /// The intensity dominant likelihood function.
+        /// </summary>
+        /// <param name="featureScores">
+        /// The feature scores.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double IntensityDominantLikelihoodFunction(FeatureScoreHolder featureScores)
+        {
+            return featureScores.IntensityScore + 0.5 * featureScores.IsotopicScore;
+        }
     }
 }

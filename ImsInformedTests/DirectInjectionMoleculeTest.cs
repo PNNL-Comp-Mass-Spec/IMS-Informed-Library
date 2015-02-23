@@ -157,10 +157,10 @@ namespace ImsInformedTests
         public void TestSingleMoleculeWithFormula()
         {
             // Nicotine
-            string formula = "C10H14N2";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
-            Console.WriteLine("MZ:   " +  221.0594);
-            string fileLocation = AcetamipridFile;
+            // string formula = "C10H14N2";
+            // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            // Console.WriteLine("MZ:   " +  221.0594);
+            // string fileLocation = AcetamipridFile;
 
             // Acetamiprid
             // string formula = "C10H11ClN4";
@@ -172,10 +172,9 @@ namespace ImsInformedTests
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             // string fileLocation = Bps;
 
-            // string formula = "C3H8O";
-            // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
-            // string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf";
-            // fileLocation = @"\\protoapps\IMS08_UIMFs\EXP-1PR_pos_15Sep14_Columbia_DI.uimf";
+            string formula = "C9H13ClN6";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
 
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("Composition: " + sample.Composition);

@@ -307,6 +307,7 @@ namespace ImsInformed.Util
                             featureBlobs.RemoveAll(isotopeThreshold);
                         }
 
+                        ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDominantLikelihoodFunction;
                         if (featureBlobs.Count > 0)
                         {
                             IDictionary<FeatureBlob, FeatureScoreHolder> qualifiedFeatures = featureBlobs.ToDictionary(feature => feature, feature => scoresTable[feature]);
@@ -314,7 +315,6 @@ namespace ImsInformed.Util
 
                             // TODO: If there are more than one apexes in the best feature. Treat them as isomers.
 
-                            ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDependentLikelihoodFunction;
                             voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(qualifiedFeatures, likelihoodFunc);
                             voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
                         }
@@ -325,7 +325,6 @@ namespace ImsInformed.Util
                             Trace.WriteLine("");
 
                             // Select the one of the better features from the features rejected to represent the voltage group.
-                            ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDependentLikelihoodFunction;
                             voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
                             if (voltageGroup.BestFeature != null)
                             {

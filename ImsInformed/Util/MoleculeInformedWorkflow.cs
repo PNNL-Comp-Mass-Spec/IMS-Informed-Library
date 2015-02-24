@@ -196,7 +196,7 @@ namespace ImsInformed.Util
                     Trace.WriteLine("Ionization method: " + target.IonizationType);
                     Trace.WriteLine("Target empirical formula: " + target.EmpiricalFormula);
                     Trace.WriteLine("Targeting Mz: " + target.TargetMz);
-                    Trace.WriteLine("");
+                    Trace.WriteLine(string.Empty);
                         
                     // Generate Theoretical Isotopic Profile
                     List<Peak> theoreticalIsotopicProfilePeakList = null;
@@ -282,9 +282,9 @@ namespace ImsInformed.Util
                             }
 
                             string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
-                            rejectionReason += lowIntenstity ? "[Low Intensity] " : "";
-                            rejectionReason += !lowIntenstity && badPeakShape ? "[Bad Peak Shape] " : "";
-                            rejectionReason += !lowIntenstity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : "";
+                            rejectionReason += lowIntenstity ? "[Low Intensity] " : string.Empty;
+                            rejectionReason += !lowIntenstity && badPeakShape ? "[Bad Peak Shape] " : string.Empty;
+                            rejectionReason += !lowIntenstity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
                             if (badScanRange || lowIntenstity || lowIsotopicAffinity || badPeakShape)
                             {
                                 Trace.WriteLine(rejectionReason);
@@ -294,7 +294,7 @@ namespace ImsInformed.Util
                                 Trace.WriteLine("        [PASS]");
                             }
 
-                            Trace.WriteLine("");
+                            Trace.WriteLine(string.Empty);
                         }
                         
                         featureBlobs.RemoveAll(scanPredicate);
@@ -321,8 +321,8 @@ namespace ImsInformed.Util
                         else 
                         {
                             Trace.WriteLine(String.Format("    (All features were rejected in voltage group {0:F4} V)", voltageGroup.MeanVoltageInVolts));
-                            Trace.WriteLine("");
-                            Trace.WriteLine("");
+                            Trace.WriteLine(string.Empty);
+                            Trace.WriteLine(string.Empty);
 
                             // Select the one of the better features from the features rejected to represent the voltage group.
                             voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
@@ -401,6 +401,7 @@ namespace ImsInformed.Util
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {
                         informedResult.LastVoltageGroupDriftTimeInMs = voltageGroup.FitPoint.X * 1000;
+
                         // Normalize the drift time to be displayed.
                         informedResult.LastVoltageGroupDriftTimeInMs = MoleculeUtil.NormalizeDriftTime(informedResult.LastVoltageGroupDriftTimeInMs, voltageGroup);
                         Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt(voltageGroup.VarianceVoltage)));

@@ -10,6 +10,7 @@ namespace ImsInformed.Domain
         TAR, // Target construction problem
         NEG, // Result negative, ion not found
         Nah, // Analysis not scheduled
+        Conflict, 
         XicNotFound,
         IsotopicProfileNotFound,
         IsotopicProfileNotMatchTheoretical,

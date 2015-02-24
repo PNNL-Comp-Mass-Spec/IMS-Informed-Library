@@ -1,7 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PeptideUtil.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
-//   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
+//   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
 //   Defines the PeptideUtil type.
@@ -26,11 +26,14 @@ namespace ImsInformed.Util
         /// <summary>
         /// The _amino acid set.
         /// </summary>
-        private static AminoAcidSet _aminoAcidSet;
+        private static readonly AminoAcidSet AminoAcidSet;
 
+        /// <summary>
+        /// Initializes static members of the <see cref="PeptideUtil"/> class.
+        /// </summary>
         static PeptideUtil()
         {
-            _aminoAcidSet = new AminoAcidSet();
+            AminoAcidSet = new AminoAcidSet();
         }
 
         /// <summary>
@@ -44,7 +47,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static Composition GetCompositionOfPeptide(string peptide)
         {
-            var composition = _aminoAcidSet.GetComposition(peptide);
+            var composition = AminoAcidSet.GetComposition(peptide);
             composition += Composition.H2O;
             return composition;
         }

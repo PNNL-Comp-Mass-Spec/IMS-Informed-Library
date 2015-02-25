@@ -127,12 +127,16 @@ namespace ImsInformed.Scoring
             }
 
             // For peaks with peak width lower than 3, return a peak score of 0
+
             // TODO get the intensity threshold here from the noise level instead.
-            if (averagedPeak[scanRep - scanNumberMin] < globalMaxIntensities * 0.0001 
-                || averagedPeak[scanRep - scanNumberMin - 1] < globalMaxIntensities * 0.0001
-                || averagedPeak[scanRep - scanNumberMin + 1] < globalMaxIntensities * 0.0001)
+            if (scanWindowSize >= 3)
             {
-                return 0;
+                if (averagedPeak[scanRep - scanNumberMin] < globalMaxIntensities * 0.0001 
+                    || averagedPeak[scanRep - scanNumberMin - 1] < globalMaxIntensities * 0.0001
+                    || averagedPeak[scanRep - scanNumberMin + 1] < globalMaxIntensities * 0.0001)
+                {
+                    return 0;
+                }
             }
 
             // Perform a statistical normality test
@@ -205,7 +209,7 @@ namespace ImsInformed.Scoring
                 int scanNumberMin = (scanNumber - scanWindowSize / 2 > 0) ? scanNumber - scanWindowSize / 2 : 0;
                 int scanNumberMax = (scanNumber + scanWindowSize / 2 < (int)workflow.NumberOfScans) ? scanNumber + scanWindowSize / 2 : (int)workflow.NumberOfScans - 1;
                 var peakList = workflow._uimfReader.GetXic(Mz, 
-                    workflow._parameters.MassToleranceInPpm / 10,
+                    workflow._parameters.MassToleranceInPpm,
                     voltageGroup.FirstFrameNumber,
                     voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1,
                     scanNumberMin,
@@ -317,6 +321,12 @@ namespace ImsInformed.Scoring
         /// </returns>
         private static double IsotopicProfileScoreAngle(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
         {
+            // calculate the cubic of observed isotopic peak list.
+            for (int i = 0; i < observedIsotopicPeakList.Count; i++)
+            {
+                observedIsotopicPeakList[i] = observedIsotopicPeakList[i] * observedIsotopicPeakList[i] * observedIsotopicPeakList[i];
+            }
+
             // calculate angle between two isotopic vectors in the isotopic space
             double dot = 0;
             double theoreticalLength = 0;

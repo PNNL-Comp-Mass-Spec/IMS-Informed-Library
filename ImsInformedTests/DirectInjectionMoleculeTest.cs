@@ -64,6 +64,11 @@ namespace ImsInformedTests
         /// </summary>
         public const string Bps = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-BPS_neg2_28Aug14_Columbia_DI.uimf";
 
+        /// <summary>
+        /// The cae.
+        /// </summary>
+        public const string Cae = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
+
                 /// <summary>
         /// The test empirical formula utilities.
         /// </summary>
@@ -469,6 +474,7 @@ namespace ImsInformedTests
             formulas.Add("C12H8O4S ");
             formulas.Add("C12H7O4S ");
             formulas.Add("C12H6O4S ");
+            Console.WriteLine("[Intensity], [Distance1], [Distance2], [Angle], [Pearson], [Bucha]");
             foreach (var form in formulas)
             {
                 bool found = false;
@@ -514,6 +520,7 @@ namespace ImsInformedTests
                 VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, sample.TargetMz, parameters);
 
                 var voltageGroup = accumulatedXiCs.Keys.First();
+
                 // Smooth Chromatogram
                 IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
                 smoother.Smooth(ref pointList);
@@ -583,7 +590,42 @@ namespace ImsInformedTests
                     // Report all features.
                     if (featureBlob.Statistics.ScanImsRep == 115)
                     {
-                        Console.WriteLine("{0}", isotopicScoreBhattacharyya);
+                        Console.Write("{0:F4} ", intensityScore);
+                        found = true;
+                    }
+
+                    // Report all features.
+                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    {
+                        Console.Write("{0:F4} ", isotopicScoreDistance);
+                        found = true;
+                    }
+
+                    // Report all features.
+                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    {
+                        Console.Write("{0:F4} ", isotopicScoreDistanceAlternative);
+                        found = true;
+                    }
+
+                    // Report all features.
+                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    {
+                        Console.Write("{0:F4} ", isotopicScoreAngle);
+                        found = true;
+                    }
+
+                    // Report all features.
+                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    {
+                        Console.Write("{0:F4} ", isotopicScorePerson);
+                        found = true;
+                    }
+
+                    // Report all features.
+                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    {
+                        Console.Write("{0:F4} ", isotopicScoreBhattacharyya);
                         found = true;
                     }
                 }
@@ -592,6 +634,8 @@ namespace ImsInformedTests
                 {
                     Console.WriteLine("0");
                 }
+
+                Console.WriteLine();
             }
         }
 
@@ -601,9 +645,9 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestScoring()
         {
-            string formula = "C12H11O4S";
-            string fileLocation = Bps;
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            string formula = "C9H13ClN6";
+            string fileLocation = Cae;
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
             
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("Composition: " + sample.Composition);

@@ -9,8 +9,8 @@ namespace ImsInformed.Domain
         ERR, // Error
         TAR, // Target construction problem
         NEG, // Result negative, ion not found
-        Nah, // Analysis not scheduled
-        Conflict, 
+        NAH, // Analysis not scheduled
+        CON, // Conflict between experiments
         XicNotFound,
         IsotopicProfileNotFound,
         IsotopicProfileNotMatchTheoretical,

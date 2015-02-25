@@ -18,7 +18,7 @@ namespace ImsInformed.Scoring
     public class TargetPresenceLikelihoodFunctions
     {
         /// <summary>
-        /// The intensity only likelihood function.
+        /// The intensity only likelihood function. Better used if your target/feature match is more dependent on intensity then anything else.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -32,7 +32,8 @@ namespace ImsInformed.Scoring
         }
 
         /// <summary>
-        /// The intensity independent likelihood function.
+        /// The intensity independent likelihood function. Better used if you have strong faith in the isotopic score 100% and/or your sample is really mixed and
+        /// intensity is useless.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -46,7 +47,8 @@ namespace ImsInformed.Scoring
         }
 
         /// <summary>
-        /// The intensity dependent likelihood function.
+        /// The intensity dependent likelihood function. Better used if you have good faith in the isotopic score 75% and/or your sample is really mixed intensity is 
+        /// no longer a good indicator of feature/target match.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -54,13 +56,27 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityDependentLikelihoodFunction(FeatureScoreHolder featureScores)
+        public static double IsotopicScoreDominantLikelihoodFunction(FeatureScoreHolder featureScores)
         {
             return featureScores.IntensityScore + 2 * featureScores.IsotopicScore;
         }
 
         /// <summary>
-        /// The intensity dominant likelihood function.
+        /// The neutral likelihood function. Better used if you are not sure what your target/feature match depends on
+        /// </summary>
+        /// <param name="featureScores">
+        /// The feature scores.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double NeutralLikelihoodFunction(FeatureScoreHolder featureScores)
+        {
+            return featureScores.IntensityScore + featureScores.IsotopicScore;
+        }
+
+        /// <summary>
+        /// The intensity dominant likelihood function. Say you have a pure sample, roll with this one might give better results.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.

@@ -11,6 +11,7 @@
 namespace ImsInformed.Util
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
@@ -18,7 +19,6 @@ namespace ImsInformed.Util
     using System.Linq;
 
     using DeconTools.Backend.Core;
-    using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain;
     using ImsInformed.Filters;
@@ -126,6 +126,14 @@ namespace ImsInformed.Util
             return new Ion(target.Composition, chargeState);
         }
 
+        public IDictionary<ImsTarget, MoleculeInformedWorkflowResult> RunMoleculeInformedWorkFlow(IEnumerable<ImsTarget> targetList)
+        {
+            foreach (var target in targetList)
+            {
+                this.RunMoleculeInformedWorkFlow(target);
+            }
+        }
+
         /// <summary>
         /// The run molecule informed work flow.
         /// </summary>
@@ -137,14 +145,11 @@ namespace ImsInformed.Util
         /// </returns>
         public MoleculeInformedWorkflowResult RunMoleculeInformedWorkFlow(ImsTarget target)
         {
+            string targetDescription = target.Composition == null ? target.TargetMz : target.EmpiricalFormula;
             double monoisotopicMass = 0;
+
             try
             {
-                // Initialize the result object
-                MoleculeInformedWorkflowResult informedResult;
-                informedResult.DatasetName = this.DatasetName;
-                informedResult.IonizationMethod = target.IonizationType;
-                
                 // Compensate for mass changes due to ionization
                 Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(target.Composition, target.IonizationType);
 
@@ -347,6 +352,18 @@ namespace ImsInformed.Util
 
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
+                        AnalysisScoresHolder analysisScores;
+                        analysisScores.RSquared = 0;
+                        analysisScores.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(rejectionList);
+                        analysisScores.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
+                        MoleculeInformedWorkflowResult informedResult = new MoleculeInformedWorkflowResult(
+                            this.DatasetName,
+                            targetDescription,
+                            target.IonizationType,
+                            AnalysisStatus.NEG,
+                            analysisScores,
+                            null
+                            );
                         informedResult.AnalysisStatus = AnalysisStatus.NEG;
                         
 
@@ -356,7 +373,6 @@ namespace ImsInformed.Util
                         informedResult.LastVoltageGroupDriftTimeInMs = -1;
 
                         // quantize the VG score from VGs in the removal list.
-                        informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(rejectionList);
                         IEnumerable<FeatureScoreHolder> featureScores = rejectionList.Select(x => x.BestFeatureScores);
                         informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                         Trace.WriteLine(String.Format("    Final verdict: {0}", informedResult.AnalysisStatus));

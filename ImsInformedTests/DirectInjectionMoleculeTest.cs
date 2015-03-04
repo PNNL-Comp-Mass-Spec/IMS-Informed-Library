@@ -11,6 +11,7 @@
 namespace ImsInformedTests
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
@@ -782,6 +783,58 @@ namespace ImsInformedTests
 
                 Console.WriteLine();
             }
+        }
+
+        /// <summary>
+        /// The test single molecule MZ only.
+        /// </summary>
+        [Test][STAThread]
+        public void TestMultipleTargets()
+        {
+            string targetA = "C10H14N2";
+            string targetB = "C10H11ClN4";
+            string targetC = "C12H10O4S";
+            string targetD = "C9H13ClN6";
+            double targetE = 122.5;
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
+            IonizationMethod method = IonizationMethod.ProtonPlus;
+
+            IList<ImsTarget> targetList = new List<ImsTarget>();
+            targetList.Add(new ImsTarget(1, method, targetA));
+            targetList.Add(new ImsTarget(2, method, targetB));
+            targetList.Add(new ImsTarget(3, method, targetC));
+            targetList.Add(new ImsTarget(4, method, targetD));
+            targetList.Add(new ImsTarget(5, method, targetE));
+            
+            Console.WriteLine("Dataset: {0}", fileLocation);
+            Console.WriteLine("TargetList: ");
+
+            foreach (var target in targetList)
+            {
+                if (target.EmpiricalFormula != null)
+                {
+                    Console.Write("Target: " + target.Composition);
+                    Console.WriteLine("(MZ: {0})" + target.Mass);
+                }
+                else
+                {
+                    Console.Write("TargetMZ: {0}" + target.TargetMz);
+                }
+            }
+
+            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
+            {
+                MassToleranceInPpm = 10,
+                NumPointForSmoothing = 9,
+                ScanWindowWidth = 4,
+                IntensityThreshold = 0.0,
+                IsotopicFitScoreThreshold = 0.4,
+                PeakShapeThreshold = 0.4,
+                MinFitPoints = 3
+            };
+
+            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
+            informedWorkflow.RunMoleculeInformedWorkFlow(targetList);
         }
     }
 }

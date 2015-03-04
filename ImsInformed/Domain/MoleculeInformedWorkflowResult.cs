@@ -11,6 +11,10 @@
 namespace ImsInformed.Domain
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
 
     using ImsInformed.Scoring;
 
@@ -18,53 +22,81 @@ namespace ImsInformed.Domain
     /// The molecule informed workflow result.
     /// </summary>
     [Serializable]
-    public struct MoleculeInformedWorkflowResult
+    public class MoleculeInformedWorkflowResult
     {
         /// <summary>
         /// The dataset name.
         /// </summary>
-        public string DatasetName;
+        public readonly string DatasetName;
 
         /// <summary>
         /// TargetDescriptor, either the empirical formula or the MZ used.
         /// </summary>
-        public string TargetDescriptor;
+        public readonly string TargetDescriptor;
 
         /// <summary>
         /// The ionization method.
         /// </summary>
-        public IonizationMethod IonizationMethod;
+        public readonly IonizationMethod IonizationMethod;
 
         /// <summary>
         /// The analysis status.
         /// </summary>
-        public AnalysisStatus AnalysisStatus;
-
-        /// <summary>
-        /// The mobility.
-        /// </summary>
-        public double Mobility;
+        public readonly AnalysisStatus AnalysisStatus;
 
         /// <summary>
         /// The r squared.
         /// </summary>
-        public AnalysisScoresHolder AnalysisScoresHolder;
+        public readonly AnalysisScoresHolder AnalysisScoresHolder;
 
         /// <summary>
-        /// The cross sectional area.
+        /// The isomer results.
         /// </summary>
-        public double CrossSectionalArea;
-
-        #region data needed by viper
-        /// <summary>
-        /// The cross sectional area.
-        /// </summary>
-        public double LastVoltageGroupDriftTimeInMs;
+        private readonly IEnumerable<IsomerResult> isomerResults;
 
         /// <summary>
-        /// The monoisotopic mass.
+        /// Initializes a new instance of the <see cref="MoleculeInformedWorkflowResult"/> class.
         /// </summary>
-        public double MonoisotopicMass;
-        #endregion
+        /// <param name="datasetName">
+        /// The dataset name.
+        /// </param>
+        /// <param name="targetDescriptor">
+        /// The target descriptor.
+        /// </param>
+        /// <param name="ionizationMethod">
+        /// The ionization method.
+        /// </param>
+        /// <param name="analysisStatus">
+        /// The analysis status.
+        /// </param>
+        /// <param name="analysisScoresHolder">
+        /// The analysis scores holder.
+        /// </param>
+        /// <param name="isomerResults">
+        /// The isomer results.
+        /// </param>
+        public MoleculeInformedWorkflowResult(string datasetName, string targetDescriptor, IonizationMethod ionizationMethod, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<IsomerResult> isomerResults)
+        {
+            this.DatasetName = datasetName;
+            this.TargetDescriptor = targetDescriptor;
+            this.IonizationMethod = ionizationMethod;
+            this.AnalysisStatus = analysisStatus;
+            this.AnalysisScoresHolder = analysisScoresHolder;
+            this.isomerResults = isomerResults;
+        }
+
+        /// <summary>
+        /// The isomer results.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="IEnumerable"/>.
+        /// </returns>
+        public IEnumerable<IsomerResult> IsomerResults
+        {
+            get 
+            {
+                return this.isomerResults.ToList();
+            }
+        }
     }
 }

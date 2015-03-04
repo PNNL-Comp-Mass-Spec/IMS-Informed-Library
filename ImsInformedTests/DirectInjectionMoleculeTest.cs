@@ -76,6 +76,7 @@ namespace ImsInformedTests
         public void TestEmpiricalFormulaUtilities()
         {
             List<string> testCases = new List<string>();
+            testCases.Add("C16D10");
             testCases.Add("FeS");
             testCases.Add("C18H24N2O10P2S2");
             testCases.Add("c18H24n2O1P2s2"); //case test

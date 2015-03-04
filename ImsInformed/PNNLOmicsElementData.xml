@@ -24,6 +24,19 @@
 				<Probability>0.000155745</Probability>
 			</Isotope>
 		</Element>
+        <Element>
+			<Symbol>D</Symbol>
+			<Name>Deuterium </Name>
+			<NumIsotopes>1</NumIsotopes>
+			<Atomicity>1</Atomicity>
+			<MassAverage>2.01410177796</MassAverage>
+			<MassAverageUncertainty>0.00007</MassAverageUncertainty>
+            <Isotope>
+				<IsotopeNumber>2</IsotopeNumber>
+				<Mass>2.01410177796</Mass>
+				<Probability>1</Probability>
+			</Isotope>
+		</Element>
 		<Element>
 			<Symbol>He</Symbol>
 			<Name>Helium</Name>

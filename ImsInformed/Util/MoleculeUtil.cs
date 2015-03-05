@@ -46,8 +46,8 @@ namespace ImsInformed.Util
         {
             if (composition != null)
             {
-                // compensate for extra composition difference due to different ionization method
-                if (method == IonizationMethod.ProtonPlus) 
+                // decompensate for extra composition difference due to different ionization method
+                if (method == IonizationMethod.ProtonPlus)
                 {
                     return composition + new Composition(0, 1, 0, 0, 0);
                 }
@@ -57,19 +57,69 @@ namespace ImsInformed.Util
                 }
                 else if (method == IonizationMethod.SodiumPlus) 
                 {
-                    Composition sodium = ReadEmpiricalFormulaNoParenthesis("Na");
-                    return composition.Add(sodium);
+                    return composition + ReadEmpiricalFormulaNoParenthesis("Na");
                 }
-                else if (method == IonizationMethod.Proton2Plus)
+                else if (method == IonizationMethod.APCI) 
                 {
-                    return composition + new Composition(0, 2, 0, 0, 0);
+                    return composition;
                 }
-                else if (method == IonizationMethod.Proton2Minus)
+                else if (method == IonizationMethod.HCOOMinus) 
                 {
-                    return composition - new Composition(0, 2, 0, 0, 0);
+                    return composition + new Composition(1, 1, 0, 2, 0);
+                }
+                else if (method == IonizationMethod.Proton2MinusSodiumPlus)
+                {
+                    Composition newCompo = composition + ReadEmpiricalFormulaNoParenthesis("Na");
+                    return newCompo - new Composition(0, 2, 0, 0, 0);
                 }
             }
 
+            return null;
+        }
+
+        /// <summary>
+        /// The ionization composition decompensation.
+        /// </summary>
+        /// <param name="composition">
+        /// The composition.
+        /// </param>
+        /// <param name="method">
+        /// The method.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
+        public static Composition IonizationCompositionDecompensation(Composition composition, IonizationMethod method)
+        {
+            if (composition != null)
+            {
+                // decompensate for extra composition difference due to different ionization method
+                if (method == IonizationMethod.ProtonPlus)
+                {
+                    return composition - new Composition(0, 1, 0, 0, 0);
+                }
+                else if (method == IonizationMethod.ProtonMinus) 
+                {
+                    return composition + new Composition(0, 1, 0, 0, 0);
+                }
+                else if (method == IonizationMethod.SodiumPlus) 
+                {
+                    return composition - ReadEmpiricalFormulaNoParenthesis("Na");
+                }
+                else if (method == IonizationMethod.APCI) 
+                {
+                    return composition;
+                }
+                else if (method == IonizationMethod.HCOOMinus) 
+                {
+                    return composition - new Composition(1, 1, 0, 2, 0);
+                }
+                else if (method == IonizationMethod.Proton2MinusSodiumPlus)
+                {
+                    Composition newCompo = composition - ReadEmpiricalFormulaNoParenthesis("Na");
+                    return newCompo + new Composition(0, 2, 0, 0, 0);
+                }
+            }
             return null;
         }
 
@@ -211,47 +261,6 @@ namespace ImsInformed.Util
         public static double MaxDigitization(VoltageGroup group, DataReader reader)
         {
             return 255 * group.AccumulationCount * reader.GetFrameParams(group.FirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
-        }
-
-        /// <summary>
-        /// The ionization composition decompensation.
-        /// </summary>
-        /// <param name="composition">
-        /// The composition.
-        /// </param>
-        /// <param name="method">
-        /// The method.
-        /// </param>
-        /// <returns>
-        /// The <see cref="Composition"/>.
-        /// </returns>
-        public static Composition IonizationCompositionDecompensation(Composition composition, IonizationMethod method)
-        {
-            if (composition != null)
-            {
-                // decompensate for extra composition difference due to different ionization method
-                if (method == IonizationMethod.ProtonPlus)
-                {
-                    return composition - new Composition(0, 1, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.ProtonMinus) 
-                {
-                    return composition + new Composition(0, 1, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.SodiumPlus) 
-                {
-                    return composition - MoleculeUtil.ReadEmpiricalFormulaNoParenthesis("Na");
-                }
-                else if (method == IonizationMethod.Proton2Plus) 
-                {
-                    return composition - new Composition(0, 2, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.Proton2Minus)
-                {
-                    return composition + new Composition(0, 2, 0, 0, 0);
-                }
-            }
-            return null;
         }
 
         /// <summary>

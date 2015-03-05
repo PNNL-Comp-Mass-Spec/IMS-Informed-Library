@@ -179,7 +179,7 @@ namespace ImsInformedTests
             // string fileLocation = Bps;
 
             string formula = "C9H13ClN6";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2MinusSodiumPlus, formula);
             string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
 
             Console.WriteLine("Dataset: {0}", fileLocation);

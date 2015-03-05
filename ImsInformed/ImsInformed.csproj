@@ -95,7 +95,7 @@
     <Compile Include="Domain\ImsTargetResult.cs" />
     <Compile Include="Domain\InjectionMethod.cs" />
     <Compile Include="Domain\IonizationMethod.cs" />
-    <Compile Include="Domain\IsomerResult.cs" />
+    <Compile Include="Domain\TargetIsomerReport.cs" />
     <Compile Include="Domain\MoleculeInformedWorkflowResult.cs" />
     <Compile Include="Filters\AnalysisFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />

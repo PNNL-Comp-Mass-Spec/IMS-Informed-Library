@@ -810,19 +810,6 @@ namespace ImsInformedTests
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("TargetList: ");
 
-            foreach (var target in targetList)
-            {
-                if (target.EmpiricalFormula != null)
-                {
-                    Console.Write("Target: " + target.Composition);
-                    Console.WriteLine("(MZ: {0})" + target.Mass);
-                }
-                else
-                {
-                    Console.Write("TargetMZ: {0}" + target.TargetMz);
-                }
-            }
-
             MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
             {
                 MassToleranceInPpm = 10,
@@ -835,7 +822,7 @@ namespace ImsInformedTests
             };
 
             MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
-            informedWorkflow.RunMoleculeInformedWorkFlow(targetList);
+            IDictionary<ImsTarget, MoleculeInformedWorkflowResult> resultMap = informedWorkflow.RunMoleculeInformedWorkFlow(targetList);
         }
     }
 }

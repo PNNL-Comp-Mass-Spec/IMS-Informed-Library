@@ -10,7 +10,7 @@ namespace ImsInformed.Domain
     /// The isomer result.
     /// </summary>
     [Serializable]
-    public struct IsomerResult
+    public struct TargetIsomerReport
     {
         /// <summary>
         /// The cross sectional area.

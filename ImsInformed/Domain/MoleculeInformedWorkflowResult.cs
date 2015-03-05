@@ -52,7 +52,7 @@ namespace ImsInformed.Domain
         /// <summary>
         /// The isomer results.
         /// </summary>
-        private readonly IEnumerable<IsomerResult> isomerResults;
+        private readonly IEnumerable<TargetIsomerReport> isomerResults;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MoleculeInformedWorkflowResult"/> class.
@@ -75,7 +75,7 @@ namespace ImsInformed.Domain
         /// <param name="isomerResults">
         /// The isomer results.
         /// </param>
-        public MoleculeInformedWorkflowResult(string datasetName, string targetDescriptor, IonizationMethod ionizationMethod, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<IsomerResult> isomerResults)
+        public MoleculeInformedWorkflowResult(string datasetName, string targetDescriptor, IonizationMethod ionizationMethod, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
         {
             this.DatasetName = datasetName;
             this.TargetDescriptor = targetDescriptor;
@@ -91,7 +91,7 @@ namespace ImsInformed.Domain
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public IEnumerable<IsomerResult> IsomerResults
+        public IEnumerable<TargetIsomerReport> MatchingIsomers
         {
             get 
             {

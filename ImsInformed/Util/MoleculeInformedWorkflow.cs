@@ -521,8 +521,25 @@ namespace ImsInformed.Util
             catch (Exception e)
             {
                 // Print result
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
+                Trace.Listeners.Clear();
+                ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
+                consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
+                string result = this.OutputPath + this.ResultFileName;
+                
+                using (StreamWriter resultFile = File.AppendText(result))
+                {
+                    TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(resultFile)
+                    {
+                        Name = "this.DatasetName" + "_Result",
+                        TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
+                    };
+                
+                    Trace.Listeners.Add(consoleTraceListener);
+                    Trace.Listeners.Add(resultFileTraceListener);
+                    Trace.AutoFlush = true;
+                    Trace.WriteLine(e.Message);
+                    Trace.WriteLine(e.StackTrace);
+                }
 
                 // create the error result
                 MoleculeInformedWorkflowResult informedResult;

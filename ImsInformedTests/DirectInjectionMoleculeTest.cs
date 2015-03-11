@@ -790,15 +790,21 @@ namespace ImsInformedTests
         /// The test single molecule MZ only.
         /// </summary>
         [Test][STAThread]
-        public void TestMultipleTargets()
+        public void TestMixedSamples()
         {
-            string targetA = "C10H14N2";
-            string targetB = "C10H11ClN4";
-            string targetC = "C12H10O4S";
-            string targetD = "C9H13ClN6";
-            double targetE = 122.5;
-            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
-            IonizationMethod method = IonizationMethod.ProtonPlus;
+            string targetA = "C3H7O7P";
+            string targetB = "C3H7O6P";
+            string targetC = "C6H14O12P2";
+            string targetD = "C4H6O5";
+            string targetE = "C3H4O3";
+            string targetF = "C5H11O8P";
+            string targetG = "C6H8O7";
+            string targetH = "C4H6O4";
+            string targetI = "C3H5O6P";
+            string targetJ = "C7H15O10P";
+            double targetK = 120.5;
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
+            IonizationMethod method = IonizationMethod.SodiumPlus;
 
             IList<ImsTarget> targetList = new List<ImsTarget>();
             targetList.Add(new ImsTarget(1, method, targetA));
@@ -806,6 +812,12 @@ namespace ImsInformedTests
             targetList.Add(new ImsTarget(3, method, targetC));
             targetList.Add(new ImsTarget(4, method, targetD));
             targetList.Add(new ImsTarget(5, method, targetE));
+            targetList.Add(new ImsTarget(6, method, targetF));
+            targetList.Add(new ImsTarget(7, method, targetG));
+            targetList.Add(new ImsTarget(8, method, targetH));
+            targetList.Add(new ImsTarget(9, method, targetI));
+            targetList.Add(new ImsTarget(10, method, targetJ));
+            targetList.Add(new ImsTarget(11, method, targetK));
             
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("TargetList: ");
@@ -822,7 +834,7 @@ namespace ImsInformedTests
             };
 
             MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
-            IDictionary<ImsTarget, MoleculeInformedWorkflowResult> resultMap = informedWorkflow.RunMoleculeInformedWorkFlow(targetList);
+            IDictionary<ImsTarget, MoleculeInformedWorkflowResult> resultMap = informedWorkflow.RunMoleculeInformedWorkFlow(targetList, false);
         }
     }
 }

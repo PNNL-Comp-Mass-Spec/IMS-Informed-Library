@@ -53,22 +53,22 @@ namespace ImsInformedTests
         /// <summary>
         /// The Acetamiprid file.
         /// </summary>
-        public const string AcetamipridFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-AAP_neg_26Aug14_Columbia_DI.uimf";
+        public const string AcetamipridFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AAP_neg_26Aug14_Columbia_DI.uimf";
 
         /// <summary>
         /// The acetaminophen.
         /// </summary>
-        public const string Acetaminophen = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-ACE_neg2_28Aug14_Columbia_DI.uimf";
+        public const string Acetaminophen = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-ACE_neg2_28Aug14_Columbia_DI.uimf";
 
         /// <summary>
         /// The bps.
         /// </summary>
-        public const string Bps = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-BPS_neg2_28Aug14_Columbia_DI.uimf";
+        public const string Bps = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BPS_neg2_28Aug14_Columbia_DI.uimf";
 
         /// <summary>
         /// The cae.
         /// </summary>
-        public const string Cae = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
+        public const string Cae = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
 
                 /// <summary>
         /// The test empirical formula utilities.
@@ -180,7 +180,7 @@ namespace ImsInformedTests
             // string fileLocation = Bps;
 
             string formula = "C9H13ClN6";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2MinusSodiumPlus, formula);
             string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
 
             Console.WriteLine("Dataset: {0}", fileLocation);

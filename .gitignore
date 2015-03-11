@@ -48,6 +48,9 @@ _ReSharper*/
 #Subversion files
 .svn
 
+#StyleCop files
+*.StyleCop
+
 # Office Temp Files
 ~$*
 

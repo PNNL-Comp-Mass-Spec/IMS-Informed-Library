@@ -193,7 +193,7 @@ namespace ImsInformed.Util
                     
                     resultFile.WriteLine();
                     Trace.WriteLine("Dataset: " + this.DatasetName);
-                    Trace.WriteLine("Ionization method: " + target.IonizationType);
+                    Trace.WriteLine("Ionization method: " + target.IonizationType.ToFriendlyString());
                     Trace.WriteLine("Target empirical formula: " + target.EmpiricalFormula);
                     Trace.WriteLine("Targeting Mz: " + target.TargetMz);
                     Trace.WriteLine(string.Empty);

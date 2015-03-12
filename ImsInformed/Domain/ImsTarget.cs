@@ -85,7 +85,7 @@ namespace ImsInformed.Domain
             this.EmpiricalFormula = empiricalFormula;
 
             // parse the small molecule empirical formula
-            this.Composition = MoleculeUtil.ReadEmpiricalFormulaNoParenthesis(empiricalFormula);
+            this.Composition = MoleculeUtil.ReadEmpiricalFormula(empiricalFormula);
             this.Mass = this.Composition.Mass;
             this.ResultList = new List<ImsTargetResult>();
             this.DriftTimeTargetList = new List<DriftTimeTarget>();

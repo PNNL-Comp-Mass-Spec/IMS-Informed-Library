@@ -77,6 +77,7 @@ namespace ImsInformedTests
         {
             List<string> testCases = new List<string>();
             testCases.Add("C16D10");
+            testCases.Add("CH3COOH");
             testCases.Add("FeS");
             testCases.Add("C18H24N2O10P2S2");
             testCases.Add("c18H24n2O1P2s2"); //case test
@@ -101,7 +102,6 @@ namespace ImsInformedTests
 
                 try
                 {
-                    
                     Dictionary<string, int> dict = EmpiricalFormulaUtilities.ParseEmpiricalFormulaString(testCase);
                     Console.WriteLine(@"Decon tool ParseEmpiricalFormulaString:");
                     foreach (var entry in dict)
@@ -125,20 +125,25 @@ namespace ImsInformedTests
         public void TestMoleculeUtil()
         {
             List<string> testCases = new List<string>();
-            testCases.Add("FeS");
-            
-            testCases.Add("C18H24N2O10P2S2");
-            testCases.Add("c18H24n2O1P2s2"); //case test
-            testCases.Add("CCl4");
-            
-            testCases.Add("(NH4)2SO4");
             testCases.Add("(CF3)2C(C6H4OH)2");
+            testCases.Add("CH3COOH");
             testCases.Add("O2S[C6H3(CH3)OH]2");
             
-            //invalid inputs
-            testCases.Add("(CH3)3CCH2C(CH3)2C6H4OH");
-            testCases.Add("Mg(NO3)2");
+            testCases.Add("C16D10");
+            testCases.Add("FeS");
+            testCases.Add("C18H24N2O10P2S2");
+            testCases.Add("c18H24n2O1P2s2"); //case test
             testCases.Add("Jian22TNT250"); //Random string
+            testCases.Add("(NH4)2SO4");
+            
+
+            testCases.Add("()[]<>{}");
+            testCases.Add("(<");
+            testCases.Add("]}");
+            testCases.Add("()<");
+            testCases.Add("(][)");
+            testCases.Add("{(X)[XY]}");
+
 
             foreach (string testCase in testCases)
             {

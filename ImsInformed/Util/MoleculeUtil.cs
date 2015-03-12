@@ -13,6 +13,7 @@ namespace ImsInformed.Util
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
     using ImsInformed.Domain;
@@ -30,6 +31,9 @@ namespace ImsInformed.Util
     /// </summary>
     public static class MoleculeUtil
     {
+        public static readonly string Open  = "([{<"; 
+        public static readonly string Close = ")]}>";
+
         /// <summary>
         /// The ionization composition compensation.
         /// </summary>
@@ -276,38 +280,82 @@ namespace ImsInformed.Util
         /// </exception>
         public static Composition ReadEmpiricalFormula(string empiricalFormula)
         {
-            char[] leftParenthesisArray = {'(', '[', '<', '{'};
-            char[] rightParenthesisArray = {')', ']', '>', '}'};
-            HashSet<char> leftParenthesisSymbols = new HashSet<char>(leftParenthesisArray);
-            HashSet<char> rightParenthesisSymbols = new HashSet<char>(rightParenthesisArray);
-            int index = 0;
-            int count = 0;
-
-            // Check for parenthesis balance.
-            while (index < empiricalFormula.Length)
+            if (!IsBalanced(empiricalFormula))
             {
-                if (leftParenthesisSymbols.Contains(empiricalFormula[index]))
-                {
-                    count++;
-                } 
-                else if (rightParenthesisSymbols.Contains(empiricalFormula[index]))
-                {
-                    count--;
-                }
-                
-                if (count < 0)
-                {
-                    throw new ArgumentException("Extra right parenthesis: " + empiricalFormula, "empiricalFormula");
-                }
-                index++;
+                throw new ArgumentException("Parentheses are not balanced in [" + empiricalFormula + "].");
             }
 
-            if (count > 0)
-            {
-                throw new ArgumentException("Extra left parenthesis: " + empiricalFormula, "empiricalFormula");
-            }
-            
-            return ReadEmpiricalFormula(empiricalFormula, leftParenthesisSymbols, rightParenthesisSymbols);
+            return ParseEmpiricalFormula(empiricalFormula);
+        }
+
+        /// <summary>
+        /// The is balanced.
+        /// </summary>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private static bool IsBalanced(string input)
+        {
+            return IsBalanced(input, String.Empty);
+        }
+
+        /// <summary>
+        /// Check the balance of parenthesis given a empirical formula
+        /// </summary>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <param name="stack">
+        /// The stack.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        private static bool IsBalanced(string input, string stack)
+        {
+            return 
+                String.IsNullOrEmpty(input) ? String.IsNullOrEmpty(stack) :
+                IsOpen(input[0]) ? IsBalanced(input.Substring(1), input[0] + stack) :
+                IsClose(input[0]) ? !String.IsNullOrEmpty(stack) && IsMatching(stack[0], input[0]) && IsBalanced(input.Substring(1), stack.Substring(1)) :
+                IsBalanced(input.Substring(1), stack);
+        }
+
+        /// <summary>
+        /// The is open.
+        /// </summary>
+        /// <param name="ch">
+        /// The ch.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private static bool IsOpen(char ch) 
+        {
+            return Open.IndexOf(ch) != -1;
+        }
+
+        /// <summary>
+        /// The is closed.
+        /// </summary>
+        /// <param name="ch">
+        /// The ch.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private static bool IsClose(char ch) 
+        {
+            return Close.IndexOf(ch) != -1;
+        }
+
+        private static bool IsMatching(char open, char close)
+        {
+            return Open.IndexOf(open) == Close.IndexOf(close);
         }
 
         /// <summary>
@@ -327,7 +375,7 @@ namespace ImsInformed.Util
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
-        private static Composition ReadEmpiricalFormula(string empiricalFormula, HashSet<char> leftParenthesisSymbols, HashSet<char> rightParenthesisSymbols)
+        private static Composition ParseEmpiricalFormula(string empiricalFormula)
         {
             int index = 0; // reset index
             
@@ -336,7 +384,7 @@ namespace ImsInformed.Util
             string afterLeftParenthesisFormula = "";
 
             // Locate left parenthesis.
-            while (index < empiricalFormula.Length && !leftParenthesisSymbols.Contains(empiricalFormula[index]))
+            while (index < empiricalFormula.Length && !IsOpen(empiricalFormula[index]))
             {
                 beforeLeftParenthesisFormula += empiricalFormula[index];
                 index++;
@@ -347,16 +395,11 @@ namespace ImsInformed.Util
                 return ReadEmpiricalFormulaNoParenthesis(empiricalFormula);
             }
 
-            if (index + 1 >= empiricalFormula.Length)
-            {
-                throw new ArgumentException("Parenthesis not properly closed: " + empiricalFormula, "empiricalFormula");
-            }
-
             afterLeftParenthesisFormula = empiricalFormula.Substring(index + 1);
             
             Composition beforeParenthesis = ReadEmpiricalFormulaNoParenthesis(beforeLeftParenthesisFormula);
-            Composition insideParenthesis = CloseParenthesis(afterLeftParenthesisFormula, out afterRightParenthesisFormula, leftParenthesisSymbols, rightParenthesisSymbols);
-            Composition afterParenthesis = ReadEmpiricalFormula(afterRightParenthesisFormula);
+            Composition insideParenthesis = CloseParenthesis(afterLeftParenthesisFormula, out afterRightParenthesisFormula);
+            Composition afterParenthesis = ParseEmpiricalFormula(afterRightParenthesisFormula);
             return beforeParenthesis + insideParenthesis + afterParenthesis;
         }
 
@@ -382,14 +425,15 @@ namespace ImsInformed.Util
         /// </exception>
         /// <exception cref="ArgumentException">
         /// </exception>
-        private static Composition CloseParenthesis(string stringToBeClosed, out string leftOver, HashSet<char> leftParenthesisSymbols, HashSet<char> rightParenthesisSymbols)
+        private static Composition CloseParenthesis(string stringToBeClosed, out string leftOver)
         {
             int index = 0; // reset index
             string insideParenthesisFormula = "";
+            bool isNumeric = false;
 
-            while (index < stringToBeClosed.Length && !rightParenthesisSymbols.Contains(stringToBeClosed[index]))
+            while (index < stringToBeClosed.Length && !IsClose(stringToBeClosed[index]))
             {
-                if (leftParenthesisSymbols.Contains(stringToBeClosed[index]))
+                if (IsOpen(stringToBeClosed[index]))
                 {
                     throw new NotImplementedException("Cannot parse strings");
                 }
@@ -397,27 +441,20 @@ namespace ImsInformed.Util
                 index++;
             }
 
-            if (index >= stringToBeClosed.Length)
+            index++;
+            if (index < stringToBeClosed.Length)
             {
-                throw new ArgumentException("Parenthesis not properly closed.");
+                isNumeric = Char.IsNumber(stringToBeClosed[index]);
             }
 
-            if (index + 1 >= stringToBeClosed.Length)
-            {
-                leftOver = "";
-            }
-
-            int n;
-            bool isNumeric = Char.IsNumber(stringToBeClosed[index + 1]);
-
-            n = isNumeric ? stringToBeClosed[index + 1] - '0' : 1;
+            int multiplier = isNumeric ? stringToBeClosed[index] - '0' : 1;
 
             Composition inside = ReadEmpiricalFormulaNoParenthesis(insideParenthesisFormula);
 
             Composition summedInside = new Composition(0,0,0,0,0);
 
             // multiply molecule the composition
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < multiplier; i++)
             {
                 summedInside += inside;
             }
@@ -444,7 +481,7 @@ namespace ImsInformed.Util
         /// </returns>
         /// <exception cref="Exception">
         /// </exception>
-        public static Composition ReadEmpiricalFormulaNoParenthesis(string empiricalFormula)
+        private static Composition ReadEmpiricalFormulaNoParenthesis(string empiricalFormula)
         {
             int c = 0;
             int h = 0;
@@ -452,7 +489,7 @@ namespace ImsInformed.Util
             int o = 0;
             int s = 0;
             int p = 0;
-            Dictionary<string, int> dict = DeconTools.Backend.Utilities.EmpiricalFormulaUtilities.ParseEmpiricalFormulaString(empiricalFormula);
+            IDictionary<string, int> dict = ParseEmpiricalFormulaString(empiricalFormula);
             
             c = (dict.ContainsKey("C")) ? dict["C"] : 0;
             h = (dict.ContainsKey("H")) ? dict["H"] : 0;
@@ -502,7 +539,6 @@ namespace ImsInformed.Util
                     }
                     catch (Exception e)
                     {
-                        
                         throw new Exception("Element not defined: " + e);
                     }
                 }
@@ -512,6 +548,53 @@ namespace ImsInformed.Util
             {
                 throw new Exception("Failed to read atom info from PNNLOmicsElementData.xml. " + e);
             }
+        }
+
+        /// <summary>
+        /// The parse empirical formula string.
+        /// </summary>
+        /// <param name="chemicalFormula">
+        /// The chemical formula.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IDictionary"/>.
+        /// </returns>
+        /// <exception cref="FormatException">
+        /// </exception>
+        private static IDictionary<string, int> ParseEmpiricalFormulaString(string chemicalFormula)
+        {
+            IDictionary<string, int> formula = new Dictionary<string, int>();
+            string elementRegex = "([A-Z][a-z]*)([0-9]*)";
+            string validateRegex = "^(" + elementRegex + ")+$";
+
+            if (String.IsNullOrEmpty(chemicalFormula))
+            {
+                return formula;
+            }
+
+            if (!Regex.IsMatch(chemicalFormula, validateRegex))
+                throw new FormatException("Input string was in an incorrect format.");
+
+            foreach (Match match in Regex.Matches(chemicalFormula, elementRegex))
+            {
+                string name = match.Groups[1].Value;
+
+                int count =
+                    match.Groups[2].Value != "" ?
+                    int.Parse(match.Groups[2].Value) :
+                    1;
+
+                if (formula.ContainsKey(name))
+                {
+                    formula[name] += count;
+                }
+                else
+                {
+                    formula.Add(name, count);
+                }
+            }
+
+            return formula;
         }
 
         /// <summary>

@@ -79,7 +79,7 @@ namespace ImsInformedTests
             testCases.Add("C16D10");
             testCases.Add("CH3COOH");
             testCases.Add("FeS");
-            testCases.Add("C18H24N2O10P2S2");
+            testCases.Add(" C13H13ClN4O2S");
             testCases.Add("c18H24n2O1P2s2"); //case test
             testCases.Add("Jian22TNT250"); //Random string
             testCases.Add("(NH4)2SO4");
@@ -125,10 +125,11 @@ namespace ImsInformedTests
         public void TestMoleculeUtil()
         {
             List<string> testCases = new List<string>();
+            testCases.Add("O2S[C6H3(CH3)OH]2");
+            testCases.Add("C13H13ClN4O2S"); //case test
             testCases.Add("c18H24n2O1P2s2"); //case test
             testCases.Add("(CF3)2C(C6H4OH)2");
             testCases.Add("CH3COOH");
-            testCases.Add("O2S[C6H3(CH3)OH]2");
             
             testCases.Add("C16D10");
             testCases.Add("FeS");
@@ -180,13 +181,9 @@ namespace ImsInformedTests
             // string fileLocation = AcetamipridFile;
 
             // BPS Na
-            // string formula = "C12H10O4S";
-            // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
-            // string fileLocation = Bps;
-
-            string formula = "C9H13ClN6";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.Proton2MinusSodiumPlus, formula);
-            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
+            string formula = "C12H10O4S";
+            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            string fileLocation = Bps;
 
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("Composition: " + sample.Composition);

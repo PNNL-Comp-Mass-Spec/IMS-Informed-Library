@@ -431,14 +431,24 @@ namespace ImsInformed.Util
             string insideParenthesisFormula = "";
             bool isNumeric = false;
 
-            while (index < stringToBeClosed.Length && !IsClose(stringToBeClosed[index]))
+            int opennings = 1;
+            while (index < stringToBeClosed.Length && opennings != 0)
             {
+                if (IsClose(stringToBeClosed[index]))
+                {
+                    opennings--;
+                }
+
                 if (IsOpen(stringToBeClosed[index]))
                 {
-                    throw new NotImplementedException("Cannot parse strings");
+                    opennings++;
                 }
-                insideParenthesisFormula += stringToBeClosed[index];
-                index++;
+
+                if (opennings != 0)
+                {
+                    insideParenthesisFormula += stringToBeClosed[index];
+                    index++;
+                }
             }
 
             index++;
@@ -449,7 +459,7 @@ namespace ImsInformed.Util
 
             int multiplier = isNumeric ? stringToBeClosed[index] - '0' : 1;
 
-            Composition inside = ReadEmpiricalFormulaNoParenthesis(insideParenthesisFormula);
+            Composition inside = ReadEmpiricalFormula(insideParenthesisFormula);
 
             Composition summedInside = new Composition(0,0,0,0,0);
 

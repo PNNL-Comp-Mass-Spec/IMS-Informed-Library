@@ -196,7 +196,7 @@ namespace ImsInformed.Util
 
                 // Get the monoisotopic mass for viper
                 double targetMass = (target.Composition == null) ? target.TargetMz : targetComposition.Mass;
-                if (target.IonizationType == IonizationMethod.ProtonMinus)
+                if (target.IonizationType == IonizationMethod.ProtonMinus || target.IonizationType == IonizationMethod.APCI || target.IonizationType == IonizationMethod.HCOOMinus || target.IonizationType == IonizationMethod.Proton2MinusSodiumPlus)
                 {
                     monoisotopicMass = targetMass + new Composition(0, 1, 0, 0, 0).Mass;
                 }

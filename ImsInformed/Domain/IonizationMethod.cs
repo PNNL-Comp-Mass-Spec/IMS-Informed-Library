@@ -1,6 +1,8 @@
 ﻿namespace ImsInformed.Domain
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
 
     /// <summary>
     /// The ionization method.
@@ -42,7 +44,7 @@
     /// <summary>
     /// The ionization method extensions.
     /// </summary>
-    public static class IonizationMethodExtensions
+    public static class IonizationMethodUtilities
     {
         /// <summary>
         /// The to friendly string.

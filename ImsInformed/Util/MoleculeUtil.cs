@@ -573,7 +573,7 @@ namespace ImsInformed.Util
             }
 
             if (!Regex.IsMatch(chemicalFormula, validateRegex))
-                throw new FormatException("Input string was in an incorrect format.");
+                throw new FormatException(String.Format("Cannot parse empirical formula for [{0}], please check format and case", chemicalFormula));
 
             foreach (Match match in Regex.Matches(chemicalFormula, elementRegex))
             {

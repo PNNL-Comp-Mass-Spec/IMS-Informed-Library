@@ -47,7 +47,8 @@ namespace ImsInformed.Util
         /// </returns>
         public static Composition GetCompositionOfPeptide(string peptide)
         {
-            var composition = AminoAcidSet.GetComposition(peptide);
+            Sequence peptideSequence = new Sequence(peptide, AminoAcidSet.GetStandardAminoAcidSet());
+            var composition = peptideSequence.Composition;
             composition += Composition.H2O;
             return composition;
         }

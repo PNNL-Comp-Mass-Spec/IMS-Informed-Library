@@ -125,6 +125,7 @@ namespace ImsInformedTests
         public void TestMoleculeUtil()
         {
             List<string> testCases = new List<string>();
+            testCases.Add("c18H24n2O1P2s2"); //case test
             testCases.Add("(CF3)2C(C6H4OH)2");
             testCases.Add("CH3COOH");
             testCases.Add("O2S[C6H3(CH3)OH]2");
@@ -132,7 +133,7 @@ namespace ImsInformedTests
             testCases.Add("C16D10");
             testCases.Add("FeS");
             testCases.Add("C18H24N2O10P2S2");
-            testCases.Add("c18H24n2O1P2s2"); //case test
+            
             testCases.Add("Jian22TNT250"); //Random string
             testCases.Add("(NH4)2SO4");
             
@@ -379,8 +380,6 @@ namespace ImsInformedTests
 
             double result = 0;
 
-            double significantLevel = 0.05;
-
             int sampleSize = 100;
 
             // Good shaped peaks
@@ -538,7 +537,6 @@ namespace ImsInformedTests
                 featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
 
                 // feature scorings and target selection.
-                FeatureBlob bestFeature = null;
                 FeatureScoreHolder mostLikelyPeakScores;
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;
@@ -718,7 +716,6 @@ namespace ImsInformedTests
                 featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
 
                 // feature scorings and target selection.
-                FeatureBlob bestFeature = null;
                 FeatureScoreHolder mostLikelyPeakScores;
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;

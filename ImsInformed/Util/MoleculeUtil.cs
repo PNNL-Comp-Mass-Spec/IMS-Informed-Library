@@ -280,6 +280,8 @@ namespace ImsInformed.Util
         /// </exception>
         public static Composition ReadEmpiricalFormula(string empiricalFormula)
         {
+            empiricalFormula = empiricalFormula.Trim();
+
             if (!IsBalanced(empiricalFormula))
             {
                 throw new ArgumentException("Parentheses are not balanced in [" + empiricalFormula + "].");
@@ -459,7 +461,7 @@ namespace ImsInformed.Util
 
             int multiplier = isNumeric ? stringToBeClosed[index] - '0' : 1;
 
-            Composition inside = ReadEmpiricalFormula(insideParenthesisFormula);
+            Composition inside = ParseEmpiricalFormula(insideParenthesisFormula);
 
             Composition summedInside = new Composition(0,0,0,0,0);
 

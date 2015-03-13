@@ -129,7 +129,7 @@ namespace ImsInformedTests
             testCases.Add("C13H13ClN4O2S"); //case test
             testCases.Add("c18H24n2O1P2s2"); //case test
             testCases.Add("(CF3)2C(C6H4OH)2");
-            testCases.Add("CH3COOH");
+            testCases.Add("  CH3COOH ");
             
             testCases.Add("C16D10");
             testCases.Add("FeS");

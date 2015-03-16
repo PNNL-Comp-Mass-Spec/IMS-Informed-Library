@@ -831,7 +831,7 @@ namespace ImsInformedTests
             };
 
             MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
-            IDictionary<ImsTarget, MoleculeInformedWorkflowResult> resultMap = informedWorkflow.RunMoleculeInformedWorkFlow(targetList, false);
+            IDictionary<string, MoleculeInformedWorkflowResult> resultMap = informedWorkflow.RunMoleculeInformedWorkFlow(targetList, false);
         }
     }
 }

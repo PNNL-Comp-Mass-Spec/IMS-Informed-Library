@@ -12,6 +12,7 @@ namespace ImsInformed.Domain
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
 
@@ -117,17 +118,72 @@ namespace ImsInformed.Domain
             this.DriftTimeTargetList = new List<DriftTimeTarget>();
         }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the ionization type.
+        /// </summary>
         public IonizationMethod IonizationType { get; private set; }
-        public TargetType TargetType{ get; private set; }
+
+        /// <summary>
+        /// Gets the target type.
+        /// </summary>
+        public TargetType TargetType { get; private set; }
+
+        /// <summary>
+        /// Gets the empirical formula.
+        /// </summary>
         public string EmpiricalFormula { get; private set; }
+
+        /// <summary>
+        /// Gets the composition.
+        /// </summary>
         public Composition Composition { get; private set; }
+
+        public string TargetDescriptor
+        {
+            get
+            {
+                return this.Composition == null ? this.TargetMz.ToString(CultureInfo.InvariantCulture) : this.EmpiricalFormula;;
+            }
+        }
+
+        /// <summary>
+        /// Gets the peptide.
+        /// </summary>
         public string Peptide { get; private set; }
+
+        /// <summary>
+        /// Gets the mass.
+        /// </summary>
         public double Mass { get; private set; }
+
+        /// <summary>
+        /// Gets the normalized elution time.
+        /// </summary>
         public double NormalizedElutionTime { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the drift time target list.
+        /// </summary>
         public IList<DriftTimeTarget> DriftTimeTargetList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the result list.
+        /// </summary>
         public IList<ImsTargetResult> ResultList { get; set; }
+
+        /// <summary>
+        /// Gets the modification list.
+        /// </summary>
         public IList<Modification> ModificationList { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the target mz.
+        /// </summary>
         public double TargetMz {get; set;}
 
         /// <summary>

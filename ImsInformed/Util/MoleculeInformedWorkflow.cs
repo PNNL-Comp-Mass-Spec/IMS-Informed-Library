@@ -11,13 +11,11 @@
 namespace ImsInformed.Util
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Windows.Documents;
 
     using DeconTools.Backend.Core;
 
@@ -147,8 +145,9 @@ namespace ImsInformed.Util
             return new Ion(target.Composition, chargeState);
         }
 
-        public IDictionary<ImsTarget, MoleculeInformedWorkflowResult> RunMoleculeInformedWorkFlow(IEnumerable<ImsTarget> targetList, bool detailedVerbose = true)
+        public IDictionary<string, MoleculeInformedWorkflowResult> RunMoleculeInformedWorkFlow(IEnumerable<ImsTarget> targetList, bool detailedVerbose = true)
         {
+            IDictionary<string, MoleculeInformedWorkflowResult> targetResultMap = new Dictionary<string, MoleculeInformedWorkflowResult>();
             foreach (var target in targetList)
             {
                 if (target.EmpiricalFormula != null)
@@ -160,13 +159,9 @@ namespace ImsInformed.Util
                 {
                     Console.WriteLine("    Target: Unknown (MZ = {0})", target.TargetMz);
                 }
-            }
 
-            IDictionary<ImsTarget, MoleculeInformedWorkflowResult> targetResultMap = new Dictionary<ImsTarget, MoleculeInformedWorkflowResult>();
-            foreach (var target in targetList)
-            {
                 MoleculeInformedWorkflowResult result = this.RunMoleculeInformedWorkFlow(target, detailedVerbose);
-                targetResultMap.Add(target, result);
+                targetResultMap.Add(target.TargetDescriptor, result);
             }
 
             return targetResultMap;
@@ -184,7 +179,7 @@ namespace ImsInformed.Util
         /// </returns>
         public MoleculeInformedWorkflowResult RunMoleculeInformedWorkFlow(ImsTarget target, bool detailedVerbose = true)
         {
-            string targetDescription = target.Composition == null ? ("[Mz = " + target.TargetMz.ToString(CultureInfo.InvariantCulture) + "]") : target.EmpiricalFormula;
+            string targetDescription = target.TargetDescriptor;
             double monoisotopicMass = 0;
 
             MoleculeInformedWorkflowResult informedResult;

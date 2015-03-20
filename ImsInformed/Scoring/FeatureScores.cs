@@ -17,6 +17,7 @@ namespace ImsInformed.Scoring
     using ImsInformed.Domain;
     using ImsInformed.Stats;
     using ImsInformed.Util;
+    using ImsInformed.Workflows;
 
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
@@ -50,7 +51,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityScore(InformedWorkflow workflow, FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
+        public static double IntensityScore(LCMSPeptideSearchWorkfow workflow, FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
         {
             // Sort features by relative intensity
             FeatureBlobStatistics statistics = featureBlob.Statistics;
@@ -88,7 +89,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double PeakShapeScore(InformedWorkflow workflow, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz, double globalMaxIntensities)
+        public static double PeakShapeScore(LCMSPeptideSearchWorkfow workflow, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz, double globalMaxIntensities)
         {
             int scanRep = statistics.ScanImsRep;
             double toleranceInMz = workflow._parameters.MassToleranceInPpm / 1e6 * targetMz;
@@ -171,7 +172,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities)
+        public static double IsotopicProfileScore(LCMSPeptideSearchWorkfow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)

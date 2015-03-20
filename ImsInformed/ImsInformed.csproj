@@ -112,9 +112,10 @@
     <Compile Include="Domain\ImsTargetResult.cs" />
     <Compile Include="Domain\InjectionMethod.cs" />
     <Compile Include="Domain\IonizationMethod.cs" />
-    <Compile Include="Domain\MoleculeInformedWorkflowResult.cs" />
+    <Compile Include="Domain\CrossSectionWorkflowResult.cs" />
     <Compile Include="Filters\AnalysisFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
+    <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
@@ -143,13 +144,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Util\InformedWorkflow.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
     <Compile Include="Util\MoleculeUtil.cs" />
-    <Compile Include="Util\MoleculeInformedWorkflow.cs" />
     <Compile Include="Util\PeptideUtil.cs" />
     <Compile Include="Util\SaturationDetector.cs" />
     <Compile Include="Stats\ContinuousXYPoint.cs" />
+    <Compile Include="Workflows\CrossSectionWorkfow.cs" />
+    <Compile Include="Workflows\LCMSPeptideSearchWorkfow.cs" />
+    <Compile Include="Workflows\LibrarySearchWorkflow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

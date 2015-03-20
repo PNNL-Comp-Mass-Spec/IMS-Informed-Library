@@ -26,13 +26,23 @@ namespace ImsInformed.Domain
     public class ImsTarget
     {
         /// <summary>
+        /// The peptide sequence.
+        /// </summary>
+        private string peptideSequence;
+
+        /// <summary>
+        /// The drift time target list.
+        /// </summary>
+        private IList<DriftTimeTarget> driftTimeTargetList;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ImsTarget"/> class.
         /// </summary>
         /// <param name="id">
         /// The id.
         /// </param>
-        /// <param name="peptide">
-        /// The peptide.
+        /// <param name="peptideSequence">
+        /// The PeptideSequence.
         /// </param>
         /// <param name="normalizedElutionTime">
         /// The normalized elution time.
@@ -40,9 +50,9 @@ namespace ImsInformed.Domain
         /// <param name="modificationList">
         /// The modification list.
         /// </param>
-        public ImsTarget(int id, string peptide, double normalizedElutionTime, IList<Modification> modificationList = null)
+        public ImsTarget(int id, string peptideSequence, double normalizedElutionTime, IList<Modification> modificationList = null)
         {
-            Composition composition = PeptideUtil.GetCompositionOfPeptide(peptide);
+            Composition composition = PeptideUtil.GetCompositionOfPeptide(peptideSequence);
             foreach (var modification in modificationList)
             {
                 composition += modification.Composition;
@@ -54,7 +64,7 @@ namespace ImsInformed.Domain
             }
 
             this.Id = id;
-            this.Peptide = peptide;
+            this.PeptideSequence = peptideSequence;
             this.Mass = composition.Mass;
             this.NormalizedElutionTime = normalizedElutionTime;
             this.Composition = composition;
@@ -90,7 +100,7 @@ namespace ImsInformed.Domain
             this.ResultList = new List<ImsTargetResult>();
             this.DriftTimeTargetList = new List<DriftTimeTarget>();
             this.ModificationList = null;
-            this.TargetType = TargetType.Nonpeptide;
+            this.TargetType = TargetType.SmallMolecule;
             this.IonizationType = ionization;
         }
 
@@ -98,7 +108,7 @@ namespace ImsInformed.Domain
         /// Initializes a new instance of the <see cref="ImsTarget"/> class.
         /// </summary>
         /// <param name="id">
-        /// The id.
+        /// The ID.
         /// </param>
         /// <param name="ionization">
         /// The ionization.
@@ -110,25 +120,114 @@ namespace ImsInformed.Domain
         {
             this.Id = id;
             this.TargetMz = targetMz;
-            this.TargetType = TargetType.Nonpeptide;
+            this.TargetType = TargetType.SmallMolecule;
             this.IonizationType = ionization;
 
             this.ResultList = new List<ImsTargetResult>();
             this.DriftTimeTargetList = new List<DriftTimeTarget>();
         }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the ionization type.
+        /// </summary>
         public IonizationMethod IonizationType { get; private set; }
-        public TargetType TargetType{ get; private set; }
+
+        /// <summary>
+        /// Gets the target type.
+        /// </summary>
+        public TargetType TargetType { get; private set; }
+
+        /// <summary>
+        /// Gets the empirical formula.
+        /// </summary>
         public string EmpiricalFormula { get; private set; }
+
+        /// <summary>
+        /// Gets the composition.
+        /// </summary>
         public Composition Composition { get; private set; }
-        public string Peptide { get; private set; }
+
+        /// <summary>
+        /// Gets the PeptideSequence.
+        /// </summary>
+        public string PeptideSequence
+        {
+            get
+            {
+                if (this.TargetType != TargetType.Peptide)
+                {
+                    throw new InvalidOperationException("Cannot get peptide sequence for targets that's not a peptide");
+                }
+
+                return this.peptideSequence;
+            }
+
+            private set
+            {
+                if (this.TargetType != TargetType.Peptide)
+                {
+                    throw new InvalidOperationException("Cannot get peptide sequence for targets that's not a peptide");
+                }
+
+                this.peptideSequence = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the mass.
+        /// </summary>
         public double Mass { get; private set; }
+
+        /// <summary>
+        /// Gets the normalized elution time.
+        /// </summary>
         public double NormalizedElutionTime { get; private set; }
-        public IList<DriftTimeTarget> DriftTimeTargetList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the drift time target list.
+        /// </summary>
+        public IList<DriftTimeTarget> DriftTimeTargetList
+        {
+            get
+            {
+                if (this.TargetType != TargetType.Peptide)
+                {
+                    throw new InvalidOperationException("Cannot get peptide sequence for targets that's not a peptide");
+                }
+
+                return this.driftTimeTargetList;
+            }
+
+            set
+            {
+                if (this.TargetType != TargetType.Peptide)
+                {
+                    throw new InvalidOperationException("Cannot get peptide sequence for targets that's not a peptide");
+                }
+
+                this.driftTimeTargetList = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the result list.
+        /// </summary>
         public IList<ImsTargetResult> ResultList { get; set; }
+
+        /// <summary>
+        /// Gets the modification list.
+        /// </summary>
         public IList<Modification> ModificationList { get; private set; }
-        public double TargetMz {get; set;}
+
+        /// <summary>
+        /// Gets or sets the target MZ.
+        /// </summary>
+        public double TargetMz { get; set; }
 
         /// <summary>
         /// The remove results.
@@ -147,10 +246,10 @@ namespace ImsInformed.Domain
         public string CreateSqlMassTagQueries()
         {
             StringBuilder massTagQuery = new StringBuilder();
-            massTagQuery.Append("INSERT INTO T_MASS_TAG (Mass_Tag_Id, Peptide, Mod_Description, Empirical_Formula, Monoisotopic_Mass, NET) VALUES(");
+            massTagQuery.Append("INSERT INTO T_MASS_TAG (Mass_Tag_Id, PeptideSequence, Mod_Description, Empirical_Formula, Monoisotopic_Mass, NET) VALUES(");
             massTagQuery.Append(this.Id);
             massTagQuery.Append(",");
-            massTagQuery.Append("'" + this.Peptide + "'");
+            massTagQuery.Append("'" + this.PeptideSequence + "'");
             massTagQuery.Append(",");
             massTagQuery.Append("'MOD_HERE'");
             massTagQuery.Append(",");
@@ -178,10 +277,10 @@ namespace ImsInformed.Domain
             StringBuilder allQueries = new StringBuilder();
 
             //StringBuilder massTagQuery = new StringBuilder();
-            //massTagQuery.Append("INSERT INTO T_MASS_TAG (Mass_Tag_Id, Peptide, Mod_Description, Empirical_Formula, Monoisotopic_Mass, NET) VALUES(");
+            //massTagQuery.Append("INSERT INTO T_MASS_TAG (Mass_Tag_Id, PeptideSequence, Mod_Description, Empirical_Formula, Monoisotopic_Mass, NET) VALUES(");
             //massTagQuery.Append(this.Id);
             //massTagQuery.Append(",");
-            //massTagQuery.Append("'" + this.Peptide + "'");
+            //massTagQuery.Append("'" + this.PeptideSequence + "'");
             //massTagQuery.Append(",");
             //massTagQuery.Append("'MOD_HERE'");
             //massTagQuery.Append(",");

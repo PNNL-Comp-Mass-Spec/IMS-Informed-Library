@@ -16,20 +16,15 @@ namespace ImsInformedTests
     using System.Linq;
 
     using DeconTools.Backend.Algorithms;
-    using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain;
     using ImsInformed.IO;
     using ImsInformed.Parameters;
-    using ImsInformed.Stats;
     using ImsInformed.Util;
 
-    using InformedProteomics.Backend.Data.Composition;
     using InformedProteomics.Backend.Data.Sequence;
 
-    using MathNet.Numerics.Distributions;
     using MathNet.Numerics.Interpolation;
-    using MathNet.Numerics.Statistics;
 
     using NUnit.Framework;
 

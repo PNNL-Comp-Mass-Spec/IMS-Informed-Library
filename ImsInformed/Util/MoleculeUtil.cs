@@ -31,11 +31,18 @@ namespace ImsInformed.Util
     /// </summary>
     public static class MoleculeUtil
     {
-        public static readonly string Open  = "([{<"; 
+        /// <summary>
+        /// The open parenthesis symbols
+        /// </summary>
+        public static readonly string Open  = "([{<";
+
+        /// <summary>
+        /// The close parenthesis symbols
+        /// </summary>
         public static readonly string Close = ")]}>";
 
         /// <summary>
-        /// The ionization composition compensation.
+        /// Compensate the composition based on ionization methods used.
         /// </summary>
         /// <param name="composition">
         /// The composition.
@@ -82,7 +89,7 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// The ionization composition decompensation.
+        /// Decompensate the extra proton that is usually assumed(not true in metabolitics) to proteomics
         /// </summary>
         /// <param name="composition">
         /// The composition.
@@ -128,7 +135,7 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// The compute collision cross sectional area.
+        /// The math to compute collision cross sectional area.
         /// </summary>
         /// <param name="averageTemperatureInKelvin">
         /// The average temperature in kelvin.
@@ -268,7 +275,7 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// The read empirical formula.
+        /// Convert the empirical formula string to Composition object defined Informed Proteomics
         /// </summary>
         /// <param name="empiricalFormula">
         /// The empirical formula.
@@ -299,7 +306,7 @@ namespace ImsInformed.Util
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        private static bool IsBalanced(string input)
+        public static bool IsBalanced(string input)
         {
             return IsBalanced(input, String.Empty);
         }
@@ -308,13 +315,13 @@ namespace ImsInformed.Util
         /// Check the balance of parenthesis given a empirical formula
         /// </summary>
         /// <param name="input">
-        /// The input.
+        /// The input string.
         /// </param>
         /// <param name="stack">
-        /// The stack.
+        /// The string stack to compare balance with.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        /// true if the string has balanced string as the stack <see cref="bool"/>.
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
@@ -328,13 +335,13 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// The is open.
+        /// The character is an open parenthesis.
         /// </summary>
         /// <param name="ch">
-        /// The ch.
+        /// The character to be contested.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        /// true if the character is an open parenthesis, false otherwise <see cref="bool"/>.
         /// </returns>
         private static bool IsOpen(char ch) 
         {
@@ -342,13 +349,13 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// The is closed.
+        /// The character is a closing parenthesis.
         /// </summary>
         /// <param name="ch">
-        /// The ch.
+        /// The character to be contested.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        /// true if the character is an open parenthesis, false otherwise <see cref="bool"/>.
         /// </returns>
         private static bool IsClose(char ch) 
         {

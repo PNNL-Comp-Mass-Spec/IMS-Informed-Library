@@ -135,7 +135,7 @@ namespace ImsInformed.IO
                 LowColor = OxyColors.Blue,
                 Minimum = 0.1,
                 Maximum = 0.9,
-                Palette = new OxyPalette(OxyColor.FromRgb(255, 0, 0), OxyColor.FromRgb(153, 255, 54) )
+                Palette = new OxyPalette(OxyColor.FromRgb(255, 0, 0), OxyColor.FromRgb(153, 255, 54))
             };
 
             ScatterSeries fitPointSeries = new ScatterSeries

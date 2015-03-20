@@ -12,16 +12,15 @@ namespace ImsInformedTests
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Threading;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
     using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Parameters;
     using ImsInformed.Scoring;
     using ImsInformed.Stats;

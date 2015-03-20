@@ -15,6 +15,7 @@ namespace ImsInformed.Scoring
     using System.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Stats;
     using ImsInformed.Util;
     using ImsInformed.Workflows;

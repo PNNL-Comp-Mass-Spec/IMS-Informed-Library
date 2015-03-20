@@ -20,8 +20,8 @@ namespace ImsInformed.Workflows
     using DeconTools.Backend.Core;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
-    using ImsInformed.Interfaces;
     using ImsInformed.IO;
     using ImsInformed.Parameters;
     using ImsInformed.Scoring;
@@ -34,7 +34,7 @@ namespace ImsInformed.Workflows
     using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
-    /// Find molecules with a known formula and know ionization methods.
+    /// Find molecules with a given empirical formula and given ionization methods. Developed based on LCMS Peptide Search Workflow
     /// </summary>
     public class CrossSectionWorkfow : LCMSPeptideSearchWorkfow
     {
@@ -348,7 +348,7 @@ namespace ImsInformed.Workflows
 
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
-                        informedResult.AnalysisStatus = AnalysisStatus.NEG;
+                        informedResult.AnalysisStatus = AnalysisStatus.Negative;
                         
 
                         informedResult.Mobility = -1;
@@ -427,7 +427,7 @@ namespace ImsInformed.Workflows
                     if (!sufficientPoints)
                     {
                         Trace.WriteLine("Not enough points are qualified to perform linear fit. Abort identification.");
-                        informedResult.AnalysisStatus = AnalysisStatus.NSP;
+                        informedResult.AnalysisStatus = AnalysisStatus.NotSufficientPoints;
                         informedResult.Mobility = -1;
                         informedResult.CrossSectionalArea = -1;
                         informedResult.AnalysisScoresHolder.RSquared = 0;
@@ -480,7 +480,7 @@ namespace ImsInformed.Workflows
                     double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge State is assumed to be 1 here;
 
                     // Initialize the result struct.
-                    informedResult.AnalysisStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.REJ : AnalysisStatus.POS;
+                    informedResult.AnalysisStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.Rejected : AnalysisStatus.Positive;
                     informedResult.Mobility = mobility;
                     informedResult.CrossSectionalArea = crossSection;
                     informedResult.AnalysisScoresHolder.RSquared = rSquared;
@@ -489,7 +489,7 @@ namespace ImsInformed.Workflows
                     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(scores);
 
                     // Check if the last voltage group still exists as fit point
-                    if (informedResult.AnalysisStatus == AnalysisStatus.REJ)
+                    if (informedResult.AnalysisStatus == AnalysisStatus.Rejected)
                     {
                         informedResult.LastVoltageGroupDriftTimeInMs = -1;
                     }
@@ -547,7 +547,7 @@ namespace ImsInformed.Workflows
                 informedResult.DatasetName = this.DatasetName;
                 informedResult.TargetDescriptor = null;
                 informedResult.IonizationMethod = target.IonizationType;
-                informedResult.AnalysisStatus = AnalysisStatus.ERR;
+                informedResult.AnalysisStatus = AnalysisStatus.UknownError;
                 informedResult.Mobility = -1;
                 informedResult.CrossSectionalArea = -1;
                 informedResult.AnalysisScoresHolder.RSquared = 0;

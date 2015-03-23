@@ -29,7 +29,7 @@ namespace ImsInformed.IO
 
 			StringBuilder peptideInfo = new StringBuilder();
 			peptideInfo.Append(target.Id + ",");
-			peptideInfo.Append(target.Peptide + ",");
+			peptideInfo.Append(target.PeptideSequence + ",");
 			peptideInfo.Append(modificationString + ","); // TODO: Mods
 			peptideInfo.Append(target.EmpiricalFormula + ",");
 			peptideInfo.Append(target.Mass + ",");
@@ -88,7 +88,7 @@ namespace ImsInformed.IO
 
 			StringBuilder peptideInfo = new StringBuilder();
 			peptideInfo.Append(target.Id + ",");
-			peptideInfo.Append(target.Peptide + ",");
+			peptideInfo.Append(target.PeptideSequence + ",");
 			peptideInfo.Append(modificationString + ","); // TODO: Mods
 			peptideInfo.Append(target.EmpiricalFormula + ",");
 			peptideInfo.Append(target.Mass + ",");
@@ -135,7 +135,7 @@ namespace ImsInformed.IO
 
 		private static void AddCsvHeader(TextWriter textWriter)
 		{
-			const string header = "ID,Peptide,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,ScanLcRep,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation,AnalysisStatus";
+			const string header = "ID,PeptideSequence,Mods,EmpiricalFormula,TargetMass,ChargeState,ObservedMz,ppmError,ScanLcRep,IsoFitScore,Abundance,TargetElutionTime,ObservedElutionTime,ElutionTimeError,TargetDriftTime,ObservedDriftTime,DriftTimeError,ChargeCorrelation,AnalysisStatus";
 			textWriter.WriteLine(header);
 		}
 

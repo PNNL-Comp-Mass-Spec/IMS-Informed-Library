@@ -14,6 +14,7 @@ namespace ImsInformed.Scoring
     using System.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
 
     /// <summary>
     /// The voltage group score.

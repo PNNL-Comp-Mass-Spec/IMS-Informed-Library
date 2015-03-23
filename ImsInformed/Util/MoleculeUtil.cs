@@ -17,6 +17,7 @@ namespace ImsInformed.Util
     using System.Xml.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Stats;
 
     using InformedProteomics.Backend.Data.Biology;

@@ -48,7 +48,7 @@ namespace ImsInformed.IO
 					while (reader.Read())
 					{
 						int massTagId = Convert.ToInt32(reader["Mass_Tag_ID"]);
-						string peptide = Convert.ToString(reader["Peptide"]);
+						string peptide = Convert.ToString(reader["PeptideSequence"]);
 						double normalizedElutionTime = Convert.ToDouble(reader["Avg_GANET"]);
 						int modCount = Convert.ToInt16(reader["Mod_Count"]);
 						
@@ -92,7 +92,7 @@ namespace ImsInformed.IO
 
 			if (currentImsTarget != null)
 			{
-				if (currentImsTarget.Peptide == peptide && Math.Abs(currentImsTarget.NormalizedElutionTime - normalizedElutionTime) < 0.00001)
+				if (currentImsTarget.PeptideSequence == peptide && Math.Abs(currentImsTarget.NormalizedElutionTime - normalizedElutionTime) < 0.00001)
 				{
 					if (modCount == currentImsTarget.ModificationList.Count)
 					{
@@ -126,7 +126,7 @@ namespace ImsInformed.IO
 		{
 			return "SELECT " +
 						"MT.Mass_Tag_ID, " +
-						"MT.Peptide, " +
+						"MT.PeptideSequence, " +
 						"MTN.Avg_GANET," +
 						"MT.Mod_Count," +
 						"MT.Mod_Description," +
@@ -144,7 +144,7 @@ namespace ImsInformed.IO
 		{
 			return "SELECT " +
 						"MT.Mass_Tag_ID, " +
-						"MT.Peptide, " +
+						"MT.PeptideSequence, " +
 						"MTN.Avg_GANET," +
 						"MT.Mod_Count," +
 						"MT.Mod_Description," +

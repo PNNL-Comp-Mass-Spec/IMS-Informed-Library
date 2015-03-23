@@ -120,7 +120,7 @@
     <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="Interfaces\IImsTarget.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
-    <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
+    <Compile Include="Parameters\CrossSectionSearchParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
     <Compile Include="Scoring\AnalysisScoresHolder.cs" />
     <Compile Include="Scoring\TargetPresenceLikelihoodFunctions.cs" />
@@ -137,7 +137,7 @@
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
-    <Compile Include="Parameters\InformedParameters.cs" />
+    <Compile Include="Parameters\LCMSPeptideSearchParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

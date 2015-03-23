@@ -54,7 +54,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
@@ -81,7 +81,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.2,
@@ -114,7 +114,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 2,
                 NetTolerance = 0.03,
@@ -140,7 +140,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 2,
                 NetTolerance = 0.1,
@@ -166,7 +166,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
@@ -205,7 +205,7 @@ namespace ImsInformedTests
 
             IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -251,7 +251,7 @@ namespace ImsInformedTests
             File.Copy(sqliteSchemaLocation, sqliteOutputLocation);
 
             // Setup calibration workflow and targets
-            InformedParameters calibrationParameters = new InformedParameters
+            LCMSPeptideSearchParameters calibrationParameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
@@ -264,7 +264,7 @@ namespace ImsInformedTests
             Console.WriteLine("Using " + calibrationTargetList.Count + " targets for calibration.");
 
             // Setup Informed workflow parameters
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -447,7 +447,7 @@ namespace ImsInformedTests
             //IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
             // Setup calibration workflow and targets
-            InformedParameters calibrationParameters = new InformedParameters
+            LCMSPeptideSearchParameters calibrationParameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
@@ -459,7 +459,7 @@ namespace ImsInformedTests
             List<ImsTarget> calibrationTargetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789", 1e-10, true);
             Console.WriteLine("Using " + calibrationTargetList.Count + " targets for calibration.");
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -639,7 +639,7 @@ namespace ImsInformedTests
             string uimfFileLocation = Cheetah;
             //string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
@@ -782,7 +782,7 @@ namespace ImsInformedTests
 
             //IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.2,
@@ -818,7 +818,7 @@ namespace ImsInformedTests
 
             IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -852,7 +852,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
@@ -879,7 +879,7 @@ namespace ImsInformedTests
         public void TestDataExtractionSpeedManyTargets()
         {
             // Setup Informed workflow parameters
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,

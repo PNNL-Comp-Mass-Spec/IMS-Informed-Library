@@ -15,7 +15,7 @@
         // IMS, with different drifttube voltages at different frames.
         // This constructor intelligently group voltages together by observing
         // sharp changes in running voltage standard deviation
-        public VoltageSeparatedAccumulatedXICs(DataReader uimfReader, double targetMz, InformedParameters informedParams) : base()
+        public VoltageSeparatedAccumulatedXICs(DataReader uimfReader, double targetMz, CrossSectionSearchParameters crossSectionSearchParameters) : base()
         {
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
             
@@ -36,7 +36,7 @@
 
                 List<IntensityPoint> XIC = uimfReader.GetXic(
                     targetMz,
-                    informedParams.MassToleranceInPpm,
+                    crossSectionSearchParameters.MassToleranceInPpm,
                     i,
                     i,
                     0,

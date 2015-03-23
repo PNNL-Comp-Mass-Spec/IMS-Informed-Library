@@ -51,7 +51,7 @@ namespace ImsInformed.Workflows
         public readonly DataReader _uimfReader;
 
         /// <summary>
-        /// The _smoother.
+        /// The smoother.
         /// </summary>
         protected readonly SavitzkyGolaySmoother _smoother;
 
@@ -88,7 +88,7 @@ namespace ImsInformed.Workflows
         /// <summary>
         /// The _parameters.
         /// </summary>
-        public readonly InformedParameters _parameters;
+        public readonly LCMSPeptideSearchParameters _parameters;
 
         /// <summary>
         /// The number of frames.
@@ -139,7 +139,7 @@ namespace ImsInformed.Workflows
         /// <param name="netAlignment">
         /// The net alignment.
         /// </param>
-        public LCMSPeptideSearchWorkfow(string uimfFileLocation, InformedParameters parameters, IInterpolation netAlignment) : this(uimfFileLocation, parameters)
+        public LCMSPeptideSearchWorkfow(string uimfFileLocation, LCMSPeptideSearchParameters parameters, IInterpolation netAlignment) : this(uimfFileLocation, parameters)
         {
             this._netAlignment = netAlignment;
         }
@@ -153,7 +153,7 @@ namespace ImsInformed.Workflows
         /// <param name="parameters">
         /// The parameters.
         /// </param>
-        public LCMSPeptideSearchWorkfow(string uimfFileLocation, InformedParameters parameters)
+        public LCMSPeptideSearchWorkfow(string uimfFileLocation, LCMSPeptideSearchParameters parameters)
         {
             this._buildWatershedStopWatch = new Stopwatch();
             this._smoothStopwatch = new Stopwatch();

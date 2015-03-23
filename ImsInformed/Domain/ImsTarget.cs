@@ -15,6 +15,7 @@ namespace ImsInformed.Domain
     using System.Linq;
     using System.Text;
 
+    using ImsInformed.Interfaces;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Composition;
@@ -23,7 +24,7 @@ namespace ImsInformed.Domain
     /// <summary>
     /// The IMS target.
     /// </summary>
-    public class ImsTarget
+    public class ImsTarget : IImsTarget
     {
         /// <summary>
         /// The peptide sequence.
@@ -122,9 +123,7 @@ namespace ImsInformed.Domain
             this.TargetMz = targetMz;
             this.TargetType = TargetType.SmallMolecule;
             this.IonizationType = ionization;
-
             this.ResultList = new List<ImsTargetResult>();
-            this.DriftTimeTargetList = new List<DriftTimeTarget>();
         }
 
         /// <summary>

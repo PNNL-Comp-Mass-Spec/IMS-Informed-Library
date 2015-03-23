@@ -18,6 +18,11 @@ namespace ImsInformed.Workflows
     using System.Linq;
 
     using DeconTools.Backend.Core;
+    using DeconTools.Backend.ProcessingTasks.FitScoreCalculators;
+    using DeconTools.Backend.ProcessingTasks.PeakDetectors;
+    using DeconTools.Backend.ProcessingTasks.ResultValidators;
+    using DeconTools.Backend.ProcessingTasks.TargetedFeatureFinders;
+    using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
@@ -31,13 +36,26 @@ namespace ImsInformed.Workflows
     using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
 
+    using MultiDimensionalPeakFinding;
     using MultiDimensionalPeakFinding.PeakDetection;
+
+    using UIMFLibrary;
 
     /// <summary>
     /// Find molecules with a given empirical formula and given ionization methods. Developed based on LCMS Peptide Search Workflow
     /// </summary>
-    public class CrossSectionWorkfow : LCMSPeptideSearchWorkfow
+    public class CrossSectionWorkfow
     {
+        /// <summary>
+        /// The number of frames.
+        /// </summary>
+        public readonly double NumberOfFrames;
+
+        /// <summary>
+        /// The number of scans.
+        /// </summary>
+        public readonly int NumberOfScans;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionWorkfow"/> class.
         /// </summary>
@@ -53,8 +71,25 @@ namespace ImsInformed.Workflows
         /// <param name="parameters">
         /// The parameters.
         /// </param>
-        public CrossSectionWorkfow(string uimfFileLocation, string outputDirectory, string resultFileName, MoleculeWorkflowParameters parameters) : base(uimfFileLocation, parameters)
+        public CrossSectionWorkfow(string uimfFileLocation, string outputDirectory, string resultFileName, CrossSectionSearchParameters parameters)
         {
+            this.uimfReader = new DataReader(uimfFileLocation);
+
+            // Append bin-centric table to the uimf if not present.
+            if (!this.uimfReader.DoesContainBinCentricData())
+            {
+                DataWriter dataWriter = new DataWriter(uimfFileLocation);
+                dataWriter.CreateBinCentricTables();
+            }
+            
+            this.Parameters = parameters;
+            this.smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
+            this.theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
+            this.peakDetector = new ChromPeakDetector(0.0001, 0.0001);
+
+            this.NumberOfFrames = this.uimfReader.GetGlobalParams().NumFrames;
+            this.NumberOfScans = this.uimfReader.GetFrameParams(1).Scans;
+
             this.DatasetName = Path.GetFileNameWithoutExtension(uimfFileLocation);
 
             this.Parameters = parameters;
@@ -88,14 +123,34 @@ namespace ImsInformed.Workflows
         }
 
         /// <summary>
+        /// The UIMF reader.
+        /// </summary>
+        public readonly DataReader uimfReader;
+
+        /// <summary>
+        /// The theoretical feature generator.
+        /// </summary>
+        protected readonly ITheorFeatureGenerator theoreticalFeatureGenerator;
+
+        /// <summary>
+        /// The smoother.
+        /// </summary>
+        protected readonly SavitzkyGolaySmoother smoother;
+
+        /// <summary>
         /// Gets or sets the parameters.
         /// </summary>
-        public MoleculeWorkflowParameters Parameters { get; set; }
+        public CrossSectionSearchParameters Parameters { get; set; }
 
         /// <summary>
         /// Gets or sets the dataset name.
         /// </summary>
         public string DatasetName { get; set; }
+
+        /// <summary>
+        /// The _peak detector.
+        /// </summary>
+        protected readonly ChromPeakDetector peakDetector;
 
         /// <summary>
         /// Gets the result path.
@@ -204,23 +259,23 @@ namespace ImsInformed.Workflows
                     if (targetComposition != null) 
                     {
                         string empiricalFormula = targetComposition.ToPlainString();
-                        IsotopicProfile theoreticalIsotopicProfile = this._theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                        IsotopicProfile theoreticalIsotopicProfile = this.theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
                         theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                     }
                 
                     // Voltage grouping
-                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this._uimfReader, target.TargetMz, this._parameters);
+                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.TargetMz, this.Parameters);
 
                     // For each voltage, find 2D XIC features 
                     Trace.WriteLine("Feature detection and scoring: ");
                     IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {    
-                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this._uimfReader);
+                        double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this.uimfReader);
 
                         // Smooth Chromatogram
                         IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
-                        this._smoother.Smooth(ref pointList);
+                        this.smoother.Smooth(ref pointList);
                         
                         // Peak Find Chromatogram
                         List<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList).ToList();
@@ -241,14 +296,14 @@ namespace ImsInformed.Workflows
                         foreach (var featureBlob in featureBlobs)
                         {   
                             FeatureScoreHolder currentScoreHolder;
-                            currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup, globalMaxIntensity);
+                            currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
                             
-                            currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz, globalMaxIntensity);
+                            currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this.uimfReader, this.Parameters, featureBlob.Statistics, voltageGroup, target.TargetMz, globalMaxIntensity, (int)this.NumberOfScans);
 
                             currentScoreHolder.IsotopicScore = 0;
                             if (targetComposition != null)
                             {
-                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity);
+                                 currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this.uimfReader, this.Parameters, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity, (int)this.NumberOfScans);
                             }
 
                             scoresTable.Add(featureBlob, currentScoreHolder);
@@ -260,7 +315,7 @@ namespace ImsInformed.Workflows
                         // filter out features with Ims scans at 1% left or right.
                         Predicate<FeatureBlob> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
                         Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
-                        Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicFitScoreThreshold);
+                        Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
 
                         // Print out candidate features that pass the intensity threshold.
                         foreach (var featureBlob in featureBlobs)

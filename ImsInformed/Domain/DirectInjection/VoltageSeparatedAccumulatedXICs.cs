@@ -14,7 +14,8 @@
         // The input UIMF file needs to be a UIMF file created by direct-injection
         // IMS, with different drifttube voltages at different frames.
         // This constructor intelligently group voltages together by observing
-        // sharp changes in running voltage standard deviation
+        // sharp changes in running voltage standard deviation. Only the XIC around
+        // targeted MZ would be accumulated. 
         public VoltageSeparatedAccumulatedXICs(DataReader uimfReader, double targetMz, CrossSectionSearchParameters crossSectionSearchParameters) : base()
         {
             int frameNum = uimfReader.GetGlobalParams().NumFrames;

@@ -120,6 +120,8 @@
     <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="Interfaces\IImsTarget.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
+    <Compile Include="IO\RetentionMobilitySwappedMzMLExporter.cs" />
+    <Compile Include="IO\UIMFExporter.cs" />
     <Compile Include="Parameters\CrossSectionSearchParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
     <Compile Include="Scoring\AnalysisScoresHolder.cs" />
@@ -152,6 +154,7 @@
     <Compile Include="Workflows\CrossSectionWorkfow.cs" />
     <Compile Include="Workflows\LCMSPeptideSearchWorkfow.cs" />
     <Compile Include="Workflows\LibrarySearchWorkflow.cs" />
+    <Compile Include="Workflows\VoltageAccumulationWorkflow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

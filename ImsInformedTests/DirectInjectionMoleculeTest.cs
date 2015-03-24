@@ -761,5 +761,15 @@ namespace ImsInformedTests
                 Console.WriteLine();
             }
         }
+
+        /// <summary>
+        /// The test scoring.
+        /// </summary>
+        [Test][STAThread]
+        public void TestMzmlExport()
+        {
+            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, Acetaminophen, "UIMFs");
+            workflow.RunVoltageAccumulationWorkflow();
+        }
     }
 }

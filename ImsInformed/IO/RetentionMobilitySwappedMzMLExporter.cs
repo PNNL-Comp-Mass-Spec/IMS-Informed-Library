@@ -221,7 +221,7 @@ namespace ImsInformed.IO
 
                 // Write the bins as mass spectrum
                 writer.WriteStartElement("spectrum");
-                writer.WriteAttributeString("index", lcScan.ToString(CultureInfo.InvariantCulture));
+                writer.WriteAttributeString("index", String.Format("{0}", lcScan - 1));
                 writer.WriteAttributeString("id", String.Format("frame={0} scan={1} frameType={2}", 1, lcScan, 1));
                 writer.WriteAttributeString("defaultArrayLength", mzArray.Count().ToString(CultureInfo.InvariantCulture));
 

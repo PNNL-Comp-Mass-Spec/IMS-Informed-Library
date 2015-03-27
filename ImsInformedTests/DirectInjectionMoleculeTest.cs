@@ -776,6 +776,7 @@ namespace ImsInformedTests
         {
             VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, Mix1, "output");
             workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.MzML);
+            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.UIMF);
         }
     }
 }

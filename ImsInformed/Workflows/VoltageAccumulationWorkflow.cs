@@ -215,7 +215,7 @@ namespace ImsInformed.Workflows
         /// </returns>
         private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, bool fullScan, FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, 1, 1, fullScan, exportFormat);
+            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, -1, -1, fullScan, exportFormat);
         }
 
         /// <summary>

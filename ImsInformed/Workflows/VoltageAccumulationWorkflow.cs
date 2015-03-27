@@ -264,9 +264,9 @@ namespace ImsInformed.Workflows
                 if (exportFormat == FileFormatEnum.UIMF)
                 {
                     string outputPath = Path.Combine(this.OutputDir, this.datasetName + "_" + Math.Round(voltageGroup.MeanVoltageInVolts) + "V.uimf");
-                    Console.WriteLine("Writing UIMF files to {0}", this.OutputDir);
                     UimfExporter uimfExporter = new UimfExporter();
                     success = success && uimfExporter.ExportVoltageGroupAsSingleFrameUimf(outputPath, voltageGroup, this.UimfReader, this.averageNotSum, startScan, endScan, startBin, endBin, xCompression, yCompression, fullScan);
+                    Console.WriteLine("Writing UIMF files to {0}", outputPath);
                 }
                 else if (exportFormat == FileFormatEnum.MzML)
                 {

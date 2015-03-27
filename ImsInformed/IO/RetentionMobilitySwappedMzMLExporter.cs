@@ -211,8 +211,8 @@ namespace ImsInformed.IO
             // Use dirft time scan as LC scan to massage skyline
             for (int lcScan = 1; lcScan <= this.scans; lcScan++)
             {
-                double[] mzArray;
-                int[] intensityArray;
+                float[] mzArray;
+                float[] intensityArray;
 
                 this.GetMzIntensityArrayAtScan(summedIntensities, lcScan, out mzArray, out intensityArray);
 
@@ -319,23 +319,23 @@ namespace ImsInformed.IO
             writer.WriteEndElement();
         }
 
-        private void GetMzIntensityArrayAtScan(double[,] intensities, int scan, out double[] mzArray, out int[] intensityArray)
+        private void GetMzIntensityArrayAtScan(double[,] intensities, int scan, out float[] mzArray, out float[] intensityArray)
         {
-            List<double> mzList = new List<double>();
-            List<int> intensityList = new List<int>();
+            List<float> mzList = new List<float>();
+            List<float> intensityList = new List<float>();
 
             for (int bin = 1; bin <= this.bins; bin++) 
             {
                 if (Math.Abs(intensities[scan - 1, bin - 1]) > 0.000001)
                 {
-                    double mz = DataReader.ConvertBinToMZ(
+                    float mz = (float)DataReader.ConvertBinToMZ(
                         this.calibrationSlope,
                         this.calibrationIntercept,
                         this.binWidth,
                         this.tofCorrectionTime,
                         bin);
                     mzList.Add(mz);
-                    intensityList.Add((int)Math.Round(intensities[scan - 1, bin - 1]));
+                    intensityList.Add((float)intensities[scan - 1, bin - 1]);
                 }
             }
 
@@ -343,7 +343,7 @@ namespace ImsInformed.IO
             intensityArray = intensityList.ToArray();
         }
 
-        private string EncodeMzArray(double[] mzArray, out int encodeLength)
+        private string Encode32bitFloatArray(float[] mzArray, out int encodeLength)
         {
             int precisionBits;
             string type;
@@ -352,22 +352,13 @@ namespace ImsInformed.IO
             return encoded;
         }
 
-        private string EncodeIntensityArray(int[] IntensityArray, out int encodeLength)
-        {
-            int precisionBits;
-            string type;
-            string encoded = MSDataFileReader.clsBase64EncodeDecode.EncodeNumericArray(IntensityArray, out precisionBits, out type);
-            encodeLength = encoded.Count();
-            return encoded;
-        }
-
-        private void WriteBinaryDataArrays(double[] mzArray, int[] intensityArray, XmlWriter writer)
+        private void WriteBinaryDataArrays(float[] mzArray, float[] intensityArray, XmlWriter writer)
         {
             int encodedMzArraySize;
             int encodedIntensityArraySize;
 
-            string encodedMzArray = this.EncodeMzArray(mzArray, out encodedMzArraySize);
-            string encodedIntensityArray = this.EncodeIntensityArray(intensityArray, out encodedIntensityArraySize);
+            string encodedMzArray = this.Encode32bitFloatArray(mzArray, out encodedMzArraySize);
+            string encodedIntensityArray = this.Encode32bitFloatArray(intensityArray, out encodedIntensityArraySize);
 
             writer.WriteStartElement("binaryDataArrayList");
             writer.WriteAttributeString("count", "2");
@@ -378,8 +369,8 @@ namespace ImsInformed.IO
 
             writer.WriteStartElement("cvParam");
             writer.WriteAttributeString("cvRef", "MS");
-            writer.WriteAttributeString("accession", "MS:1000523");
-            writer.WriteAttributeString("name", "64-bit float");
+            writer.WriteAttributeString("accession", "MS:1000521");
+            writer.WriteAttributeString("name", "32-bit float");
             writer.WriteAttributeString("value", string.Empty);
             writer.WriteEndElement();
 

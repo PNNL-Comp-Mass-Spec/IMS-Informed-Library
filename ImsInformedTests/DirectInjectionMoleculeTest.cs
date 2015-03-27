@@ -22,6 +22,7 @@ namespace ImsInformedTests
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.IO;
     using ImsInformed.Parameters;
     using ImsInformed.Scoring;
     using ImsInformed.Stats;
@@ -54,6 +55,11 @@ namespace ImsInformedTests
         /// The Acetamiprid file.
         /// </summary>
         public const string AcetamipridFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AAP_neg_26Aug14_Columbia_DI.uimf";
+
+        /// <summary>
+        /// The mix 1.
+        /// </summary>
+        public const string Mix1 = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
 
         /// <summary>
         /// The acetaminophen.
@@ -768,8 +774,8 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestMzmlExport()
         {
-            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, Acetaminophen, "UIMFs");
-            workflow.RunVoltageAccumulationWorkflow();
+            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, Mix1, "output");
+            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.MzML);
         }
     }
 }

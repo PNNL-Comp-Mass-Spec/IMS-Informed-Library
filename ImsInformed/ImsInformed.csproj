@@ -67,6 +67,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MathNet.Numerics.dll</HintPath>
     </Reference>
+    <Reference Include="MSDataFileReader">
+      <HintPath>..\lib\MSDataFileReader\MSDataFileReader.dll</HintPath>
+    </Reference>
     <Reference Include="MultiDimensionalPeakFinding, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MultiDimensionalPeakFinding\MultiDimensionalPeakFinding.dll</HintPath>
@@ -119,6 +122,7 @@
     <Compile Include="Filters\FeatureFilters.cs" />
     <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="Interfaces\IImsTarget.cs" />
+    <Compile Include="IO\FileFormatEnum.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="IO\RetentionMobilitySwappedMzMLExporter.cs" />
     <Compile Include="IO\UIMFExporter.cs" />

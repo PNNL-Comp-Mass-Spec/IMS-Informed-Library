@@ -48,11 +48,22 @@ namespace ImsInformed.IO
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool ExportVoltageGroupAsSingleFrameUimf(string outputPath, VoltageGroup voltageGroup, DataReader originalUIMF, double[,] summedIntensities, bool averageNotSum)
+        public bool ExportVoltageGroupAsSingleFrameUimf(string outputPath, VoltageGroup voltageGroup, DataReader originalUIMF, bool averageNotSum, int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, bool fullScan)
         {
-            int scans = summedIntensities.GetLength(0);
-            int bins = summedIntensities.GetLength(1);
+            int startingFrame = voltageGroup.FirstFrameNumber;
+            int endingFrame = voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1;
 
+                FrameParams frameParam = originalUIMF.GetFrameParams(startingFrame);
+                if (fullScan)
+                {
+                    startScan = 1;
+                    endScan = frameParam.Scans;
+                }
+
+                Console.Write("Summing frame[{0} - {1}]...    ", startingFrame, endingFrame);
+                double[,] summedIntensities = originalUIMF.AccumulateFrameData(startingFrame, endingFrame, false, startScan, endScan, startBin, endBin, xCompression, yCompression);
+
+            int scans = summedIntensities.GetLength(0);
             if (File.Exists(outputPath))
             {
                 File.Delete(outputPath);

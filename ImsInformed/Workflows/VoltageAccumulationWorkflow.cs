@@ -39,6 +39,8 @@ namespace ImsInformed.Workflows
 
         private readonly bool averageNotSum;
 
+        private readonly string inputPath;
+
         private string datasetName;
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace ImsInformed.Workflows
         public VoltageAccumulationWorkflow(bool averageNotSum, string uimfLocation, string outputDirectory)
         {
             this.UimfReader = new DataReader(uimfLocation);
+            this.inputPath = uimfLocation;
             GlobalParams globalParams = this.UimfReader.GetGlobalParams();
             this.NumberOfFrames = globalParams.GetValueInt32(GlobalParamKeyType.NumFrames);
             this.averageNotSum = averageNotSum;
@@ -77,7 +80,7 @@ namespace ImsInformed.Workflows
                 }
             }
 
-            this.OutputPath = outputDirectory;
+            this.OutputDir = outputDirectory;
             GlobalParams globalParam = this.UimfReader.GetGlobalParams();
             this.NumberOfFrames = globalParam.NumFrames;
             this.NumberOfBins = globalParam.GetValueInt32(GlobalParamKeyType.Bins);
@@ -86,7 +89,7 @@ namespace ImsInformed.Workflows
         /// <summary>
         /// Gets or sets the output path.
         /// </summary>
-        public string OutputPath { get; set; }
+        public string OutputDir { get; set; }
 
         /// <summary>
         /// The run voltage accumulation workflow.
@@ -94,9 +97,9 @@ namespace ImsInformed.Workflows
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool RunVoltageAccumulationWorkflow()
+        public bool RunVoltageAccumulationWorkflow(FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(0, 0, true);
+            return this.RunVoltageAccumulationWorkflow(0, 0, true, exportFormat);
         }
 
         /// <summary>
@@ -111,9 +114,9 @@ namespace ImsInformed.Workflows
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool RunVoltageAccumulationWorkflow(int startScan, int endScan)
+        public bool RunVoltageAccumulationWorkflow(int startScan, int endScan, FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(startScan, endScan, false);
+            return this.RunVoltageAccumulationWorkflow(startScan, endScan, false, exportFormat);
         }
 
         /// <summary>
@@ -134,9 +137,9 @@ namespace ImsInformed.Workflows
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin)
+        public bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, false);
+            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, false, exportFormat);
         }
 
         /// <summary>
@@ -163,9 +166,9 @@ namespace ImsInformed.Workflows
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression)
+        public bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, xCompression, yCompression, false);
+            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, xCompression, yCompression, false, exportFormat);
         }
 
         /// <summary>
@@ -183,9 +186,9 @@ namespace ImsInformed.Workflows
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, bool fullScan)
+        private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, bool fullScan, FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(startScan, endScan, 1, this.NumberOfBins, fullScan);
+            return this.RunVoltageAccumulationWorkflow(startScan, endScan, 1, this.NumberOfBins, fullScan, exportFormat);
         }
 
         /// <summary>
@@ -206,12 +209,13 @@ namespace ImsInformed.Workflows
         /// <param name="fullScan">
         /// The full scan.
         /// </param>
+        /// <param name="exportFormat"></param>
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, bool fullScan)
+        private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, bool fullScan, FileFormatEnum exportFormat)
         {
-            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, 1, 1, fullScan);
+            return this.RunVoltageAccumulationWorkflow(startScan, endScan, startBin, endBin, 1, 1, fullScan, exportFormat);
         }
 
         /// <summary>
@@ -239,10 +243,16 @@ namespace ImsInformed.Workflows
         /// <param name="yCompression">
         /// The y compression.
         /// </param>
+        /// <param name="fullScan">
+        /// The full Scan.
+        /// </param>
+        /// <param name="exportFormat">
+        /// The export Format.
+        /// </param>
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, bool fullScan)
+        private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, bool fullScan, FileFormatEnum exportFormat)
         {
             CrossSectionSearchParameters defaultParams = new CrossSectionSearchParameters();
             VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.UimfReader, 100, defaultParams);
@@ -250,26 +260,24 @@ namespace ImsInformed.Workflows
             bool success = true;
             foreach (var voltageGroup in voltageGroups)
             {
-                int startingFrame = voltageGroup.FirstFrameNumber;
-                int endingFrame = voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1;
-
-                FrameParams frameParam = this.UimfReader.GetFrameParams(startingFrame);
-                if (fullScan)
-                {
-                    startScan = 1;
-                    endScan = frameParam.Scans;
-                }
-
-                string fileName = this.datasetName + "_" + Math.Round(voltageGroup.MeanVoltageInVolts) + "V.uimf";
-
-                double[,] summedIntensities = this.UimfReader.AccumulateFrameData(startingFrame, endingFrame, false, startScan, endScan, startBin, endBin, 1, 1);
-
                 // convert to MzML or UIMFs
-                UimfExporter exporter = new UimfExporter();
-                success = success && exporter.ExportVoltageGroupAsSingleFrameUimf(Path.Combine(OutputPath, fileName), voltageGroup, this.UimfReader, summedIntensities, this.averageNotSum);
+                if (exportFormat == FileFormatEnum.UIMF)
+                {
+                    string outputPath = Path.Combine(this.OutputDir, this.datasetName + "_" + Math.Round(voltageGroup.MeanVoltageInVolts) + "V.uimf");
+                    Console.WriteLine("Writing UIMF files to {0}", this.OutputDir);
+                    UimfExporter uimfExporter = new UimfExporter();
+                    success = success && uimfExporter.ExportVoltageGroupAsSingleFrameUimf(outputPath, voltageGroup, this.UimfReader, this.averageNotSum, startScan, endScan, startBin, endBin, xCompression, yCompression, fullScan);
+                }
+                else if (exportFormat == FileFormatEnum.MzML)
+                {
+                    string outputPath = Path.Combine(this.OutputDir, this.datasetName + "_" + Math.Round(voltageGroup.MeanVoltageInVolts) + "V.mzML");
+                    RetentionMobilitySwappedMzMLExporter mzMLExporter = new RetentionMobilitySwappedMzMLExporter();
+                    success = success && mzMLExporter.ExportMzML(inputPath, outputPath, voltageGroup, this.UimfReader, this.averageNotSum);
+                    Console.WriteLine("Writing MzML files to {0}", outputPath);
+                }
             }
 
-            return true;
+            return success;
         }
 
         public bool ExportToMzML(string MzMLPath)

@@ -62,6 +62,11 @@ namespace ImsInformedTests
         public const string Mix1 = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
 
         /// <summary>
+        /// The mix 1.
+        /// </summary>
+        public const string F1E = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-F1E_pos_10Oct14_Columbia_DI.uimf";
+
+        /// <summary>
         /// The acetaminophen.
         /// </summary>
         public const string Acetaminophen = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-ACE_neg2_28Aug14_Columbia_DI.uimf";
@@ -774,7 +779,7 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestMzmlExport()
         {
-            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, Mix1, "output");
+            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, F1E, "output");
             workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.MzML);
             workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.UIMF);
         }

@@ -45,6 +45,27 @@ namespace ImsInformed.IO
         /// <param name="averageNotSum">
         /// The average not sum.
         /// </param>
+        /// <param name="startScan">
+        /// The start Scan.
+        /// </param>
+        /// <param name="endScan">
+        /// The end Scan.
+        /// </param>
+        /// <param name="startBin">
+        /// The start Bin.
+        /// </param>
+        /// <param name="endBin">
+        /// The end Bin.
+        /// </param>
+        /// <param name="xCompression">
+        /// The x Compression.
+        /// </param>
+        /// <param name="yCompression">
+        /// The y Compression.
+        /// </param>
+        /// <param name="fullScan">
+        /// The full Scan.
+        /// </param>
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
@@ -129,6 +150,7 @@ namespace ImsInformed.IO
             {
                 throw new IndexOutOfRangeException();
             }
+
             List<int> scanData = new List<int>();
             for (int bin = 0; bin < bins; bin++)
             {

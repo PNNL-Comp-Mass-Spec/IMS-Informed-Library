@@ -15,7 +15,6 @@ namespace ImsInformed.IO
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Windows;
     using System.Xml;
 
     using ImsInformed.Domain.DirectInjection;
@@ -41,8 +40,8 @@ namespace ImsInformed.IO
             FrameParams frameParam = originalUIMF.GetFrameParams(voltageGroup.FirstFrameNumber);
             GlobalParams globalParams = originalUIMF.GetGlobalParams();
 
-            this.scans = frameParam.GetValueInt32(FrameParamKeyType.Scans);
-            this.bins = globalParams.GetValueInt32(GlobalParamKeyType.Bins);
+            this.scans = (int)frameParam.GetValueDouble(FrameParamKeyType.Scans);
+            this.bins = (int)globalParams.GetValueDouble(GlobalParamKeyType.Bins);
 
             this.calibrationSlope = frameParam.GetValueDouble(FrameParamKeyType.CalibrationSlope);
             this.calibrationIntercept = frameParam.GetValueDouble(FrameParamKeyType.CalibrationIntercept);
@@ -206,7 +205,7 @@ namespace ImsInformed.IO
             int endingFrame = voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1;
             Console.Write("Summing frame[{0} - {1}]...    ", startingFrame, endingFrame);
 
-            double[,] summedIntensities = reader.AccumulateFrameData(startingFrame, endingFrame, false, 1, this.scans, 1, this.bins, 1, 1);
+            double[,] summedIntensities = reader.AccumulateFrameData(startingFrame, endingFrame, false, 1, this.scans, 1, this.bins, -1, -1);
 
             // Use dirft time scan as LC scan to massage skyline
             for (int lcScan = 1; lcScan <= this.scans; lcScan++)
@@ -319,23 +318,41 @@ namespace ImsInformed.IO
             writer.WriteEndElement();
         }
 
+        /// <summary>
+        /// The get mz intensity array at scan.
+        /// </summary>
+        /// <param name="intensities">
+        /// The intensities.
+        /// </param>
+        /// <param name="scan">
+        /// The scan.
+        /// </param>
+        /// <param name="mzArray">
+        /// The mz array.
+        /// </param>
+        /// <param name="intensityArray">
+        /// The intensity array.
+        /// </param>
         private void GetMzIntensityArrayAtScan(double[,] intensities, int scan, out float[] mzArray, out float[] intensityArray)
         {
             List<float> mzList = new List<float>();
             List<float> intensityList = new List<float>();
-
+            float mz = 0;
             for (int bin = 1; bin <= this.bins; bin++) 
             {
-                if (Math.Abs(intensities[scan - 1, bin - 1]) > 0.000001)
+                if (intensities[scan - 1, bin - 1] > 0.000001)
                 {
-                    float mz = (float)DataReader.ConvertBinToMZ(
+                    mz = (float)DataReader.ConvertBinToMZ(
                         this.calibrationSlope,
                         this.calibrationIntercept,
                         this.binWidth,
                         this.tofCorrectionTime,
                         bin);
+
                     mzList.Add(mz);
-                    intensityList.Add((float)intensities[scan - 1, bin - 1]);
+
+                    float intensity = (float)intensities[scan - 1, bin - 1];
+                    intensityList.Add(intensity);
                 }
             }
 
@@ -343,6 +360,18 @@ namespace ImsInformed.IO
             intensityArray = intensityList.ToArray();
         }
 
+        /// <summary>
+        /// The encode 32 bit float array.
+        /// </summary>
+        /// <param name="mzArray">
+        /// The mz array.
+        /// </param>
+        /// <param name="encodeLength">
+        /// The encode length.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
         private string Encode32bitFloatArray(float[] mzArray, out int encodeLength)
         {
             int precisionBits;
@@ -352,6 +381,18 @@ namespace ImsInformed.IO
             return encoded;
         }
 
+        /// <summary>
+        /// The write binary data arrays.
+        /// </summary>
+        /// <param name="mzArray">
+        /// The mz array.
+        /// </param>
+        /// <param name="intensityArray">
+        /// The intensity array.
+        /// </param>
+        /// <param name="writer">
+        /// The writer.
+        /// </param>
         private void WriteBinaryDataArrays(float[] mzArray, float[] intensityArray, XmlWriter writer)
         {
             int encodedMzArraySize;

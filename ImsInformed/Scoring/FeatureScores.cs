@@ -15,8 +15,11 @@ namespace ImsInformed.Scoring
     using System.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Parameters;
     using ImsInformed.Stats;
     using ImsInformed.Util;
+    using ImsInformed.Workflows;
 
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
@@ -50,7 +53,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityScore(InformedWorkflow workflow, FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
+        public static double IntensityScore(FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
         {
             // Sort features by relative intensity
             FeatureBlobStatistics statistics = featureBlob.Statistics;
@@ -88,20 +91,20 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double PeakShapeScore(InformedWorkflow workflow, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz, double globalMaxIntensities)
+        public static double PeakShapeScore(DataReader reader, CrossSectionSearchParameters parameters, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz, double globalMaxIntensities, int numberOfScans)
         {
             int scanRep = statistics.ScanImsRep;
-            double toleranceInMz = workflow._parameters.MassToleranceInPpm / 1e6 * targetMz;
-            int scanWindowSize = workflow._parameters.ScanWindowWidth;
+            double toleranceInMz = parameters.MassToleranceInPpm / 1e6 * targetMz;
+            int scanWindowSize = parameters.ScanWindowWidth;
 
             int scanNumberMin = scanRep - scanWindowSize / 2;
             int scanNumberMax = scanRep + scanWindowSize / 2;
-            if ((scanNumberMin < 0) || (scanNumberMax > (int)workflow.NumberOfScans - 1))
+            if ((scanNumberMin < 0) || (scanNumberMax > numberOfScans - 1))
             {
                 return 0;
             }
                                   
-            int[][] intensityWindow = workflow._uimfReader.GetFramesAndScanIntensitiesForAGivenMz(
+            int[][] intensityWindow = reader.GetFramesAndScanIntensitiesForAGivenMz(
                 voltageGroup.FirstFrameNumber,
                 voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount,
                 DataReader.FrameType.MS1, 
@@ -150,6 +153,7 @@ namespace ImsInformed.Scoring
         /// <param name="workflow">
         /// The workflow.
         /// </param>
+        /// <param name="parameters"></param>
         /// <param name="target">
         /// The target.
         /// </param>
@@ -171,7 +175,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(InformedWorkflow workflow, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities)
+        public static double IsotopicProfileScore(DataReader reader, CrossSectionSearchParameters parameters, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, int numberOfScans)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
@@ -205,11 +209,11 @@ namespace ImsInformed.Scoring
             {
                 // Isotopic Mz
                 double Mz = isotopicPeakList[i].XValue;
-                int scanWindowSize = workflow._parameters.ScanWindowWidth;
+                int scanWindowSize = parameters.ScanWindowWidth;
                 int scanNumberMin = (scanNumber - scanWindowSize / 2 > 0) ? scanNumber - scanWindowSize / 2 : 0;
-                int scanNumberMax = (scanNumber + scanWindowSize / 2 < (int)workflow.NumberOfScans) ? scanNumber + scanWindowSize / 2 : (int)workflow.NumberOfScans - 1;
-                var peakList = workflow._uimfReader.GetXic(Mz, 
-                    workflow._parameters.MassToleranceInPpm,
+                int scanNumberMax = (scanNumber + scanWindowSize / 2 < numberOfScans) ? scanNumber + scanWindowSize / 2 : numberOfScans - 1;
+                var peakList = reader.GetXic(Mz, 
+                    parameters.MassToleranceInPpm,
                     voltageGroup.FirstFrameNumber,
                     voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1,
                     scanNumberMin,

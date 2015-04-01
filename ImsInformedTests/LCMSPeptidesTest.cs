@@ -21,6 +21,7 @@ namespace ImsInformedTests
     using ImsInformed.IO;
     using ImsInformed.Parameters;
     using ImsInformed.Util;
+    using ImsInformed.Workflows;
 
     using InformedProteomics.Backend.Data.Sequence;
 
@@ -48,7 +49,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
@@ -63,8 +64,8 @@ namespace ImsInformedTests
 
             ImsTarget target = new ImsTarget(1, peptide, net);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-            informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
+            lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
         }
 
         /// <summary>
@@ -75,7 +76,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.2,
@@ -91,8 +92,8 @@ namespace ImsInformedTests
             DriftTimeTarget driftTimeTarget = new DriftTimeTarget(2, 19.62);
             target.DriftTimeTargetList.Add(driftTimeTarget);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-            ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
+            ChargeStateCorrelationResult correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
 
             using (ImsTargetResultExporter resultsExporter = new ImsTargetResultExporter("outputSingle.csv"))
             {
@@ -108,7 +109,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 2,
                 NetTolerance = 0.03,
@@ -122,8 +123,8 @@ namespace ImsInformedTests
 
             ImsTarget target = new ImsTarget(1, peptide, net);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-            informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
+            lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
         }
 
         /// <summary>
@@ -134,7 +135,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 2,
                 NetTolerance = 0.1,
@@ -148,8 +149,8 @@ namespace ImsInformedTests
 
             ImsTarget target = new ImsTarget(1, peptide, net);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-            informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
+            lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
         }
 
         /// <summary>
@@ -160,7 +161,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
@@ -174,8 +175,8 @@ namespace ImsInformedTests
 
             ImsTarget target = new ImsTarget(1, peptide, net);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-            informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
+            lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace ImsInformedTests
 
             IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -216,11 +217,11 @@ namespace ImsInformedTests
             {
                 using (ImsTargetResultExporter resultsExporter = new ImsTargetResultExporter("outputTest.csv"))
                 {
-                    InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters, interpolation);
+                    LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters, interpolation);
 
                     foreach (var imsTarget in targetList)
                     {
-                        ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+                        ChargeStateCorrelationResult correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(imsTarget);
 
                         allResultsExporter.AppendResultsOfTargetToCsv(imsTarget);
 
@@ -245,7 +246,7 @@ namespace ImsInformedTests
             File.Copy(sqliteSchemaLocation, sqliteOutputLocation);
 
             // Setup calibration workflow and targets
-            InformedParameters calibrationParameters = new InformedParameters
+            LCMSPeptideSearchParameters calibrationParameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
@@ -258,7 +259,7 @@ namespace ImsInformedTests
             Console.WriteLine("Using " + calibrationTargetList.Count + " targets for calibration.");
 
             // Setup Informed workflow parameters
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -319,7 +320,7 @@ namespace ImsInformedTests
                         if(!File.Exists(netAlignmentFileInfo.FullName))
                         {
                             Console.WriteLine(DateTime.Now + ": Creating alignment file using " + calibrationTargetList.Count + " possible targets.");
-                            InformedWorkflow calibrationWorkflow = new InformedWorkflow(uimfFileLocation, calibrationParameters);
+                            LCMSPeptideSearchWorkfow calibrationWorkflow = new LCMSPeptideSearchWorkfow(uimfFileLocation, calibrationParameters);
                             List<Tuple<double, double>> netAlignmentInput = new List<Tuple<double, double>>();
 
                             int index = 0;
@@ -376,7 +377,7 @@ namespace ImsInformedTests
                         // Grab the net alignment
                         IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileInfo.FullName);
 
-                        InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
+                        LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileInfo.FullName, parameters, interpolation);
 
                         // Insert Dataset Info
                         using (var transaction = connection.BeginTransaction())
@@ -394,7 +395,7 @@ namespace ImsInformedTests
                         {
                             using (var transaction = connection.BeginTransaction())
                             {
-                                ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+                                ChargeStateCorrelationResult correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(imsTarget);
 
                                 string queries = imsTarget.CreateSqlResultQueries(i);
                                 command.CommandText = queries;
@@ -441,7 +442,7 @@ namespace ImsInformedTests
             //IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
             // Setup calibration workflow and targets
-            InformedParameters calibrationParameters = new InformedParameters
+            LCMSPeptideSearchParameters calibrationParameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
@@ -453,7 +454,7 @@ namespace ImsInformedTests
             List<ImsTarget> calibrationTargetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789", 1e-10, true);
             Console.WriteLine("Using " + calibrationTargetList.Count + " targets for calibration.");
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -512,7 +513,7 @@ namespace ImsInformedTests
                         if (!File.Exists(netAlignmentFileInfo.FullName))
                         {
                             Console.WriteLine(DateTime.Now + ": Creating alignment file using " + calibrationTargetList.Count + " possible targets.");
-                            InformedWorkflow calibrationWorkflow = new InformedWorkflow(uimfFileLocation, calibrationParameters);
+                            LCMSPeptideSearchWorkfow calibrationWorkflow = new LCMSPeptideSearchWorkfow(uimfFileLocation, calibrationParameters);
                             List<Tuple<double, double>> netAlignmentInput = new List<Tuple<double, double>>();
 
                             int index = 0;
@@ -569,7 +570,7 @@ namespace ImsInformedTests
                         // Grab the net alignment
                         IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileInfo.FullName);
 
-                        InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
+                        LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileInfo.FullName, parameters, interpolation);
 
                         //using (var transaction = connection.BeginTransaction())
                         //{
@@ -585,7 +586,7 @@ namespace ImsInformedTests
                         {
                             using (var transaction = connection.BeginTransaction())
                             {
-                                ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+                                ChargeStateCorrelationResult correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(imsTarget);
 
                                 if (correlationResult != null)
                                 {
@@ -633,7 +634,7 @@ namespace ImsInformedTests
             string uimfFileLocation = Cheetah;
             //string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.5,
@@ -648,11 +649,11 @@ namespace ImsInformedTests
             List<Tuple<double, double>> netAlignmentInput = new List<Tuple<double, double>>();
             List<Tuple<double, double>> massAlignmentInput = new List<Tuple<double, double>>();
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
 
             foreach (var imsTarget in targetList.OrderBy(x => x.NormalizedElutionTime))
             {
-                ChargeStateCorrelationResult correlationResult = informedWorkflow.RunInformedWorkflow(imsTarget);
+                ChargeStateCorrelationResult correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(imsTarget);
 
                 if (correlationResult == null || !correlationResult.CorrelatedResults.Any()) continue;
 
@@ -776,7 +777,7 @@ namespace ImsInformedTests
 
             //IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.2,
@@ -795,8 +796,8 @@ namespace ImsInformedTests
 
             ImsTarget target = new ImsTarget(1, peptide, net, modificationList);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters, null);
-            var correlationResult = informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters, null);
+            var correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
 
             Console.WriteLine(correlationResult.ReferenceImsTargetResult.NormalizedElutionTime);
         }
@@ -812,7 +813,7 @@ namespace ImsInformedTests
 
             IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileLocation);
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -832,8 +833,8 @@ namespace ImsInformedTests
 
             ImsTarget target = new ImsTarget(1, peptide, net, modificationList);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters, interpolation);
-            var correlationResult = informedWorkflow.RunInformedWorkflow(target);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters, interpolation);
+            var correlationResult = lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
 
             Console.WriteLine(correlationResult.ReferenceImsTargetResult.NormalizedElutionTime);
         }
@@ -846,7 +847,7 @@ namespace ImsInformedTests
         {
             string uimfFileLocation = Cheetah;
 
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.1,
@@ -862,8 +863,8 @@ namespace ImsInformedTests
             List<ImsTarget> targetList = new List<ImsTarget>();
             targetList.Add(target);
 
-            InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileLocation, parameters);
-            informedWorkflow.ExtractData(targetList);
+            LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileLocation, parameters);
+            lcmsPeptideSearchWorkfow.ExtractData(targetList);
         }
 
         /// <summary>
@@ -873,7 +874,7 @@ namespace ImsInformedTests
         public void TestDataExtractionSpeedManyTargets()
         {
             // Setup Informed workflow parameters
-            InformedParameters parameters = new InformedParameters
+            LCMSPeptideSearchParameters parameters = new LCMSPeptideSearchParameters
             {
                 ChargeStateMax = 5,
                 NetTolerance = 0.03,
@@ -914,7 +915,7 @@ namespace ImsInformedTests
                 // Grab the net alignment
                 IInterpolation interpolation = AlignmentImporter.ReadFile(netAlignmentFileInfo.FullName);
 
-                //InformedWorkflow warmupInformedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
+                //LCMSPeptideSearchWorkfow warmupInformedWorkflow = new LCMSPeptideSearchWorkfow(uimfFileInfo.FullName, parameters, interpolation);
 
                 //foreach (var target in targetList.Take(10))
                 //{
@@ -927,22 +928,22 @@ namespace ImsInformedTests
                 //Console.WriteLine("**************************************************************");
                 //Console.WriteLine("**************************************************************");
 
-                InformedWorkflow informedWorkflow = new InformedWorkflow(uimfFileInfo.FullName, parameters, interpolation);
+                LCMSPeptideSearchWorkfow lcmsPeptideSearchWorkfow = new LCMSPeptideSearchWorkfow(uimfFileInfo.FullName, parameters, interpolation);
 
                 foreach (var target in targetList)
                 {
-                    informedWorkflow.RunInformedWorkflow(target);
+                    lcmsPeptideSearchWorkfow.RunInformedWorkflow(target);
                 }
 
-                //informedWorkflow.PrintFeatureFindStatistics();
+                //LCMSPeptideSearchWorkfow.PrintFeatureFindStatistics();
 
                 // Warmup
-                //informedWorkflow.ExtractData(targetList.Take(10)); 
+                //LCMSPeptideSearchWorkfow.ExtractData(targetList.Take(10)); 
 
                 // Actual
                 //Random random = new Random();
-                //informedWorkflow.ExtractData(targetList.OrderBy(X => random.Next()).Take(100));
-                //informedWorkflow.ExtractData(targetList);
+                //LCMSPeptideSearchWorkfow.ExtractData(targetList.OrderBy(X => random.Next()).Take(100));
+                //LCMSPeptideSearchWorkfow.ExtractData(targetList);
             }
         }
 

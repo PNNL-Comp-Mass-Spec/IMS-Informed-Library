@@ -11,22 +11,23 @@
 namespace ImsInformedTests
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Threading;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
     using DeconTools.Backend.Utilities;
+    using DeconTools.Backend.Workflows;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.IO;
     using ImsInformed.Parameters;
     using ImsInformed.Scoring;
     using ImsInformed.Stats;
     using ImsInformed.Util;
+    using ImsInformed.Workflows;
 
     using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
@@ -54,6 +55,16 @@ namespace ImsInformedTests
         /// The Acetamiprid file.
         /// </summary>
         public const string AcetamipridFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AAP_neg_26Aug14_Columbia_DI.uimf";
+
+        /// <summary>
+        /// The mix 1.
+        /// </summary>
+        public const string Mix1 = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
+
+        /// <summary>
+        /// The mix 1.
+        /// </summary>
+        public const string F1E = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-F1E_pos_10Oct14_Columbia_DI.uimf";
 
         /// <summary>
         /// The acetaminophen.
@@ -188,19 +199,11 @@ namespace ImsInformedTests
 
             Console.WriteLine("Dataset: {0}", fileLocation);
 
-            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-            {
-                MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9,
-                ScanWindowWidth = 4,
-                IntensityThreshold = 0.0,
-                IsotopicFitScoreThreshold = 0.4,
-                PeakShapeThreshold = 0.4,
-                MinFitPoints = 3
-            };
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
-            informedWorkflow.RunMoleculeInformedWorkFlow(sample, true);
+            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            workfow.RunCrossSectionWorkFlow(sample, true);
+            workfow.Dispose();
         }
 
         /// <summary>
@@ -233,15 +236,11 @@ namespace ImsInformedTests
             Console.WriteLine("Nicotine:");
             Console.WriteLine("MZ:   " + mz);
 
-            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-            {
-                MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9,
-                ScanWindowWidth = 4,
-            };
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
-            workflow.RunMoleculeInformedWorkFlow(target);
+            CrossSectionWorkfow workflow = new CrossSectionWorkfow(uimfFile, "output", "result.txt", parameters);
+            workflow.RunCrossSectionWorkFlow(target);
+            workflow.Dispose();
         }
 
         /// <summary>
@@ -282,39 +281,10 @@ namespace ImsInformedTests
             // string uimfFile = AcetamipridFile;
 
             ImsTarget target= new ImsTarget(1, IonizationMethod.ProtonMinus, mz);
-            Console.WriteLine("Nicotine:");
-            Console.WriteLine("MZ:   " + mz);
 
-            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-            {
-                IsotopicFitScoreThreshold = 0.15,
-                MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9
-            };
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
-            Assert.Throws<FileNotFoundException>(() => new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters));
-        }
-
-        /// <summary>
-        /// The test locked uimf.
-        /// </summary>
-        [Test]
-        public void TestLockedUIMF()
-        {
-            // A locked UIMF file
-            string uimfFile = @"\\protoapps\ims08_UIMFs\EXP-NIC_pos2_13Sep14_Columbia_DI.uimf";
-
-            ImsTarget target = new ImsTarget(1, IonizationMethod.SodiumPlus, "C10H14N2");
-
-            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-            {
-                IsotopicFitScoreThreshold = 0.15,
-                MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9
-            };
-
-            MoleculeInformedWorkflow workflow = new MoleculeInformedWorkflow(uimfFile, "output", "result.txt", parameters);
-            workflow.RunMoleculeInformedWorkFlow(target);
+            Assert.Throws<FileNotFoundException>(() => new CrossSectionWorkfow(uimfFile, "output", "result.txt", parameters));
         }
 
         [Test][STAThread]
@@ -476,23 +446,18 @@ namespace ImsInformedTests
             formulas.Add("C12H7O4S ");
             formulas.Add("C12H6O4S ");
             Console.WriteLine("[Intensity], [Distance1], [Distance2], [Angle], [Pearson], [Bucha]");
+
+            string fileLocation = Bps;
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+            CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+
             foreach (var form in formulas)
             {
                 bool found = false;
                 string formula = form;
-                string fileLocation = Bps;
-                ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
                 
-                MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-                {
-                    MassToleranceInPpm = 5,
-                    NumPointForSmoothing = 9,
-                    ScanWindowWidth = 4,
-                };
-
+                ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
                 var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
-
-                MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
 
                 // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
                 Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(sample.Composition, sample.IonizationType);
@@ -543,49 +508,64 @@ namespace ImsInformedTests
                 foreach (var featureBlob in featureBlobs)
                 {
                     // Evaluate feature scores.
-                    double intensityScore = FeatureScores.IntensityScore(informedWorkflow, featureBlob, voltageGroup, globalMaxIntensity);
+                    double intensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
                     
                     double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Angle,
-                            globalMaxIntensity);
+                        workflow.uimfReader, 
+                        workflow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics,
+                        theoreticalIsotopicProfilePeakList,
+                        voltageGroup,
+                        IsotopicScoreMethod.Angle,
+                        globalMaxIntensity,
+                        workflow.NumberOfScans);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistance,
-                            globalMaxIntensity);
+                        workflow.uimfReader,
+                        workflow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics,
+                        theoreticalIsotopicProfilePeakList,
+                        voltageGroup,
+                        IsotopicScoreMethod.EuclideanDistance,
+                        globalMaxIntensity,
+                        workflow.NumberOfScans);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation,
-                            globalMaxIntensity);
+                        workflow.uimfReader,
+                        workflow.Parameters, 
+                        sample,
+                        featureBlob.Statistics, 
+                        theoreticalIsotopicProfilePeakList, 
+                        voltageGroup, 
+                        IsotopicScoreMethod.PearsonCorrelation,
+                        globalMaxIntensity,
+                        workflow.NumberOfScans);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Bhattacharyya,
-                            globalMaxIntensity);
+                        workflow.uimfReader,
+                        workflow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics, 
+                        theoreticalIsotopicProfilePeakList, 
+                        voltageGroup, 
+                        IsotopicScoreMethod.Bhattacharyya,
+                        globalMaxIntensity,
+                        workflow.NumberOfScans);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative,
-                            globalMaxIntensity);
+                        workflow.uimfReader,
+                        workflow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics, 
+                        theoreticalIsotopicProfilePeakList, 
+                        voltageGroup, 
+                        IsotopicScoreMethod.EuclideanDistanceAlternative,
+                        globalMaxIntensity,
+                        workflow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity);
+                    double peakShapeScore = FeatureScores.PeakShapeScore(workflow.uimfReader, workflow.Parameters, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity, workflow.NumberOfScans);
                     
                     // Report all features.
                     if (featureBlob.Statistics.ScanImsRep == 115)
@@ -637,6 +617,9 @@ namespace ImsInformedTests
 
                 Console.WriteLine();
             }
+
+            // Manually dispose so it doesn't interfere with other tests.
+            workflow.Dispose();
         }
 
         /// <summary>
@@ -653,16 +636,11 @@ namespace ImsInformedTests
             Console.WriteLine("Composition: " + sample.Composition);
             Console.WriteLine("Monoisotopic Mass: " + sample.Mass);
 
-            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-            {
-                MassToleranceInPpm = 5,
-                NumPointForSmoothing = 9,
-                ScanWindowWidth = 4,
-            };
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
             var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
+            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
 
             // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
             Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(sample.Composition, sample.IonizationType);
@@ -722,49 +700,64 @@ namespace ImsInformedTests
                 foreach (var featureBlob in featureBlobs)
                 {
                     // Evaluate feature scores.
-                    double intensityScore = FeatureScores.IntensityScore(informedWorkflow, featureBlob, voltageGroup, globalMaxIntensity);
+                    double intensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
                     
                     double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Angle,
-                            globalMaxIntensity);
+                        workfow.uimfReader, 
+                        workfow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics,
+                        theoreticalIsotopicProfilePeakList,
+                        voltageGroup,
+                        IsotopicScoreMethod.Angle,
+                        globalMaxIntensity,
+                        workfow.NumberOfScans);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistance,
-                            globalMaxIntensity);
+                        workfow.uimfReader,
+                        workfow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics,
+                        theoreticalIsotopicProfilePeakList,
+                        voltageGroup,
+                        IsotopicScoreMethod.EuclideanDistance,
+                        globalMaxIntensity,
+                        workfow.NumberOfScans);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.PearsonCorrelation,
-                            globalMaxIntensity);
+                        workfow.uimfReader,
+                        workfow.Parameters, 
+                        sample,
+                        featureBlob.Statistics, 
+                        theoreticalIsotopicProfilePeakList, 
+                        voltageGroup, 
+                        IsotopicScoreMethod.PearsonCorrelation,
+                        globalMaxIntensity,
+                        workfow.NumberOfScans);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.Bhattacharyya,
-                            globalMaxIntensity);
+                        workfow.uimfReader,
+                        workfow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics, 
+                        theoreticalIsotopicProfilePeakList, 
+                        voltageGroup, 
+                        IsotopicScoreMethod.Bhattacharyya,
+                        globalMaxIntensity,
+                        workfow.NumberOfScans);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
-                            informedWorkflow, 
-                            sample, 
-                            featureBlob.Statistics, 
-                            theoreticalIsotopicProfilePeakList, 
-                            voltageGroup, IsotopicScoreMethod.EuclideanDistanceAlternative,
-                            globalMaxIntensity);
+                        workfow.uimfReader,
+                        workfow.Parameters, 
+                        sample, 
+                        featureBlob.Statistics, 
+                        theoreticalIsotopicProfilePeakList, 
+                        voltageGroup, 
+                        IsotopicScoreMethod.EuclideanDistanceAlternative,
+                        globalMaxIntensity,
+                        workfow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(informedWorkflow, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity);
+                    double peakShapeScore = FeatureScores.PeakShapeScore(workfow.uimfReader, workfow.Parameters, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity, workfow.NumberOfScans);
                     
                     // Report all features.
                     Console.WriteLine(" feature found at scan number {0}", featureBlob.Statistics.ScanImsRep);
@@ -819,19 +812,22 @@ namespace ImsInformedTests
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("TargetList: ");
 
-            MoleculeWorkflowParameters parameters = new MoleculeWorkflowParameters 
-            {
-                MassToleranceInPpm = 10,
-                NumPointForSmoothing = 9,
-                ScanWindowWidth = 4,
-                IntensityThreshold = 0.0,
-                IsotopicFitScoreThreshold = 0.4,
-                PeakShapeThreshold = 0.4,
-                MinFitPoints = 3
-            };
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 
 
-            MoleculeInformedWorkflow informedWorkflow = new MoleculeInformedWorkflow(fileLocation, "output", "result.txt", parameters);
-            IDictionary<string, MoleculeInformedWorkflowResult> resultMap = informedWorkflow.RunMoleculeInformedWorkFlow(targetList, false);
+            CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            IDictionary<string, CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
+            informedWorkflow.Dispose();
+        }
+        
+        /// <summary>
+        /// The test scoring.
+        /// </summary>
+        [Test][STAThread]
+        public void TestMzmlExport()
+        {
+            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, F1E, "output");
+            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.MzML);
+            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.UIMF);
         }
     }
 }

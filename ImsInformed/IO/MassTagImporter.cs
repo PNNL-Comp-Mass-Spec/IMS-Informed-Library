@@ -9,153 +9,153 @@ using InformedProteomics.Backend.Data.Sequence;
 
 namespace ImsInformed.IO
 {
-	public class MassTagImporter
-	{
-		private const string DB_USERNAME = "mtuser";
-		private const string DB_PASSWORD = "mt4fun";
+    public class MassTagImporter
+    {
+        private const string DB_USERNAME = "mtuser";
+        private const string DB_PASSWORD = "mt4fun";
 
-		private static Dictionary<string, Modification> _dmsModToInformedModMap;
+        private static Dictionary<string, Modification> _dmsModToInformedModMap;
 
-		static MassTagImporter()
-		{
-			_dmsModToInformedModMap = new Dictionary<string, Modification> {{"IodoAcet", Modification.Carbamidomethylation}, {"Plus1Oxy", Modification.Oxidation}};
-		}
+        static MassTagImporter()
+        {
+            _dmsModToInformedModMap = new Dictionary<string, Modification> {{"IodoAcet", Modification.Carbamidomethylation}, {"Plus1Oxy", Modification.Oxidation}};
+        }
 
-		public static List<ImsTarget> ImportMassTags(string serverName, string databaseName, double maxMsgfSpecProb = 1e-10, bool isForCalibration = false)
-		{
-			List<ImsTarget> targetList = new List<ImsTarget>();
+        public static List<ImsTarget> ImportMassTags(string serverName, string databaseName, double maxMsgfSpecProb = 1e-10, bool isForCalibration = false)
+        {
+            List<ImsTarget> targetList = new List<ImsTarget>();
 
-			// Build connection string
-			string connectionString = BuildConnectionString(serverName, databaseName);
+            // Build connection string
+            string connectionString = BuildConnectionString(serverName, databaseName);
 
-			// Using connection
-			var dbFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
-			using (var connection = dbFactory.CreateConnection())
-			{
-				connection.ConnectionString = connectionString;
-				connection.Open();
+            // Using connection
+            var dbFactory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+            using (var connection = dbFactory.CreateConnection())
+            {
+                connection.ConnectionString = connectionString;
+                connection.Open();
 
-				// Execute query
-				string queryString = isForCalibration ? GetQueryForCalibration() : GetQuery();
-				using (DbCommand command = connection.CreateCommand())
-				{
-					command.CommandText = queryString;
-					command.CommandTimeout = 120;
-					DbDataReader reader = command.ExecuteReader();
+                // Execute query
+                string queryString = isForCalibration ? GetQueryForCalibration() : GetQuery();
+                using (DbCommand command = connection.CreateCommand())
+                {
+                    command.CommandText = queryString;
+                    command.CommandTimeout = 120;
+                    DbDataReader reader = command.ExecuteReader();
 
-					ImsTarget currentImsTarget = null;
+                    ImsTarget currentImsTarget = null;
 
-					while (reader.Read())
-					{
-						int massTagId = Convert.ToInt32(reader["Mass_Tag_ID"]);
-						string peptide = Convert.ToString(reader["Peptide"]);
-						double normalizedElutionTime = Convert.ToDouble(reader["Avg_GANET"]);
-						int modCount = Convert.ToInt16(reader["Mod_Count"]);
-						
-						List<Modification> modificationList = new List<Modification>();
-						
-						if(modCount > 0)
-						{
-							string modificationString = Convert.ToString(reader["Mod_Description"]);
-							string[] splitModString = modificationString.Split(',');
-							foreach (var singleModString in splitModString)
-							{
-								string modificationName = singleModString.Split(':')[0];
-								Modification modification = _dmsModToInformedModMap[modificationName];
-								modificationList.Add(modification);
-							}
-						}
+                    while (reader.Read())
+                    {
+                        int massTagId = Convert.ToInt32(reader["Mass_Tag_ID"]);
+                        string peptide = Convert.ToString(reader["PeptideSequence"]);
+                        double normalizedElutionTime = Convert.ToDouble(reader["Avg_GANET"]);
+                        int modCount = Convert.ToInt16(reader["Mod_Count"]);
+                        
+                        List<Modification> modificationList = new List<Modification>();
+                        
+                        if(modCount > 0)
+                        {
+                            string modificationString = Convert.ToString(reader["Mod_Description"]);
+                            string[] splitModString = modificationString.Split(',');
+                            foreach (var singleModString in splitModString)
+                            {
+                                string modificationName = singleModString.Split(':')[0];
+                                Modification modification = _dmsModToInformedModMap[modificationName];
+                                modificationList.Add(modification);
+                            }
+                        }
 
-						bool isSameTarget = IsSameTarget(currentImsTarget, peptide, normalizedElutionTime, modificationList);
+                        bool isSameTarget = IsSameTarget(currentImsTarget, peptide, normalizedElutionTime, modificationList);
 
-						if(!isSameTarget)
-						{
-							currentImsTarget = new ImsTarget(massTagId, peptide, normalizedElutionTime, modificationList);
-							targetList.Add(currentImsTarget);
-						}
+                        if(!isSameTarget)
+                        {
+                            currentImsTarget = new ImsTarget(massTagId, peptide, normalizedElutionTime, modificationList);
+                            targetList.Add(currentImsTarget);
+                        }
 
-						int chargeState = Convert.ToInt16(reader["Conformer_Charge"]);
-						double driftTime = Convert.ToDouble(reader["Drift_Time_Avg"]);
+                        int chargeState = Convert.ToInt16(reader["Conformer_Charge"]);
+                        double driftTime = Convert.ToDouble(reader["Drift_Time_Avg"]);
 
-						DriftTimeTarget driftTimeTarget = new DriftTimeTarget(chargeState, driftTime);
-						currentImsTarget.DriftTimeTargetList.Add(driftTimeTarget);
-					}
-				}
-			}
-			
-			return targetList;
-		}
+                        DriftTimeTarget driftTimeTarget = new DriftTimeTarget(chargeState, driftTime);
+                        currentImsTarget.DriftTimeTargetList.Add(driftTimeTarget);
+                    }
+                }
+            }
+            
+            return targetList;
+        }
 
-		public static bool IsSameTarget(ImsTarget currentImsTarget, string peptide, double normalizedElutionTime, List<Modification> modificationList)
-		{
-			int modCount = modificationList.Count;
+        public static bool IsSameTarget(ImsTarget currentImsTarget, string peptide, double normalizedElutionTime, List<Modification> modificationList)
+        {
+            int modCount = modificationList.Count;
 
-			if (currentImsTarget != null)
-			{
-				if (currentImsTarget.Peptide == peptide && Math.Abs(currentImsTarget.NormalizedElutionTime - normalizedElutionTime) < 0.00001)
-				{
-					if (modCount == currentImsTarget.ModificationList.Count)
-					{
-						if (modCount == 0) return true;
-						else
-						{
-							if (currentImsTarget.ModificationList[0] == modificationList[0]) return true;
-						}
-					}
-				}
-			}
+            if (currentImsTarget != null)
+            {
+                if (currentImsTarget.PeptideSequence == peptide && Math.Abs(currentImsTarget.NormalizedElutionTime - normalizedElutionTime) < 0.00001)
+                {
+                    if (modCount == currentImsTarget.ModificationList.Count)
+                    {
+                        if (modCount == 0) return true;
+                        else
+                        {
+                            if (currentImsTarget.ModificationList[0] == modificationList[0]) return true;
+                        }
+                    }
+                }
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public static string BuildConnectionString(string serverName, string databaseName)
-		{
-			SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder
-			{
-			    UserID = DB_USERNAME,
-			    Password = DB_PASSWORD,
-			    DataSource = serverName,
-			    InitialCatalog = databaseName,
-			    ConnectTimeout = 5
-			};
+        public static string BuildConnectionString(string serverName, string databaseName)
+        {
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder
+            {
+                UserID = DB_USERNAME,
+                Password = DB_PASSWORD,
+                DataSource = serverName,
+                InitialCatalog = databaseName,
+                ConnectTimeout = 5
+            };
 
-			return builder.ConnectionString;
-		}
+            return builder.ConnectionString;
+        }
 
-		public static string GetQuery()
-		{
-			return "SELECT " +
-						"MT.Mass_Tag_ID, " +
-						"MT.Peptide, " +
-						"MTN.Avg_GANET," +
-						"MT.Mod_Count," +
-						"MT.Mod_Description," +
-						"MTC.Charge AS Conformer_Charge, " +
-						"MTC.Conformer, " +
-						"MTC.Drift_Time_Avg " +
-					"FROM T_Mass_Tags MT " +
-						"JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
-						"JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
-					"WHERE MT.PMT_Quality_Score >= 2 " +
-					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
-		}
+        public static string GetQuery()
+        {
+            return "SELECT " +
+                        "MT.Mass_Tag_ID, " +
+                        "MT.PeptideSequence, " +
+                        "MTN.Avg_GANET," +
+                        "MT.Mod_Count," +
+                        "MT.Mod_Description," +
+                        "MTC.Charge AS Conformer_Charge, " +
+                        "MTC.Conformer, " +
+                        "MTC.Drift_Time_Avg " +
+                    "FROM T_Mass_Tags MT " +
+                        "JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
+                        "JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
+                    "WHERE MT.PMT_Quality_Score >= 2 " +
+                    "ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
+        }
 
-		public static string GetQueryForCalibration()
-		{
-			return "SELECT " +
-						"MT.Mass_Tag_ID, " +
-						"MT.Peptide, " +
-						"MTN.Avg_GANET," +
-						"MT.Mod_Count," +
-						"MT.Mod_Description," +
-						"MTC.Charge AS Conformer_Charge, " +
-						"MTC.Conformer, " +
-						"MTC.Drift_Time_Avg " +
-					"FROM T_Mass_Tags MT " +
-						"JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
-						"JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
-					"WHERE MT.PMT_Quality_Score >= 3 AND MT.Number_Of_Peptides > 50 " +
-					"ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
-		}
-	}
+        public static string GetQueryForCalibration()
+        {
+            return "SELECT " +
+                        "MT.Mass_Tag_ID, " +
+                        "MT.PeptideSequence, " +
+                        "MTN.Avg_GANET," +
+                        "MT.Mod_Count," +
+                        "MT.Mod_Description," +
+                        "MTC.Charge AS Conformer_Charge, " +
+                        "MTC.Conformer, " +
+                        "MTC.Drift_Time_Avg " +
+                    "FROM T_Mass_Tags MT " +
+                        "JOIN T_Mass_Tags_NET AS MTN ON MT.Mass_Tag_ID = MTN.Mass_Tag_ID " +
+                        "JOIN T_Mass_Tag_Conformers_Observed MTC ON MT.Mass_Tag_ID = MTC.Mass_Tag_ID " +
+                    "WHERE MT.PMT_Quality_Score >= 3 AND MT.Number_Of_Peptides > 50 " +
+                    "ORDER BY MT.Monoisotopic_Mass, MT.Mass_Tag_ID";
+        }
+    }
 }

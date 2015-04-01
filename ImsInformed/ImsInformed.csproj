@@ -67,6 +67,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MathNet.Numerics.dll</HintPath>
     </Reference>
+    <Reference Include="MSDataFileReader">
+      <HintPath>..\lib\MSDataFileReader\MSDataFileReader.dll</HintPath>
+    </Reference>
     <Reference Include="MultiDimensionalPeakFinding, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MultiDimensionalPeakFinding\MultiDimensionalPeakFinding.dll</HintPath>
@@ -103,21 +106,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\ChargeStateCorrelationResult.cs" />
+    <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
+    <Compile Include="Domain\DirectInjection\VoltageGroup.cs" />
+    <Compile Include="Domain\DirectInjection\VoltageSeparatedAccumulatedXICs.cs" />
     <Compile Include="Domain\DriftTimeTarget.cs" />
-    <Compile Include="Domain\FailurePrecedence.cs" />
     <Compile Include="Domain\AnalysisStatus.cs" />
     <Compile Include="Domain\FakeUIMFReader.cs" />
-    <Compile Include="Domain\FeatureBlobNet.cs" />
     <Compile Include="Domain\ImsTarget.cs" />
     <Compile Include="Domain\ImsTargetResult.cs" />
     <Compile Include="Domain\InjectionMethod.cs" />
     <Compile Include="Domain\IonizationMethod.cs" />
     <Compile Include="Domain\TargetIsomerReport.cs" />
-    <Compile Include="Domain\MoleculeInformedWorkflowResult.cs" />
+    <Compile Include="Domain\CrossSectionWorkflowResult.cs" />
+    <Compile Include="Domain\LiquidChromatography\FeatureBlobNet.cs" />
     <Compile Include="Filters\AnalysisFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
+    <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
+    <Compile Include="Interfaces\IImsTarget.cs" />
+    <Compile Include="IO\FileFormatEnum.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
-    <Compile Include="Parameters\MoleculeWorkflowParameters.cs" />
+    <Compile Include="IO\RetentionMobilitySwappedMzMLExporter.cs" />
+    <Compile Include="IO\UIMFExporter.cs" />
+    <Compile Include="Parameters\CrossSectionSearchParameters.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
     <Compile Include="Scoring\AnalysisScoresHolder.cs" />
     <Compile Include="Scoring\TargetPresenceLikelihoodFunctions.cs" />
@@ -129,28 +139,27 @@
     <Compile Include="Scoring\VoltageGroupScore.cs" />
     <Compile Include="Stats\FitLine.cs" />
     <Compile Include="Domain\TargetType.cs" />
-    <Compile Include="Domain\ExtractedIonChromatogram.cs" />
     <Compile Include="Stats\NormalityTest.cs" />
     <Compile Include="Stats\UnitConversion.cs" />
-    <Compile Include="Domain\VoltageGroup.cs" />
-    <Compile Include="Domain\VoltageSeparatedAccumulatedXICs.cs" />
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
-    <Compile Include="Parameters\InformedParameters.cs" />
+    <Compile Include="Parameters\LCMSPeptideSearchParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Util\InformedWorkflow.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
     <Compile Include="Util\MoleculeUtil.cs" />
-    <Compile Include="Util\MoleculeInformedWorkflow.cs" />
     <Compile Include="Util\PeptideUtil.cs" />
     <Compile Include="Util\SaturationDetector.cs" />
     <Compile Include="Stats\ContinuousXYPoint.cs" />
+    <Compile Include="Workflows\CrossSectionWorkfow.cs" />
+    <Compile Include="Workflows\LCMSPeptideSearchWorkfow.cs" />
+    <Compile Include="Workflows\LibrarySearchWorkflow.cs" />
+    <Compile Include="Workflows\VoltageAccumulationWorkflow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -170,6 +179,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y /S /C  "$(SolutionDir)lib\PNNLOmicsElementData.xml" "$(TargetDir)"

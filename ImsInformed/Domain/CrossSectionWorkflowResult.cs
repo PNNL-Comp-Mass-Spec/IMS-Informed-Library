@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="MoleculeInformedWorkflowResult.cs" company="PNNL">
+// <copyright file="CrossSectionInformedWorkflowResult.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the MoleculeInformedWorkflowResult type.
+//   Defines the CrossSectionInformedWorkflowResult type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ namespace ImsInformed.Domain
     /// The molecule informed workflow result.
     /// </summary>
     [Serializable]
-    public class MoleculeInformedWorkflowResult
+    public class CrossSectionWorkflowResult
     {
         /// <summary>
         /// The dataset name.
@@ -75,7 +75,7 @@ namespace ImsInformed.Domain
         /// <param name="isomerResults">
         /// The isomer results.
         /// </param>
-        public MoleculeInformedWorkflowResult(string datasetName, string targetDescriptor, IonizationMethod ionizationMethod, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
+        public CrossSectionWorkflowResult(string datasetName, string targetDescriptor, IonizationMethod ionizationMethod, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
         {
             this.DatasetName = datasetName;
             this.TargetDescriptor = targetDescriptor;

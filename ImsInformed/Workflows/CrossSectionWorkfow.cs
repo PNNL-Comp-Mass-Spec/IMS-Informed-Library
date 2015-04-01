@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="MoleculeInformedWorkflow.cs" company="PNNL">
+// <copyright file="CrossSectionWorkfow.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
@@ -8,7 +8,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Util
+namespace ImsInformed.Workflows
 {
     using System;
     using System.Collections.Generic;
@@ -18,26 +18,46 @@ namespace ImsInformed.Util
     using System.Linq;
 
     using DeconTools.Backend.Core;
+    using DeconTools.Backend.ProcessingTasks.FitScoreCalculators;
+    using DeconTools.Backend.ProcessingTasks.PeakDetectors;
+    using DeconTools.Backend.ProcessingTasks.ResultValidators;
+    using DeconTools.Backend.ProcessingTasks.TargetedFeatureFinders;
+    using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
     using ImsInformed.IO;
     using ImsInformed.Parameters;
     using ImsInformed.Scoring;
     using ImsInformed.Stats;
+    using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
 
+    using MultiDimensionalPeakFinding;
     using MultiDimensionalPeakFinding.PeakDetection;
 
+    using UIMFLibrary;
+
     /// <summary>
-    /// Find molecules with a known formula and know ionization methods. metabolites and pipetides alike.
+    /// Find molecules with a given empirical formula and given ionization methods. Developed based on LCMS Peptide Search Workflow
     /// </summary>
-    public class MoleculeInformedWorkflow : InformedWorkflow, IDisposable
+    public class CrossSectionWorkfow : IDisposable
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MoleculeInformedWorkflow"/> class.
+        /// The number of frames.
+        /// </summary>
+        public readonly double NumberOfFrames;
+
+        /// <summary>
+        /// The number of scans.
+        /// </summary>
+        public readonly int NumberOfScans;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CrossSectionWorkfow"/> class.
         /// </summary>
         /// <param name="uimfFileLocation">
         /// The UIMF file location.
@@ -51,8 +71,25 @@ namespace ImsInformed.Util
         /// <param name="parameters">
         /// The parameters.
         /// </param>
-        public MoleculeInformedWorkflow(string uimfFileLocation, string outputDirectory, string resultFileName, MoleculeWorkflowParameters parameters) : base(uimfFileLocation, parameters)
+        public CrossSectionWorkfow(string uimfFileLocation, string outputDirectory, string resultFileName, CrossSectionSearchParameters parameters)
         {
+            this.uimfReader = new DataReader(uimfFileLocation);
+
+            // Append bin-centric table to the uimf if not present.
+            if (!this.uimfReader.DoesContainBinCentricData())
+            {
+                DataWriter dataWriter = new DataWriter(uimfFileLocation);
+                dataWriter.CreateBinCentricTables();
+            }
+            
+            this.Parameters = parameters;
+            this.smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
+            this.theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
+            this.peakDetector = new ChromPeakDetector(0.0001, 0.0001);
+
+            this.NumberOfFrames = this.uimfReader.GetGlobalParams().NumFrames;
+            this.NumberOfScans = this.uimfReader.GetFrameParams(1).Scans;
+
             this.DatasetName = Path.GetFileNameWithoutExtension(uimfFileLocation);
 
             this.Parameters = parameters;
@@ -89,7 +126,7 @@ namespace ImsInformed.Util
             consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
             string result = this.OutputPath + this.ResultFileName;
             this.fileWriter = File.AppendText(result);
-            TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(fileWriter)
+            TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.fileWriter)
             {
                 Name = "this.DatasetName" + "_Result",
                 TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
@@ -101,9 +138,24 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
+        /// The UIMF reader.
+        /// </summary>
+        public readonly DataReader uimfReader;
+
+        /// <summary>
+        /// The theoretical feature generator.
+        /// </summary>
+        protected readonly ITheorFeatureGenerator theoreticalFeatureGenerator;
+
+        /// <summary>
+        /// The smoother.
+        /// </summary>
+        protected readonly SavitzkyGolaySmoother smoother;
+
+        /// <summary>
         /// Gets or sets the parameters.
         /// </summary>
-        public MoleculeWorkflowParameters Parameters { get; set; }
+        public CrossSectionSearchParameters Parameters { get; set; }
 
         /// <summary>
         /// Gets or sets the dataset name.
@@ -114,6 +166,11 @@ namespace ImsInformed.Util
         /// The file writer.
         /// </summary>
         private readonly StreamWriter fileWriter; 
+        
+         /// <summary>
+        /// The _peak detector.
+        /// </summary>
+        protected readonly ChromPeakDetector peakDetector;
 
         /// <summary>
         /// Gets the result path.
@@ -145,9 +202,9 @@ namespace ImsInformed.Util
             return new Ion(target.Composition, chargeState);
         }
 
-        public IDictionary<string, MoleculeInformedWorkflowResult> RunMoleculeInformedWorkFlow(IEnumerable<ImsTarget> targetList, bool detailedVerbose = true)
+        public IDictionary<string, CrossSectionWorkflowResult> RunCrossSectionWorkFlow(IEnumerable<ImsTarget> targetList, bool detailedVerbose = true)
         {
-            IDictionary<string, MoleculeInformedWorkflowResult> targetResultMap = new Dictionary<string, MoleculeInformedWorkflowResult>();
+            IDictionary<string, CrossSectionWorkflowResult> targetResultMap = new Dictionary<string, CrossSectionWorkflowResult>();
             foreach (var target in targetList)
             {
                 if (target.EmpiricalFormula != null)
@@ -160,7 +217,7 @@ namespace ImsInformed.Util
                     Console.WriteLine("    Target: Unknown (MZ = {0})", target.TargetMz);
                 }
 
-                MoleculeInformedWorkflowResult result = this.RunMoleculeInformedWorkFlow(target, detailedVerbose);
+                CrossSectionWorkflowResult result = this.RunCrossSectionWorkFlow(target, detailedVerbose);
                 targetResultMap.Add(target.TargetDescriptor, result);
             }
 
@@ -175,14 +232,14 @@ namespace ImsInformed.Util
         /// </param>
         /// <param name="detailedVerbose"></param>
         /// <returns>
-        /// The <see cref="MoleculeInformedWorkflowResult"/>.
+        /// The <see cref="CrossSectionWorkflowResult"/>.
         /// </returns>
-        public MoleculeInformedWorkflowResult RunMoleculeInformedWorkFlow(ImsTarget target, bool detailedVerbose = true)
+        public CrossSectionWorkflowResult RunCrossSectionWorkFlow(ImsTarget target, bool detailedVerbose = true)
         {
             string targetDescription = target.TargetDescriptor;
             double monoisotopicMass = 0;
 
-            MoleculeInformedWorkflowResult informedResult;
+            CrossSectionWorkflowResult informedResult;
 
             try
             {
@@ -244,12 +301,12 @@ namespace ImsInformed.Util
                 if (targetComposition != null) 
                 {
                     string empiricalFormula = targetComposition.ToPlainString();
-                    IsotopicProfile theoreticalIsotopicProfile = _theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                    IsotopicProfile theoreticalIsotopicProfile = this.theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
                     theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                 }
                 
                 // Voltage grouping
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(_uimfReader, target.TargetMz, _parameters);
+                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.TargetMz, this.Parameters);
                 
                 // For each voltage, find 2D XIC features 
                 if (detailedVerbose)
@@ -260,11 +317,11 @@ namespace ImsInformed.Util
                 IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
                 foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                 {    
-                    double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, _uimfReader);
+                    double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this.uimfReader);
                 
                     // Smooth Chromatogram
                     IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
-                    _smoother.Smooth(ref pointList);
+                    this.smoother.Smooth(ref pointList);
                     
                     // Peak Find Chromatogram
                     List<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList).ToList();
@@ -288,14 +345,14 @@ namespace ImsInformed.Util
                     foreach (var featureBlob in featureBlobs)
                     {   
                         FeatureScoreHolder currentScoreHolder;
-                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(this, featureBlob, voltageGroup, globalMaxIntensity);
+                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
                         
-                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this, featureBlob.Statistics, voltageGroup, target.TargetMz, globalMaxIntensity);
+                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this.uimfReader, this.Parameters, featureBlob.Statistics, voltageGroup, target.TargetMz, globalMaxIntensity, (int)this.NumberOfScans);
                 
                         currentScoreHolder.IsotopicScore = 0;
                         if (targetComposition != null)
                         {
-                             currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this, target,featureBlob.Statistics,theoreticalIsotopicProfilePeakList,voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity);
+                            currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this.uimfReader, this.Parameters, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity, (int)this.NumberOfScans);
                         }
                 
                         scoresTable.Add(featureBlob, currentScoreHolder);
@@ -307,7 +364,7 @@ namespace ImsInformed.Util
                     // filter out features with Ims scans at 1% left or right.
                     Predicate<FeatureBlob> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
                     Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
-                    Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicFitScoreThreshold);
+                    Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
                 
                     // Print out candidate features that pass the intensity threshold.
                     foreach (var featureBlob in featureBlobs)
@@ -412,11 +469,11 @@ namespace ImsInformed.Util
                     // quantize the VG score from VGs in the removal list.
                     IEnumerable<FeatureScoreHolder> featureScores = rejectionList.Select(x => x.BestFeatureScores);
                     analysisScores.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
-                    informedResult = new MoleculeInformedWorkflowResult(
+                    informedResult = new CrossSectionWorkflowResult(
                         this.DatasetName,
                         targetDescription,
                         target.IonizationType,
-                        AnalysisStatus.NEG,
+                        AnalysisStatus.Negative,
                         analysisScores,
                         null);
                     
@@ -507,11 +564,11 @@ namespace ImsInformed.Util
                     scoreHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                     IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                     scoreHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
-                    informedResult = new MoleculeInformedWorkflowResult(
+                    informedResult = new CrossSectionWorkflowResult(
                         this.DatasetName,
                         targetDescription,
                         target.IonizationType,
-                        AnalysisStatus.NSP,
+                        AnalysisStatus.NotSufficientPoints,
                         scoreHolder,
                         null);
                     return informedResult;
@@ -568,10 +625,10 @@ namespace ImsInformed.Util
                 analysisScoreHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(accumulatedXiCs.Keys);
                 IEnumerable<FeatureScoreHolder> scores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                 analysisScoreHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(scores);
-                AnalysisStatus finalStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.REJ : AnalysisStatus.POS;
+                AnalysisStatus finalStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.Rejected : AnalysisStatus.Positive;
                 
                 // Check if the last voltage group still exists as fit point
-                if (finalStatus == AnalysisStatus.REJ)
+                if (finalStatus == AnalysisStatus.Rejected)
                 {
                     voltageGroupDriftTimeInMs = -1;
                 }
@@ -590,7 +647,7 @@ namespace ImsInformed.Util
                 mostLikelyIsomer.LastVoltageGroupDriftTimeInMs = voltageGroupDriftTimeInMs;
                 isomers.Add(mostLikelyIsomer);
                 
-                informedResult = new MoleculeInformedWorkflowResult(
+                informedResult = new CrossSectionWorkflowResult(
                 this.DatasetName,
                 targetDescription,
                 target.IonizationType,
@@ -668,11 +725,11 @@ namespace ImsInformed.Util
                 analysisScores.AverageCandidateTargetScores.PeakShapeScore = 0;
                 analysisScores.AverageVoltageGroupStabilityScore = 0;
 
-                informedResult = new MoleculeInformedWorkflowResult(
+                informedResult = new CrossSectionWorkflowResult(
                     this.DatasetName,
                     targetDescription,
                     target.IonizationType,
-                    AnalysisStatus.ERR,
+                    AnalysisStatus.UknownError,
                     analysisScores,
                     null);
                 return informedResult;
@@ -691,7 +748,7 @@ namespace ImsInformed.Util
         /// <summary>
         /// Finalizer
         /// </summary>
-        ~MoleculeInformedWorkflow()
+        ~CrossSectionWorkfow()
         {
             this.Dispose(false);
         }
@@ -707,7 +764,8 @@ namespace ImsInformed.Util
             if (disposing) 
             {
                 // free managed resources
-                this._uimfReader.Dispose();
+                this.uimfReader.Dispose();
+                this.fileWriter.Dispose();
                 this.DatasetName = null;
                 this.OutputPath = null;
             }

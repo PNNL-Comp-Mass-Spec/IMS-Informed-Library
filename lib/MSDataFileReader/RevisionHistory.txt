@@ -1,0 +1,95 @@
+MSDataFileReader Change Log
+
+Version 1.3.5560; May 23, 2015
+	- Updated clsBase64EncodeDecode to change ByRef parameters to <Out()> ByRef parameters
+	- Functions B64encode and EncodeNumericArray now have parameter removeTrailingPaddingChars, which defaults to False
+	  	- This is a breaking change, since previously this function always removed the trailing equals signs
+	- Fixed bug in EncodeNumericArray when eEndianMode was LittleEndian
+
+Version 1.3.5206; April 3, 2014
+	- Added support for new MzXML elements for precursor ions
+		- PrecursorCharge (accessible via ParentIonCharge)
+		- ActivationMethod (e.g. CID, ETD, or HCD)
+		- WindowWideness (accessible via IsolationWindow)
+		- PrecursorScanNum
+
+Version 1.3.4890; May 22, 2013
+	- Added support for mzXML v3.x
+		- Supports zlib compressed data and the new contentType and compressionType attributes
+
+Version 1.3.4787; February 8, 2013
+	- Added property InputFilePath
+
+Version 1.3.4729; December 12, 2012
+	- Fixed bug in RegEx used to match DTA header lines
+	- Updated to .NET 4
+
+Version 1.3.4574; July 10, 2012
+	- Switched to using Double.TryParse and Integer.TryParse in ReadSingleSpectrum
+
+Version 1.3.4553; June 19, 2012
+	- Fixed MGF file parsing bug that failed to skip spectra that did not have any ions
+
+Version 1.3.4429; February 16, 2012
+	- Added support for MGF files created by ProteoWizard
+		- Title Line contains the file name, start scan, end scan, and charge (if known)
+	- Added function GetMSMSDataAsText
+	- Added ReadOnly Property CurrentSpectrum
+	- Updated to Visual Studio 2010
+	- Now tracking MS/MS text lines with a generic string collection instead of an array
+
+Version 1.3.4139; May 2, 2011
+	- Compiled in release mode
+
+Version 1.3.3922; September 27, 2010
+	- Now checking for the final entry in a mass spectrum having an m/z and intensity of 0
+		- Removing the final entry if this is the case
+
+Version 1.3.3912; September 17, 2010
+	- Added support for additional mzXML scan attributes
+		- Added support for scanType tag in .mzXML files
+			- Options are: Full, zoom, SIM, SRM, CRM, Q1, Q3, or MRM
+		- Added support for filterLine, which lists the Thermo-specific filter line text for each scan
+		- Looking for startMZ and endMZ, which are used by mzStar and MassWolf to indicate MRM transition masses
+	- Updated to Visual Studio 2008
+
+Version 1.2.3559; September 29, 2009
+	- Added functions GetSpectrumTitle and GetSpectrumTitleWithCommentChars to the MSTextFileReader base class
+	- Added property ReadTextDataOnly to the MSTextFileReader base class
+	- Changed mMostRecentSpectrumFileText in clsMSTextFileReaderBaseClass to use the StringBuilder class for string concatenation
+
+Version 1.2.3198; October 3, 2008
+	- Added ScanCount public property
+		- Only valid for .mzXML and .mzData files
+		- When using clsMzDataFileReader or clsMzXMLFileReader, this value is not populated until after the first scan is read
+
+Version 1.2.2991; March 10, 2008
+	- Updated to allow reading mzXML files that are version 3.x (normally 3.0)
+		- Note that v3.x is backwards compatible with v2, so no actual code modifications were required
+
+Version 1.2.2539; December 14, 2006
+	 - Changed the parent ion m/z precision from single to double precision to allow for additional digits of precision
+
+Version 1.2.2355; June 13, 2006
+	- Now checking for a corrupted index at the end of an mzXML file
+
+Version 1.2.2330; May 19, 2006
+	- Added functions GetSpectrumHeaderInfoByIndex() and GetSpectrumHeaderInfoByScanNumber() to clsMSDataFileAccessorBaseClass
+		- These functions are faster than GetSpectrumByScanNumber() and GetSpectrumByIndex() since they do not parse the base-64 encoded MS and Intensity array data
+
+Version 1.2.2326; May 15, 2006
+	- Added support for indexing the spectra location in files, which allows for random access to spectra
+		- Use class clsMzDataFileAccessor or clsMzXMLFileAccessor for this 
+		- Class supports UTF8, UTF-16 Unicode, and Big Endian Unicode, in addition to Ascii files
+		- Supports files with either CRLF (Windows) or just LF (Unix) line termination symbols
+		- Using a redesigned clsBinaryTextReader that can read forward or backward
+	- Added support for reading and using the byte offset index at the end of the mzXml file, if present
+	- Now validating the mzXML version listed in the <mzXML> element at the start of the file
+		- Currently support mzXML version 2.x (normally 2.0 or 2.1)
+		- Set ParseFilesWithUnknownVersion to True to parse files with unknown/unsupported versions
+	- Now validating the mzData version listed in the <mzData> element at the start of the file
+		- Currently support mzData version 1.x (normally 1.05)
+		- Set ParseFilesWithUnknownVersion to True to parse files with unknown/unsupported versions
+
+Version 1.0.2285; April 4, 2006
+	- Initial release version (VB.NET DLL)

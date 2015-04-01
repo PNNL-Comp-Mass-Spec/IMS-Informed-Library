@@ -18,7 +18,6 @@ namespace ImsInformedTests
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
     using DeconTools.Backend.Utilities;
-    using DeconTools.Backend.Workflows;
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;

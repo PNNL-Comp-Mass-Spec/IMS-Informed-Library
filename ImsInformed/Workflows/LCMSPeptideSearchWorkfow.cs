@@ -345,7 +345,7 @@ namespace ImsInformed.Workflows
                     result.IsSaturated = unsaturatedIsotope > 0;
                     result.ScanLcRep = statistics.ScanLcRep;
                     result.NormalizedElutionTime = net;
-                    result.DriftTime = this._uimfReader.GetDriftTime(statistics.ScanLcRep, statistics.ScanImsRep);
+                    result.DriftTime = this._uimfReader.GetDriftTime(statistics.ScanLcRep, statistics.ScanImsRep, true);
                     result.XicFeature = featureToUseForResult;
 
                     // Don't consider bogus results

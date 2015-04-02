@@ -16,10 +16,13 @@ namespace ImsInformed.Scoring
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Parameters;
+    using ImsInformed.Interfaces;
     using ImsInformed.Stats;
+    using ImsInformed.Targets;
     using ImsInformed.Util;
     using ImsInformed.Workflows;
+    using ImsInformed.Workflows.CrossSectionExtraction;
+    using ImsInformed.Workflows.LcImsPeptideExtraction;
 
     using MathNet.Numerics.LinearAlgebra.Double;
     using MathNet.Numerics.LinearAlgebra.Generic;
@@ -175,7 +178,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(DataReader reader, CrossSectionSearchParameters parameters, ImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, int numberOfScans)
+        public static double IsotopicProfileScore(DataReader reader, CrossSectionSearchParameters parameters, IImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, int numberOfScans)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)

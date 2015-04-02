@@ -8,7 +8,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Parameters
+namespace ImsInformed.Workflows.CrossSectionExtraction
 {
     /// <summary>
     /// The molecule workflow parameters.

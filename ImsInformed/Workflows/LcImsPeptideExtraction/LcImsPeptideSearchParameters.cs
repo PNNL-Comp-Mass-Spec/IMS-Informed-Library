@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LCMSPeptideSearchParameters.cs" company="PNNL">
+// <copyright file="LcImsPeptideSearchParameters.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
@@ -8,12 +8,12 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Parameters
+namespace ImsInformed.Workflows.LcImsPeptideExtraction
 {
     /// <summary>
     /// The informed parameters.
     /// </summary>
-    public class LCMSPeptideSearchParameters
+    public class LcImsPeptideSearchParameters
     {
         /// <summary>
         /// Gets or sets the net tolerance.

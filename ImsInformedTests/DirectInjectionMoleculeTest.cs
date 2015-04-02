@@ -18,17 +18,19 @@ namespace ImsInformedTests
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
     using DeconTools.Backend.Utilities;
+    using DeconTools.Backend.Workflows;
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Interfaces;
     using ImsInformed.IO;
-    using ImsInformed.Parameters;
     using ImsInformed.Scoring;
     using ImsInformed.Stats;
+    using ImsInformed.Targets;
     using ImsInformed.Util;
-    using ImsInformed.Workflows;
+    using ImsInformed.Workflows.CrossSectionExtraction;
+    using ImsInformed.Workflows.VoltageAccumulation;
 
-    using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
 
     using MathNet.Numerics.Distributions;
@@ -38,7 +40,13 @@ namespace ImsInformedTests
 
     using NUnit.Framework;
 
+    using PNNLOmics.Data;
+
     using UIMFLibrary;
+
+    using Ion = InformedProteomics.Backend.Data.Biology.Ion;
+    using Peak = DeconTools.Backend.Core.Peak;
+    using PeptideTarget = ImsInformed.Targets.PeptideTarget;
 
     /// <summary>
     /// The direct injection molecule test.
@@ -193,7 +201,7 @@ namespace ImsInformedTests
 
             // BPS Na
             string formula = "C12H10O4S";
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+            MolecularTarget sample = new MolecularTarget(1, IonizationMethod.ProtonMinus, formula);
             string fileLocation = Bps;
 
             Console.WriteLine("Dataset: {0}", fileLocation);
@@ -231,7 +239,7 @@ namespace ImsInformedTests
             double mz = 221.059395;
             string uimfFile = AcetamipridFile;
 
-            ImsTarget target= new ImsTarget(1, IonizationMethod.ProtonMinus, mz);
+            MolecularTarget target= new MolecularTarget(1, IonizationMethod.ProtonMinus, mz);
             Console.WriteLine("Nicotine:");
             Console.WriteLine("MZ:   " + mz);
 
@@ -279,7 +287,7 @@ namespace ImsInformedTests
             // double mz = 221.059395;
             // string uimfFile = AcetamipridFile;
 
-            ImsTarget target= new ImsTarget(1, IonizationMethod.ProtonMinus, mz);
+            MolecularTarget target= new MolecularTarget(1, IonizationMethod.ProtonMinus, mz);
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -422,7 +430,7 @@ namespace ImsInformedTests
         public void TestSingleMoleculeBadTarget()
         {
             string formula = "NotAFormula";
-            Assert.Throws<Exception>(() => new ImsTarget(1, IonizationMethod.ProtonMinus, formula));
+            Assert.Throws<Exception>(() => new MolecularTarget(1, IonizationMethod.ProtonMinus, formula));
         }
 
         /// <summary>
@@ -455,7 +463,7 @@ namespace ImsInformedTests
                 bool found = false;
                 string formula = form;
                 
-                ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
+                MolecularTarget sample = new MolecularTarget(1, IonizationMethod.ProtonMinus, formula);
                 var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
 
                 // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
@@ -622,6 +630,64 @@ namespace ImsInformedTests
         }
 
         /// <summary>
+        /// The test single molecule MZ only.
+        /// </summary>
+        [Test][STAThread]
+        public void TestMixedSamples()
+        {
+            double targetK = 120.5;
+            string targetL = "DGWHSWPIAHQWPQGPSAVDAAFSWEEK";
+            string targetA = "C3H7O7P";
+            string targetB = "C3H7O6P";
+            string targetC = "C6H14O12P2";
+            string targetD = "C4H6O5";
+            string targetE = "C3H4O3";
+            string targetF = "C5H11O8P";
+            string targetG = "C6H8O7";
+            string targetH = "C4H6O4";
+            string targetI = "C3H5O6P";
+            string targetJ = "C7H15O10P";
+            
+            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
+            IonizationMethod method = IonizationMethod.SodiumPlus;
+
+            IList<IImsTarget> targetList = new List<IImsTarget>();
+            targetList.Add(new PeptideTarget(12, targetL, 1.0));
+            targetList.Add(new MolecularTarget(1, method, targetA));
+            targetList.Add(new MolecularTarget(2, method, targetB));
+            targetList.Add(new MolecularTarget(3, method, targetC));
+            targetList.Add(new MolecularTarget(4, method, targetD));
+            targetList.Add(new MolecularTarget(5, method, targetE));
+            targetList.Add(new MolecularTarget(6, method, targetF));
+            targetList.Add(new MolecularTarget(7, method, targetG));
+            targetList.Add(new MolecularTarget(8, method, targetH));
+            targetList.Add(new MolecularTarget(9, method, targetI));
+            targetList.Add(new MolecularTarget(10, method, targetJ));
+            targetList.Add(new MolecularTarget(11, method, targetK));
+            
+            
+            Console.WriteLine("Dataset: {0}", fileLocation);
+            Console.WriteLine("TargetList: ");
+
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 
+
+            CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            IDictionary<string, CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
+            informedWorkflow.Dispose();
+        }
+        
+        /// <summary>
+        /// The test scoring.
+        /// </summary>
+        [Test][STAThread]
+        public void TestMzmlExport()
+        {
+            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, F1E, "output");
+            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.MzML);
+            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.UIMF);
+        }
+
+        /// <summary>
         /// The test scoring.
         /// </summary>
         [Test][STAThread]
@@ -629,7 +695,7 @@ namespace ImsInformedTests
         {
             string formula = "C9H13ClN6";
             string fileLocation = Cae;
-            ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonPlus, formula);
+            MolecularTarget sample = new MolecularTarget(1, IonizationMethod.ProtonPlus, formula);
             
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("Composition: " + sample.Composition);
@@ -639,7 +705,7 @@ namespace ImsInformedTests
 
             var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
 
-            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            CrossSectionWorkfow crossSectionWorkfow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
 
             // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
             Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(sample.Composition, sample.IonizationType);
@@ -702,61 +768,61 @@ namespace ImsInformedTests
                     double intensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
                     
                     double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
-                        workfow.uimfReader, 
-                        workfow.Parameters, 
+                        crossSectionWorkfow.uimfReader, 
+                        crossSectionWorkfow.Parameters, 
                         sample, 
                         featureBlob.Statistics,
                         theoreticalIsotopicProfilePeakList,
                         voltageGroup,
                         IsotopicScoreMethod.Angle,
                         globalMaxIntensity,
-                        workfow.NumberOfScans);
+                        crossSectionWorkfow.NumberOfScans);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
-                        workfow.uimfReader,
-                        workfow.Parameters, 
+                        crossSectionWorkfow.uimfReader,
+                        crossSectionWorkfow.Parameters, 
                         sample, 
                         featureBlob.Statistics,
                         theoreticalIsotopicProfilePeakList,
                         voltageGroup,
                         IsotopicScoreMethod.EuclideanDistance,
                         globalMaxIntensity,
-                        workfow.NumberOfScans);
+                        crossSectionWorkfow.NumberOfScans);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
-                        workfow.uimfReader,
-                        workfow.Parameters, 
+                        crossSectionWorkfow.uimfReader,
+                        crossSectionWorkfow.Parameters, 
                         sample,
                         featureBlob.Statistics, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.PearsonCorrelation,
                         globalMaxIntensity,
-                        workfow.NumberOfScans);
+                        crossSectionWorkfow.NumberOfScans);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
-                        workfow.uimfReader,
-                        workfow.Parameters, 
+                        crossSectionWorkfow.uimfReader,
+                        crossSectionWorkfow.Parameters, 
                         sample, 
                         featureBlob.Statistics, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.Bhattacharyya,
                         globalMaxIntensity,
-                        workfow.NumberOfScans);
+                        crossSectionWorkfow.NumberOfScans);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
-                        workfow.uimfReader,
-                        workfow.Parameters, 
+                        crossSectionWorkfow.uimfReader,
+                        crossSectionWorkfow.Parameters, 
                         sample, 
                         featureBlob.Statistics, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.EuclideanDistanceAlternative,
                         globalMaxIntensity,
-                        workfow.NumberOfScans);
+                        crossSectionWorkfow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(workfow.uimfReader, workfow.Parameters, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity, workfow.NumberOfScans);
+                    double peakShapeScore = FeatureScores.PeakShapeScore(crossSectionWorkfow.uimfReader, crossSectionWorkfow.Parameters, featureBlob.Statistics, voltageGroup, sample.TargetMz, globalMaxIntensity, crossSectionWorkfow.NumberOfScans);
                     
                     // Report all features.
                     Console.WriteLine(" feature found at scan number {0}", featureBlob.Statistics.ScanImsRep);
@@ -773,60 +839,8 @@ namespace ImsInformedTests
 
                 Console.WriteLine();
             }
-        }
 
-        /// <summary>
-        /// The test single molecule MZ only.
-        /// </summary>
-        [Test][STAThread]
-        public void TestMixedSamples()
-        {
-            string targetA = "C3H7O7P";
-            string targetB = "C3H7O6P";
-            string targetC = "C6H14O12P2";
-            string targetD = "C4H6O5";
-            string targetE = "C3H4O3";
-            string targetF = "C5H11O8P";
-            string targetG = "C6H8O7";
-            string targetH = "C4H6O4";
-            string targetI = "C3H5O6P";
-            string targetJ = "C7H15O10P";
-            double targetK = 120.5;
-            string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
-            IonizationMethod method = IonizationMethod.SodiumPlus;
-
-            IList<ImsTarget> targetList = new List<ImsTarget>();
-            targetList.Add(new ImsTarget(1, method, targetA));
-            targetList.Add(new ImsTarget(2, method, targetB));
-            targetList.Add(new ImsTarget(3, method, targetC));
-            targetList.Add(new ImsTarget(4, method, targetD));
-            targetList.Add(new ImsTarget(5, method, targetE));
-            targetList.Add(new ImsTarget(6, method, targetF));
-            targetList.Add(new ImsTarget(7, method, targetG));
-            targetList.Add(new ImsTarget(8, method, targetH));
-            targetList.Add(new ImsTarget(9, method, targetI));
-            targetList.Add(new ImsTarget(10, method, targetJ));
-            targetList.Add(new ImsTarget(11, method, targetK));
-            
-            Console.WriteLine("Dataset: {0}", fileLocation);
-            Console.WriteLine("TargetList: ");
-
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 
-
-            CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
-            IDictionary<string, CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
-            informedWorkflow.Dispose();
-        }
-        
-        /// <summary>
-        /// The test scoring.
-        /// </summary>
-        [Test][STAThread]
-        public void TestMzmlExport()
-        {
-            VoltageAccumulationWorkflow workflow = new VoltageAccumulationWorkflow(true, F1E, "output");
-            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.MzML);
-            workflow.RunVoltageAccumulationWorkflow(FileFormatEnum.UIMF);
+            crossSectionWorkfow.Dispose();
         }
     }
 }

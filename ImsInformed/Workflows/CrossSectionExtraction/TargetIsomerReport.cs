@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ImsInformed.Domain
+﻿namespace ImsInformed.Workflows.CrossSectionExtraction
 {
+    using System;
+
     /// <summary>
     /// The isomer result.
     /// </summary>

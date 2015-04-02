@@ -23,6 +23,6 @@ namespace ImsInformed.Domain
         /// <summary>
         /// The small molecule, characterized by empirical formula
         /// </summary>
-        SmallMolecule
+        Molecule
     }
 }

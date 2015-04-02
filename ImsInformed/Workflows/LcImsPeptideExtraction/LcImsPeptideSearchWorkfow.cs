@@ -1,14 +1,14 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LCMSPeptideSearchWorkfow.cs" company="PNNL">
+// <copyright file="LcImsPeptideSearchWorkfow.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the LCMSPeptideSearchWorkfow type.
+//   Defines the LcImsPeptideSearchWorkfow type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Workflows
+namespace ImsInformed.Workflows.LcImsPeptideExtraction
 {
     using System;
     using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace ImsInformed.Workflows
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
     using ImsInformed.Domain;
-    using ImsInformed.Parameters;
+    using ImsInformed.Targets;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Biology;
@@ -40,10 +40,12 @@ namespace ImsInformed.Workflows
 
     using UIMFLibrary;
 
+    using PeptideTarget = ImsInformed.Targets.PeptideTarget;
+
     /// <summary>
     /// The informed workflow.
     /// </summary>
-    public class LCMSPeptideSearchWorkfow
+    public class LcImsPeptideSearchWorkfow
     {
         /// <summary>
         /// The _uimf reader.
@@ -88,7 +90,7 @@ namespace ImsInformed.Workflows
         /// <summary>
         /// The _parameters.
         /// </summary>
-        public readonly LCMSPeptideSearchParameters _parameters;
+        public readonly LcImsPeptideSearchParameters _parameters;
 
         /// <summary>
         /// The number of frames.
@@ -128,7 +130,7 @@ namespace ImsInformed.Workflows
         protected double _pointCount;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LCMSPeptideSearchWorkfow"/> class.
+        /// Initializes a new instance of the <see cref="LcImsPeptideSearchWorkfow"/> class.
         /// </summary>
         /// <param name="uimfFileLocation">
         /// The uimf file location.
@@ -139,13 +141,13 @@ namespace ImsInformed.Workflows
         /// <param name="netAlignment">
         /// The net alignment.
         /// </param>
-        public LCMSPeptideSearchWorkfow(string uimfFileLocation, LCMSPeptideSearchParameters parameters, IInterpolation netAlignment) : this(uimfFileLocation, parameters)
+        public LcImsPeptideSearchWorkfow(string uimfFileLocation, LcImsPeptideSearchParameters parameters, IInterpolation netAlignment) : this(uimfFileLocation, parameters)
         {
             this._netAlignment = netAlignment;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LCMSPeptideSearchWorkfow"/> class.
+        /// Initializes a new instance of the <see cref="LcImsPeptideSearchWorkfow"/> class.
         /// </summary>
         /// <param name="uimfFileLocation">
         /// The uimf file location.
@@ -153,7 +155,7 @@ namespace ImsInformed.Workflows
         /// <param name="parameters">
         /// The parameters.
         /// </param>
-        public LCMSPeptideSearchWorkfow(string uimfFileLocation, LCMSPeptideSearchParameters parameters)
+        public LcImsPeptideSearchWorkfow(string uimfFileLocation, LcImsPeptideSearchParameters parameters)
         {
             this._buildWatershedStopWatch = new Stopwatch();
             this._smoothStopwatch = new Stopwatch();
@@ -201,7 +203,7 @@ namespace ImsInformed.Workflows
         /// <returns>
         /// The <see cref="ChargeStateCorrelationResult"/>.
         /// </returns>
-        public ChargeStateCorrelationResult RunInformedWorkflow(ImsTarget target)
+        public ChargeStateCorrelationResult RunInformedWorkflow(PeptideTarget target)
         {
             Composition targetComposition = target.Composition;
             double targetMass = targetComposition.Mass;
@@ -248,7 +250,7 @@ namespace ImsInformed.Workflows
 
                 if(!featureBlobs.Any())
                 {
-                    ImsTargetResult result = new ImsTargetResult
+                    LcImsTargetResult result = new LcImsTargetResult
                     {
                         ChargeState = chargeState,
                         AnalysisStatus = AnalysisStatus.XicNotFound
@@ -261,7 +263,7 @@ namespace ImsInformed.Workflows
                 foreach (var featureBlob in featureBlobs)
                 {
                     // Setup result object
-                    ImsTargetResult result = new ImsTargetResult
+                    LcImsTargetResult result = new LcImsTargetResult
                     {
                         ChargeState = chargeState,
                         AnalysisStatus = AnalysisStatus.Positive
@@ -481,25 +483,25 @@ namespace ImsInformed.Workflows
             ChargeStateCorrelationResult bestCorrelationResult = null;
             double bestCorrelationSum = -1;
 
-            List<ImsTargetResult> resultList = target.ResultList.Where(x => x.AnalysisStatus == AnalysisStatus.Positive).OrderBy(x => x.IsotopicFitScore).ToList();
+            List<LcImsTargetResult> resultList = target.ResultList.Where(x => x.AnalysisStatus == AnalysisStatus.Positive).OrderBy(x => x.IsotopicFitScore).ToList();
             int numResults = resultList.Count;
 
             for (int i = 0; i < numResults; i++)
             {
-                ImsTargetResult referenceResult = resultList[i];
+                LcImsTargetResult referenceResult = resultList[i];
 
                 ChargeStateCorrelationResult chargeStateCorrelationResult = new ChargeStateCorrelationResult(target, referenceResult);
                 chargeStateCorrelationResultList.Add(chargeStateCorrelationResult);
 
                 for (int j = i + 1; j < numResults; j++)
                 {
-                    ImsTargetResult testResult = resultList[j];
+                    LcImsTargetResult testResult = resultList[j];
                     double correlation = FeatureCorrelator.CorrelateFeaturesUsingLc(referenceResult.XicFeature, testResult.XicFeature);
                     chargeStateCorrelationResult.CorrelationMap.Add(testResult, correlation);
                     Console.WriteLine(referenceResult.FeatureBlobStatistics.ScanLcRep + "\t" + referenceResult.FeatureBlobStatistics.ScanImsRep + "\t" + testResult.FeatureBlobStatistics.ScanLcRep + "\t" + testResult.FeatureBlobStatistics.ScanImsRep + "\t" + correlation);
                 }
 
-                List<ImsTargetResult> possibleBestResultList;
+                List<LcImsTargetResult> possibleBestResultList;
                 double correlationSum = chargeStateCorrelationResult.GetBestCorrelation(out possibleBestResultList);
 
                 if(correlationSum > bestCorrelationSum)
@@ -516,7 +518,7 @@ namespace ImsInformed.Workflows
             return bestCorrelationResult;
         }
 
-        public void ExtractData(IEnumerable<ImsTarget> targetList)
+        public void ExtractData(IEnumerable<PeptideTarget> targetList)
         {
             Stopwatch fastWatch = new Stopwatch();
             Stopwatch slowWatch = new Stopwatch();

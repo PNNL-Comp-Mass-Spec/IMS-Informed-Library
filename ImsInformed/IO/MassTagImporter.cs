@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using ImsInformed.Domain;
-using InformedProteomics.Backend.Data.Sequence;
-
-namespace ImsInformed.IO
+﻿namespace ImsInformed.IO
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Common;
+    using System.Data.SqlClient;
+
+    using ImsInformed.Domain;
+    using ImsInformed.Targets;
+
+    using InformedProteomics.Backend.Data.Sequence;
+
     public class MassTagImporter
     {
         private const string DB_USERNAME = "mtuser";
@@ -21,9 +22,9 @@ namespace ImsInformed.IO
             _dmsModToInformedModMap = new Dictionary<string, Modification> {{"IodoAcet", Modification.Carbamidomethylation}, {"Plus1Oxy", Modification.Oxidation}};
         }
 
-        public static List<ImsTarget> ImportMassTags(string serverName, string databaseName, double maxMsgfSpecProb = 1e-10, bool isForCalibration = false)
+        public static List<PeptideTarget> ImportMassTags(string serverName, string databaseName, double maxMsgfSpecProb = 1e-10, bool isForCalibration = false)
         {
-            List<ImsTarget> targetList = new List<ImsTarget>();
+            List<PeptideTarget> targetList = new List<PeptideTarget>();
 
             // Build connection string
             string connectionString = BuildConnectionString(serverName, databaseName);
@@ -43,7 +44,7 @@ namespace ImsInformed.IO
                     command.CommandTimeout = 120;
                     DbDataReader reader = command.ExecuteReader();
 
-                    ImsTarget currentImsTarget = null;
+                    PeptideTarget currentImsTarget = null;
 
                     while (reader.Read())
                     {
@@ -70,7 +71,7 @@ namespace ImsInformed.IO
 
                         if(!isSameTarget)
                         {
-                            currentImsTarget = new ImsTarget(massTagId, peptide, normalizedElutionTime, modificationList);
+                            currentImsTarget = new PeptideTarget(massTagId, peptide, normalizedElutionTime, modificationList);
                             targetList.Add(currentImsTarget);
                         }
 
@@ -86,7 +87,7 @@ namespace ImsInformed.IO
             return targetList;
         }
 
-        public static bool IsSameTarget(ImsTarget currentImsTarget, string peptide, double normalizedElutionTime, List<Modification> modificationList)
+        public static bool IsSameTarget(PeptideTarget currentImsTarget, string peptide, double normalizedElutionTime, List<Modification> modificationList)
         {
             int modCount = modificationList.Count;
 

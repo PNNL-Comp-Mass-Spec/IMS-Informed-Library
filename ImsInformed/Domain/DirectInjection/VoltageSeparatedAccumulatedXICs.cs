@@ -3,8 +3,8 @@
     using System;
     using System.Collections.Generic;
 
-    using ImsInformed.Parameters;
     using ImsInformed.Stats;
+    using ImsInformed.Workflows.CrossSectionExtraction;
 
     using UIMFLibrary;
 

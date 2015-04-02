@@ -7,6 +7,9 @@ using ImsInformed.Domain;
 
 namespace ImsInformed.IO
 {
+    using ImsInformed.Targets;
+    using ImsInformed.Workflows.LcImsPeptideExtraction;
+
     public class ImsTargetResultExporter : IDisposable
     {
         public StreamWriter _textWriter;
@@ -19,7 +22,7 @@ namespace ImsInformed.IO
             AddCsvHeader(_textWriter);
         }
 
-        public void AppendResultsOfTargetToCsv(ImsTarget target)
+        public void AppendResultsOfTargetToCsv(PeptideTarget target)
         {
             string modificationString = "";
             foreach (var modification in target.ModificationList)
@@ -28,7 +31,7 @@ namespace ImsInformed.IO
             }
 
             StringBuilder peptideInfo = new StringBuilder();
-            peptideInfo.Append(target.Id + ",");
+            peptideInfo.Append(target.ID + ",");
             peptideInfo.Append(target.PeptideSequence + ",");
             peptideInfo.Append(modificationString + ","); // TODO: Mods
             peptideInfo.Append(target.EmpiricalFormula + ",");
@@ -36,7 +39,7 @@ namespace ImsInformed.IO
 
             double targetElutionTime = target.NormalizedElutionTime;
 
-            foreach (ImsTargetResult result in target.ResultList)
+            foreach (LcImsTargetResult result in target.ResultList)
             {
                 int chargeState = result.ChargeState;
                 IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.DriftTime - result.DriftTime));
@@ -78,7 +81,7 @@ namespace ImsInformed.IO
 
         public void AppendCorrelationResultToCsv(ChargeStateCorrelationResult correlationResult)
         {
-            ImsTarget target = correlationResult.ImsTarget;
+            PeptideTarget target = correlationResult.ImsTarget;
 
             string modificationString = "";
             foreach (var modification in target.ModificationList)
@@ -87,7 +90,7 @@ namespace ImsInformed.IO
             }
 
             StringBuilder peptideInfo = new StringBuilder();
-            peptideInfo.Append(target.Id + ",");
+            peptideInfo.Append(target.ID + ",");
             peptideInfo.Append(target.PeptideSequence + ",");
             peptideInfo.Append(modificationString + ","); // TODO: Mods
             peptideInfo.Append(target.EmpiricalFormula + ",");

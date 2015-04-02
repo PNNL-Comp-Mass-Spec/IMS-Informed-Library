@@ -8,7 +8,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Workflows
+namespace ImsInformed.Workflows.VoltageAccumulation
 {
     using System;
     using System.Collections.Generic;
@@ -17,8 +17,7 @@ namespace ImsInformed.Workflows
 
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.IO;
-    using ImsInformed.Parameters;
-    using ImsInformed.Stats;
+    using ImsInformed.Workflows.CrossSectionExtraction;
 
     using UIMFLibrary;
 
@@ -272,7 +271,7 @@ namespace ImsInformed.Workflows
                 {
                     string outputPath = Path.Combine(this.OutputDir, this.datasetName + "_" + Math.Round(voltageGroup.MeanVoltageInVolts) + "V.mzML");
                     RetentionMobilitySwappedMzMLExporter mzMLExporter = new RetentionMobilitySwappedMzMLExporter();
-                    success = success && mzMLExporter.ExportMzML(inputPath, outputPath, voltageGroup, this.UimfReader, this.averageNotSum);
+                    success = success && mzMLExporter.ExportMzML(this.inputPath, outputPath, voltageGroup, this.UimfReader, this.averageNotSum);
                     Console.WriteLine("Writing MzML files to {0}", outputPath);
                 }
             }

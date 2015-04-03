@@ -57,7 +57,7 @@ namespace ImsInformed.Interfaces
         string TargetDescriptor { get; }
 
         /// <summary>
-        /// Gets or sets the target mz.
+        /// Gets or sets the target m/z.
         /// </summary>
         double TargetMz { get; set; }
     }

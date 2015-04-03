@@ -1,11 +1,8 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="CrossSectionWorkfow.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
-//   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
+//   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
-// <summary>
-//   Find molecules with a known formula and know ionization methods. metabolites and pipetides alike.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace ImsInformed.Workflows.CrossSectionExtraction
@@ -126,7 +123,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.fileWriter = File.AppendText(result);
             TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.fileWriter)
             {
-                Name = "this.DatasetName" + "_Result",
+                Name = "this.DatasetName" + "_Result", 
                 TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
             };
             
@@ -165,6 +162,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         private readonly StreamWriter fileWriter; 
         
+
          /// <summary>
         /// The _peak detector.
         /// </summary>
@@ -215,7 +213,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public IDictionary<string, CrossSectionWorkflowResult> RunCrossSectionWorkFlow(IEnumerable<IImsTarget> targetList, bool detailedVerbose = true)
         {
             IDictionary<string, CrossSectionWorkflowResult> targetResultMap = new Dictionary<string, CrossSectionWorkflowResult>();
-            foreach (var target in targetList)
+            foreach (IImsTarget target in targetList)
             {
                 if (target.EmpiricalFormula != null)
                 {
@@ -240,7 +238,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="target">
         /// The target.
         /// </param>
-        /// <param name="detailedVerbose"></param>
+        /// <param name="detailedVerbose">
+        /// </param>
         /// <returns>
         /// The <see cref="CrossSectionWorkflowResult"/>.
         /// </returns>
@@ -278,7 +277,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     target.TargetMz = targetIon.GetMonoIsotopicMz();
                 } 
                 
-                Trace.WriteLine(String.Empty);
+                Trace.WriteLine(string.Empty);
 
                 if (detailedVerbose)
                 {
@@ -296,11 +295,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {
                     if (targetComposition == null)
                     {
-                        Trace.Write(String.Format("Target: Mz = {0}", target.TargetMz));
+                        Trace.Write(string.Format("Target: Mz = {0}", target.TargetMz));
                     }
                     else
                     {
-                        Trace.Write(String.Format("Target: {0}", target.EmpiricalFormula));
+                        Trace.Write(string.Format("Target: {0}", target.EmpiricalFormula));
                     }
 
                     Trace.WriteLine(target.IonizationType.ToFriendlyString() + ":");
@@ -316,8 +315,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 }
                 
                 // Voltage grouping
-                    VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.TargetMz, this.Parameters);
-                
+                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.TargetMz, this.Parameters);
+
                 // For each voltage, find 2D XIC features 
                 if (detailedVerbose)
                 {
@@ -329,15 +328,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {    
                     double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this.uimfReader);
                 
-                    // Smooth Chromatogram
-                    IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
-                    this.smoother.Smooth(ref pointList);
-                    
-                    // Peak Find Chromatogram
-                    List<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList).ToList();
-                
-                    // Preliminary filtering: reject small feature peaks.
-                    featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, this.Parameters.FeatureFilterLevel).ToList();
+                    List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
+
+                    PeakFinding.FindPeakUsingMasic(intensityPoints);
+                    List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters);
                 
                     // Calculate feature statistics and discard features with 
                     foreach (FeatureBlob feature in featureBlobs)
@@ -349,10 +343,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IDictionary<FeatureBlob, FeatureScoreHolder> scoresTable = new Dictionary<FeatureBlob, FeatureScoreHolder>();
                     if (detailedVerbose)
                     {
-                        Trace.WriteLine(String.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
+                        Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
                     }
 
-                    foreach (var featureBlob in featureBlobs)
+                    foreach (FeatureBlob featureBlob in featureBlobs)
                     {   
                         FeatureScoreHolder currentScoreHolder;
                         currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
@@ -377,7 +371,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
                 
                     // Print out candidate features that pass the intensity threshold.
-                    foreach (var featureBlob in featureBlobs)
+                    foreach (FeatureBlob featureBlob in featureBlobs)
                     {  
                         bool badScanRange = scanPredicate(featureBlob);
                         bool lowIntenstity = intensityThreshold(featureBlob);
@@ -386,15 +380,15 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         FeatureScoreHolder currentScoreHolder = scoresTable[featureBlob];
                         if (detailedVerbose)
                         {
-                            Trace.WriteLine(String.Format("        Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
-                            Trace.WriteLine(String.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
+                            Trace.WriteLine(string.Format("        Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
+                            Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
                             if (!lowIntenstity)
                             {
-                                Trace.WriteLine(String.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
+                                Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
                             
                                 if (targetComposition != null)
                                 {
-                                    Trace.WriteLine(String.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
+                                    Trace.WriteLine(string.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
                                 }
                             }
                         }
@@ -432,11 +426,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDominantLikelihoodFunction;
                     if (featureBlobs.Count > 0)
                     {
-                        IDictionary<FeatureBlob, FeatureScoreHolder> qualifiedFeatures = featureBlobs.ToDictionary(feature => feature, feature => scoresTable[feature]);
+                        IDictionary<FeatureBlob, FeatureScoreHolder> qualifiedFeatures =
+                            featureBlobs.ToDictionary(feature => feature, feature => scoresTable[feature]);
+
                         // Assign the best feature to voltage group it belongs to, with the feature score as one of the criteria of that voltage group.
-                
+
                         // TODO: If there are more than one apexes in the best feature. Treat them as isomers.
-                
                         voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(qualifiedFeatures, likelihoodFunc);
                         voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
                     }
@@ -444,7 +439,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     {
                         if (detailedVerbose)
                         {
-                            Trace.WriteLine(String.Format("    (All features were rejected in voltage group {0:F4} V)", voltageGroup.MeanVoltageInVolts));
+                            Trace.WriteLine(string.Format("    (All features were rejected in voltage group {0:F4} V)", voltageGroup.MeanVoltageInVolts));
                             Trace.WriteLine(string.Empty);
                             Trace.WriteLine(string.Empty);
                         }
@@ -467,9 +462,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 foreach (VoltageGroup voltageGroup in rejectionList)
                 {
                     accumulatedXiCs.Remove(voltageGroup);
+
                     // Choose the best feature in the voltage group as the best feature (even if non qualified).
                 }
-                
+
                 if (accumulatedXiCs.Keys.Count < 1)
                 {
                     AnalysisScoresHolder analysisScores;
@@ -480,27 +476,28 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IEnumerable<FeatureScoreHolder> featureScores = rejectionList.Select(x => x.BestFeatureScores);
                     analysisScores.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                     informedResult = new CrossSectionWorkflowResult(
-                        this.DatasetName,
-                        targetDescription,
-                        target.IonizationType,
-                        AnalysisStatus.Negative,
-                        analysisScores,
+                        this.DatasetName, 
+                        targetDescription, 
+                        target.IonizationType, 
+                        AnalysisStatus.Negative, 
+                        analysisScores, 
                         null);
                     
                     Trace.WriteLine("Analysis result");
-                    Trace.WriteLine(String.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
+                    Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
                     if (detailedVerbose)
                     {
-                        Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                        Trace.WriteLine(String.Format("    Average Best Feature Intensity Score {0:F4}",    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
+                        Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
+                        Trace.WriteLine(string.Format("    Average Best Feature Intensity Score {0:F4}",    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                         
                         if (targetComposition != null)
                         {
-                            Trace.WriteLine(String.Format("    Average Best Feature Isotopic Score {0:F4}",     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
+                            Trace.WriteLine(string.Format("    Average Best Feature Isotopic Score {0:F4}",     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
                         }
 
-                        Trace.WriteLine(String.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
+                        Trace.WriteLine(string.Format("    Average Best Feature Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
                     }
+
                     return informedResult;
                 }
                 
@@ -542,19 +539,19 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     voltageGroupDriftTimeInMs = MoleculeUtil.NormalizeDriftTime(voltageGroupDriftTimeInMs, voltageGroup);
                     if (detailedVerbose)
                     {
-                        Trace.WriteLine(String.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt (voltageGroup.VarianceVoltage)));
-                        Trace.WriteLine(String.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber   +voltageGroup.AccumulationCount - 2));
-                        Trace.WriteLine(String.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.X * 1000,    voltageGroup.BestFeature.Statistics.ScanImsRep));
+                        Trace.WriteLine(string.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt (voltageGroup.VarianceVoltage)));
+                        Trace.WriteLine(string.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber   +voltageGroup.AccumulationCount - 2));
+                        Trace.WriteLine(string.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.X * 1000,    voltageGroup.BestFeature.Statistics.ScanImsRep));
                                                                
-                        Trace.WriteLine(String.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
-                        Trace.WriteLine(String.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
-                        Trace.WriteLine(String.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
+                        Trace.WriteLine(string.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
+                        Trace.WriteLine(string.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
+                        Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
                         if (targetComposition != null)
                         {
-                            Trace.WriteLine(String.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
+                            Trace.WriteLine(string.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
                         }
                 
-                        Trace.WriteLine(String.Format("        PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
+                        Trace.WriteLine(string.Format("        PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
                         Trace.WriteLine(string.Empty);
                     }
                 }
@@ -575,11 +572,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
                     scoreHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                     informedResult = new CrossSectionWorkflowResult(
-                        this.DatasetName,
-                        targetDescription,
-                        target.IonizationType,
-                        AnalysisStatus.NotSufficientPoints,
-                        scoreHolder,
+                        this.DatasetName, 
+                        targetDescription, 
+                        target.IonizationType, 
+                        AnalysisStatus.NotSufficientPoints, 
+                        scoreHolder, 
                         null);
                     return informedResult;
                 }
@@ -658,47 +655,47 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 isomers.Add(mostLikelyIsomer);
                 
                 informedResult = new CrossSectionWorkflowResult(
-                this.DatasetName,
-                targetDescription,
-                target.IonizationType,
-                finalStatus,
-                analysisScoreHolder,
+                this.DatasetName, 
+                targetDescription, 
+                target.IonizationType, 
+                finalStatus, 
+                analysisScoreHolder, 
                 isomers);
                 
                 Trace.WriteLine("Analysis result");
-                Trace.WriteLine(String.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
-                Trace.WriteLine(String.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
+                Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
+                Trace.WriteLine(string.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
 
                 if (detailedVerbose)
                 {
-                    Trace.WriteLine(String.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                    Trace.WriteLine(String.Format("    Average Candidate Target Intensity Score {0:F4}",    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
+                    Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
+                    Trace.WriteLine(string.Format("    Average Candidate Target Intensity Score {0:F4}",    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                     
                     if (targetComposition != null)
                     {
-                        Trace.WriteLine(String.Format("    Average Candidate Target Isotopic Score {0:F4}",     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
+                        Trace.WriteLine(string.Format("    Average Candidate Target Isotopic Score {0:F4}",     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
                     }
                     
-                    Trace.WriteLine(String.Format("    Average Candidate Target Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
+                    Trace.WriteLine(string.Format("    Average Candidate Target Peak Shape Score {0:F4}", informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
                 }
                 
                 int isomerIndex = 1;
                 bool onlyOneIsomer = informedResult.MatchingIsomers.Count() <= 1;
-                foreach (var isomer in informedResult.MatchingIsomers)
+                foreach (TargetIsomerReport isomer in informedResult.MatchingIsomers)
                 {
                     if (!onlyOneIsomer)
                     {
-                        Trace.WriteLine(String.Format("    Isomer #[{0}]" , isomerIndex));
+                        Trace.WriteLine(string.Format("    Isomer #[{0}]" , isomerIndex));
                     }
                 
-                    Trace.WriteLine(String.Format("    Last VoltageGroup Drift Time: {0:F4} ms", isomer.LastVoltageGroupDriftTimeInMs));
-                    Trace.WriteLine(String.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
-                    Trace.WriteLine(String.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
+                    Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms", isomer.LastVoltageGroupDriftTimeInMs));
+                    Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
+                    Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
                     isomerIndex++;
                 
                     if (!onlyOneIsomer)
                     {
-                        Trace.WriteLine("");
+                        Trace.WriteLine(string.Empty);
                     }
                 }
                 
@@ -716,7 +713,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {
                     TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(resultFile)
                     {
-                        Name = "this.DatasetName" + "_Result",
+                        Name = "this.DatasetName" + "_Result", 
                         TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
                     };
                 
@@ -736,11 +733,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 analysisScores.AverageVoltageGroupStabilityScore = 0;
 
                 informedResult = new CrossSectionWorkflowResult(
-                    this.DatasetName,
-                    targetDescription,
-                    target.IonizationType,
-                    AnalysisStatus.UknownError,
-                    analysisScores,
+                    this.DatasetName, 
+                    targetDescription, 
+                    target.IonizationType, 
+                    AnalysisStatus.UknownError, 
+                    analysisScores, 
                     null);
                 return informedResult;
             }
@@ -756,6 +753,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         }
 
         /// <summary>
+        /// Finalizes an instance of the <see cref="CrossSectionWorkfow"/> class. 
         /// Finalizer
         /// </summary>
         ~CrossSectionWorkfow()

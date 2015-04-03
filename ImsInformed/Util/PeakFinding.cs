@@ -36,12 +36,14 @@ namespace ImsInformed.Util
         /// <param name="intensityPoints">
         /// The intensity points.
         /// </param>
-        public static void FindPeakUsingMasic(List<IntensityPoint> intensityPoints)
+        public static void FindPeakUsingMasic(List<IntensityPoint> intensityPoints, int totalScans)
         {
             PeakDetector.udtSICPeakFinderOptionsType option = TuneMasicOption();
 
+            var paddedIntensityPoints = IMSUtil.PadZeroesToPointList(intensityPoints, totalScans);
+
             // Convert intensity points to key value pair
-            List<KeyValuePair<int, double>> cartesianData = intensityPoints.Select(point => new KeyValuePair<int, double>(point.ScanIms, point.Intensity)).ToList();
+            List<KeyValuePair<int, double>> cartesianData = paddedIntensityPoints.Select(point => new KeyValuePair<int, double>(point.ScanIms, point.Intensity)).ToList();
             
             PeakDetector detector = new PeakDetector();
             List<double> smoothedYData;

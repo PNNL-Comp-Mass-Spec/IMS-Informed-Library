@@ -120,8 +120,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
             consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
             string result = this.OutputPath + this.ResultFileName;
-            this.fileWriter = File.AppendText(result);
-            TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.fileWriter)
+            this.resultFileWriter = File.AppendText(result);
+            TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.resultFileWriter)
             {
                 Name = "this.DatasetName" + "_Result", 
                 TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
@@ -160,7 +160,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// The file writer.
         /// </summary>
-        private readonly StreamWriter fileWriter; 
+        private readonly StreamWriter resultFileWriter; 
         
 
          /// <summary>
@@ -330,7 +330,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
 
-                    PeakFinding.FindPeakUsingMasic(intensityPoints);
+                    PeakFinding.FindPeakUsingMasic(intensityPoints, this.NumberOfScans);
                     List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters);
                 
                     // Calculate feature statistics and discard features with 
@@ -709,20 +709,17 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
                 string result = this.OutputPath + this.ResultFileName;
                 
-                using (StreamWriter resultFile = File.AppendText(result))
+                TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.resultFileWriter)
                 {
-                    TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(resultFile)
-                    {
-                        Name = "this.DatasetName" + "_Result", 
-                        TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
-                    };
+                    Name = "this.DatasetName" + "_Result", 
+                    TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
+                };
                 
-                    Trace.Listeners.Add(consoleTraceListener);
-                    Trace.Listeners.Add(resultFileTraceListener);
-                    Trace.AutoFlush = true;
-                    Trace.WriteLine(e.Message);
-                    Trace.WriteLine(e.StackTrace);
-                }
+                Trace.Listeners.Add(consoleTraceListener);
+                Trace.Listeners.Add(resultFileTraceListener);
+                Trace.AutoFlush = true;
+                Trace.WriteLine(e.Message);
+                Trace.WriteLine(e.StackTrace);
 
                 // create the error result
                 AnalysisScoresHolder analysisScores;
@@ -773,7 +770,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             {
                 // free managed resources
                 this.uimfReader.Dispose();
-                this.fileWriter.Close();
+                this.resultFileWriter.Close();
                 this.DatasetName = null;
                 this.OutputPath = null;
             }

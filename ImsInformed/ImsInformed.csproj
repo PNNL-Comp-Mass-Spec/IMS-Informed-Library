@@ -151,6 +151,7 @@
     <Compile Include="Targets\MolecularTarget.cs" />
     <Compile Include="Targets\PeptideTarget.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
+    <Compile Include="Util\IMSUtil.cs" />
     <Compile Include="Util\MoleculeUtil.cs" />
     <Compile Include="Util\PeakFinding.cs" />
     <Compile Include="Util\PeptideUtil.cs" />

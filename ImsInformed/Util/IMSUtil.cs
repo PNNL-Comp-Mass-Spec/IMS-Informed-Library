@@ -33,9 +33,9 @@ namespace ImsInformed.Util
             int lc = sparsePointList.First().ScanLc;
 
             int oldListIndex = 0;
-            for (int scanIms = 1; scanIms < destinationSize; scanIms++)
+            for (int scanIms = 1; scanIms <= destinationSize; scanIms++)
             {
-                if (scanIms < sparsePointList[oldListIndex].ScanIms)
+                if (oldListIndex >= sparsePointList.Count || scanIms < sparsePointList[oldListIndex].ScanIms)
                 {
                     newList.Add(new IntensityPoint(lc, scanIms, 0));
                 } 

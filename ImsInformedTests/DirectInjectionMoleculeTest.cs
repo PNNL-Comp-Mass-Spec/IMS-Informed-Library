@@ -199,10 +199,15 @@ namespace ImsInformedTests
             // ImsTarget sample = new ImsTarget(1, IonizationMethod.ProtonMinus, formula);
             // string fileLocation = AcetamipridFile;
 
+            // F1E
+            string formula = "C15H21Cl2FN2O3";
+            MolecularTarget sample = new MolecularTarget(1, IonizationMethod.ProtonPlus, formula);
+            string fileLocation = F1E;
+
             // BPS Na
-            string formula = "C12H10O4S";
-            MolecularTarget sample = new MolecularTarget(1, IonizationMethod.ProtonMinus, formula);
-            string fileLocation = Bps;
+            // string formula = "C12H10O4S";
+            // MolecularTarget sample = new MolecularTarget(1, IonizationMethod.ProtonMinus, formula);
+            // string fileLocation = Bps;
 
             Console.WriteLine("Dataset: {0}", fileLocation);
 

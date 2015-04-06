@@ -736,6 +736,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     AnalysisStatus.UknownError, 
                     analysisScores, 
                     null);
+
                 return informedResult;
             }
         }

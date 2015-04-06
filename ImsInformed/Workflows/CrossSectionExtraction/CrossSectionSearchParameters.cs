@@ -10,6 +10,8 @@
 
 namespace ImsInformed.Workflows.CrossSectionExtraction
 {
+    using ImsInformed.Util;
+
     /// <summary>
     /// The molecule workflow parameters.
     /// </summary>
@@ -29,6 +31,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.IsotopicThreshold = 0.4;
             this.MinFitPoints = 3;
             this.ScanWindowWidth = 4;
+            this.PeakDetectorSelection = PeakDetectorEnum.WaterShed;
+            this.ExpectIsomer = false;
         }
 
         /// <summary>
@@ -58,7 +62,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="minFitPoints">
         /// The min fit points.
         /// </param>
-        public CrossSectionSearchParameters(int scanWindowWidth, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints)
+        public CrossSectionSearchParameters(int scanWindowWidth, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, bool expectIsomer, PeakDetectorEnum peakDetectorSelection)
         {
             this.ScanWindowWidth = scanWindowWidth;
             this.NumPointForSmoothing = numPointForSmoothing;
@@ -68,6 +72,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.PeakShapeThreshold = peakShapeThreshold;
             this.IsotopicThreshold = isotopicThreshold;
             this.MinFitPoints = minFitPoints;
+            this.ExpectIsomer = expectIsomer;
+            this.PeakDetectorSelection = peakDetectorSelection;
         }
 
         /// <summary>
@@ -109,5 +115,17 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// Gets or sets the scan window width.
         /// </summary>
         public int ScanWindowWidth { get; private set; }
+
+        /// <summary>
+        /// Gets the peak detector selection.
+        /// </summary>
+        public PeakDetectorEnum PeakDetectorSelection{ get; private set; }
+
+        /// <summary>
+        /// If ExpectIsomer is set to true. The algorithm will stop assuming there is one and only one
+        /// target match in the expected Mz range. Instead if there are isomers the workflow will report 
+        /// all isomers with reasonable socres.
+        /// </summary>
+        public bool ExpectIsomer{ get; private set; }
     }
 }

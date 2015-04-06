@@ -153,6 +153,7 @@
     <Compile Include="Util\IsotopicProfileUtil.cs" />
     <Compile Include="Util\IMSUtil.cs" />
     <Compile Include="Util\MoleculeUtil.cs" />
+    <Compile Include="Util\PeakDetectorEnum.cs" />
     <Compile Include="Util\PeakFinding.cs" />
     <Compile Include="Util\PeptideUtil.cs" />
     <Compile Include="Util\SaturationDetector.cs" />
@@ -182,7 +183,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Workflows\LibraryMatc\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y /S /C  "$(SolutionDir)lib\PNNLOmicsElementData.xml" "$(TargetDir)"

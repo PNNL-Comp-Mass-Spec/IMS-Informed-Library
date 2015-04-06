@@ -148,5 +148,17 @@ namespace ImsInformed.Util
             peakFinderOptions.ReturnClosestPeak = true;
             return peakFinderOptions;
         }
+
+        // Convert the MS feature from MASIC to LC-IMS feature from watershed.
+        private static FeatureBlob MASICPeakToWatershedFeatureConverter(clsPeak peak)
+        {
+            // TODO write a feature wrapper for both features as I don't think conversion like this will work.
+            // FeatureBlob watershedFeature = new FeatureBlob(0);
+            // watershedFeature.PointList = new List<Point>();
+            // 
+            // Talor MASIC's sometimes asymetirc peak into watershed flavored peak.
+            // 
+            // watershedFeature.PointList blablabla
+        }
     }
 }

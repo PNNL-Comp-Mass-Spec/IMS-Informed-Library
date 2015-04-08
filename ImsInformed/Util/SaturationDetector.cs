@@ -152,7 +152,7 @@ namespace ImsInformed.Util
 
                     int scanImsRep = statistics.ScanImsRep;
 
-                    // Get Mass Spectrum Data
+                    // Get MonoisotopicMass Spectrum Data
                     XYData massSpectrum = GetMassSpectrum(1, scanImsMin, scanImsMax, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
                     //List<Peak> massSpectrumPeakList = _peakDetector.FindPeaks(massSpectrum);
                     //WriteXYDataToFile(massSpectrum, targetMz);

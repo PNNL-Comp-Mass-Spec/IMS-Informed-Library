@@ -1,8 +1,10 @@
 ﻿namespace ImsInformed.Domain
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
+
+    using ImsInformed.Util;
+
+    using InformedProteomics.Backend.Data.Composition;
 
     /// <summary>
     /// The ionization method.
@@ -46,6 +48,77 @@
     /// </summary>
     public static class IonizationMethodUtilities
     {
+        public static int GetChargeState(this IonizationMethod ionizationMethod)
+        {
+            if (ionizationMethod == IonizationMethod.APCI ||
+                ionizationMethod == IonizationMethod.HCOOMinus || 
+                ionizationMethod == IonizationMethod.ProtonMinus || 
+                ionizationMethod == IonizationMethod.Proton2MinusSodiumPlus)
+            {
+                return -1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        public static int GetMassAductSign(this IonizationMethod ionizationMethod)
+        {
+            if (ionizationMethod == IonizationMethod.ProtonMinus)
+            {
+                return -1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Get the 
+        /// </summary>
+        /// <param name="composition">
+        /// The composition.
+        /// </param>
+        /// <param name="method">
+        /// The method.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Composition"/>.
+        /// </returns>
+        public static Composition GetComposition(this IonizationMethod method)
+        {
+            // compensate for extra composition difference due to different ionization method
+            if (method == IonizationMethod.ProtonPlus)
+            {
+                return new Composition(0, 1, 0, 0, 0);
+            }
+            else if (method == IonizationMethod.ProtonMinus) 
+            {
+                return new Composition(0, 1, 0, 0, 0);
+            }
+            else if (method == IonizationMethod.SodiumPlus) 
+            {
+                return MoleculeUtil.ReadEmpiricalFormula("Na");
+            }
+            else if (method == IonizationMethod.APCI) 
+            {
+                return new Composition(0, 0, 0, 0, 0);
+            }
+            else if (method == IonizationMethod.HCOOMinus) 
+            {
+                return new Composition(1, 1, 0, 2, 0);
+            }
+            else if (method == IonizationMethod.Proton2MinusSodiumPlus)
+            {
+                Composition newCompo = MoleculeUtil.ReadEmpiricalFormula("Na");
+                return newCompo - new Composition(0, 2, 0, 0, 0);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// The to friendly string.
         /// </summary>
@@ -138,6 +211,7 @@
             {
                 throw new ArgumentException("Ionization method [" + ionizationMethod + "] is not recognized");
             }
+
             return method;
         }
     }

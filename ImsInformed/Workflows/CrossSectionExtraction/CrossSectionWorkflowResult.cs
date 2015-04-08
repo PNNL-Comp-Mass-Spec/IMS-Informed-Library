@@ -37,7 +37,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// The ionization method.
         /// </summary>
-        public readonly IonizationMethod IonizationMethod;
+        public readonly IonizationAdduct Adduct;
 
         /// <summary>
         /// The analysis status.
@@ -55,7 +55,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         private readonly IEnumerable<TargetIsomerReport> isomerResults;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MoleculeInformedWorkflowResult"/> class.
+        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class. 
         /// </summary>
         /// <param name="datasetName">
         /// The dataset name.
@@ -63,7 +63,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="targetDescriptor">
         /// The target descriptor.
         /// </param>
-        /// <param name="ionizationMethod">
+        /// <param name="adduct">
         /// The ionization method.
         /// </param>
         /// <param name="analysisStatus">
@@ -75,11 +75,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="isomerResults">
         /// The isomer results.
         /// </param>
-        public CrossSectionWorkflowResult(string datasetName, string targetDescriptor, IonizationMethod ionizationMethod, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
+        public CrossSectionWorkflowResult(string datasetName, string targetDescriptor, IonizationAdduct adduct, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
         {
             this.DatasetName = datasetName;
             this.TargetDescriptor = targetDescriptor;
-            this.IonizationMethod = ionizationMethod;
+            this.Adduct = adduct;
             this.AnalysisStatus = analysisStatus;
             this.AnalysisScoresHolder = analysisScoresHolder;
             this.isomerResults = isomerResults;

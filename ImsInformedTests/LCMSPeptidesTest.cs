@@ -90,7 +90,7 @@ namespace ImsInformedTests
             double net = 0.3612;
 
             PeptideTarget target = new PeptideTarget(1, peptide, net);
-            DriftTimeTarget driftTimeTarget = new DriftTimeTarget(2, 19.62);
+            DriftTimeTarget driftTimeTarget = new DriftTimeTarget(19.62, target, 2);
             target.DriftTimeTargetList.Add(driftTimeTarget);
 
             LcImsPeptideSearchWorkfow lcImsPeptideSearchWorkfow = new LcImsPeptideSearchWorkfow(uimfFileLocation, parameters);
@@ -269,7 +269,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            Console.WriteLine(DateTime.Now + ": Reading Mass Tags from MTDB");
+            Console.WriteLine(DateTime.Now + ": Reading MonoisotopicMass Tags from MTDB");
             List<PeptideTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
 
             Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");
@@ -295,7 +295,7 @@ namespace ImsInformedTests
                 {
                     using (var transaction = connection.BeginTransaction())
                     {
-                        Console.WriteLine(DateTime.Now + ": Writing Mass Tags to database");
+                        Console.WriteLine(DateTime.Now + ": Writing MonoisotopicMass Tags to database");
 
                         foreach (var target in targetList)
                         {
@@ -465,7 +465,7 @@ namespace ImsInformedTests
             };
 
             List<PeptideTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
-            Console.WriteLine(DateTime.Now + ": Reading Mass Tags from MTDB");
+            Console.WriteLine(DateTime.Now + ": Reading MonoisotopicMass Tags from MTDB");
 
             Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");
 
@@ -489,7 +489,7 @@ namespace ImsInformedTests
                 {
                     using (var transaction = connection.BeginTransaction())
                     {
-                        Console.WriteLine(DateTime.Now + ": Writing Mass Tags to database");
+                        Console.WriteLine(DateTime.Now + ": Writing MonoisotopicMass Tags to database");
 
                         //foreach (var target in targetList)
                         //{
@@ -884,7 +884,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            Console.WriteLine(DateTime.Now + ": Reading Mass Tags from MTDB");
+            Console.WriteLine(DateTime.Now + ": Reading MonoisotopicMass Tags from MTDB");
             List<PeptideTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
 
             Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");

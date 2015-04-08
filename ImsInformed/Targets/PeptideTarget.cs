@@ -30,6 +30,7 @@ namespace ImsInformed.Targets
     public class PeptideTarget : IImsTarget
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="PeptideTarget"/> class. 
         /// Initializes a new instance of the <see cref="ImsTarget"/> class.
         /// </summary>
         /// <param name="id">
@@ -46,26 +47,26 @@ namespace ImsInformed.Targets
         /// </param>
         public PeptideTarget(int id, string peptideSequence, double normalizedElutionTime, IList<Modification> modificationList = null)
         {
-            this.Composition = PeptideUtil.GetCompositionOfPeptide(peptideSequence);
+            this.CompositionWithoutAdduct = PeptideUtil.GetCompositionOfPeptide(peptideSequence);
 
             if (modificationList != null)
             {
                 foreach (var modification in modificationList)
                 {
-                    this.Composition += modification.Composition;
+                    this.CompositionWithoutAdduct += modification.Composition;
                 }
             }
 
             this.ID = id;
             this.PeptideSequence = peptideSequence;
-            this.Mass = this.Composition.Mass;
+            this.MonoisotopicMass = this.CompositionWithoutAdduct.Mass;
             this.NormalizedElutionTime = normalizedElutionTime;
-            this.Composition = this.Composition;
-            this.EmpiricalFormula = this.Composition.ToPlainString();
+            this.CompositionWithoutAdduct = this.CompositionWithoutAdduct;
+            this.EmpiricalFormula = this.CompositionWithoutAdduct.ToPlainString();
             this.ResultList = new List<LcImsTargetResult>();
             this.ModificationList = modificationList;
             this.TargetType = TargetType.Peptide;
-            this.IonizationType = IonizationMethod.ProtonPlus;
+            this.Adduct = new IonizationAdduct(IonizationMethod.ProtonPlus);
         }
 
         /// <summary>
@@ -79,9 +80,9 @@ namespace ImsInformed.Targets
         public int ID { get; private set; }
 
         /// <summary>
-        /// Gets the ionization type.
+        /// Gets the adduct.
         /// </summary>
-        public IonizationMethod IonizationType { get; private set; }
+        public IonizationAdduct Adduct { get; private set; }
 
         /// <summary>
         /// Gets the target type.
@@ -91,14 +92,28 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the mass.
         /// </summary>
-        public double Mass { get; private set; }
+        public double MonoisotopicMass { get; private set; }
 
         /// <summary>
         /// Gets the empirical formula.
         /// </summary>
         public string EmpiricalFormula { get; private set; }
 
-        public Composition Composition { get; private set; }
+        /// <summary>
+        /// Gets the composition without adduct.
+        /// </summary>
+        public Composition CompositionWithoutAdduct { get; private set; }
+
+        /// <summary>
+        /// Gets the composition with adduct.
+        /// </summary>
+        public Composition CompositionWithAdduct 
+        {
+            get
+            {
+                throw new Exception("Adduct is not specified in Peptide targets.");
+            }
+        }
 
         /// <summary>
         /// Gets the normalized elution time.
@@ -134,7 +149,9 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets or sets the target MZ.
         /// </summary>
-        public double TargetMz { get; set; }
+        public double MassWithAdduct { get; set; }
+
+        public int ChargeState { get; private set; }
 
         /// <summary>
         /// The create SQL mass tag queries.
@@ -154,7 +171,7 @@ namespace ImsInformed.Targets
             massTagQuery.Append(",");
             massTagQuery.Append("'" + this.EmpiricalFormula + "'");
             massTagQuery.Append(",");
-            massTagQuery.Append(this.Mass);
+            massTagQuery.Append(this.MonoisotopicMass);
             massTagQuery.Append(",");
             massTagQuery.Append(this.NormalizedElutionTime);
             massTagQuery.Append(");");
@@ -193,7 +210,7 @@ namespace ImsInformed.Targets
             //massTagQuery.Append(",");
             //massTagQuery.Append("'" + this.EmpiricalFormula + "'");
             //massTagQuery.Append(",");
-            //massTagQuery.Append(this.Mass);
+            //massTagQuery.Append(this.MonoisotopicMass);
             //massTagQuery.Append(",");
             //massTagQuery.Append(this.NormalizedElutionTime);
             //massTagQuery.Append(");");

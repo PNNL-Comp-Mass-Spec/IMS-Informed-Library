@@ -22,19 +22,14 @@ namespace ImsInformed.Interfaces
     public interface IImsTarget
     {
         /// <summary>
-        /// Gets the id.
-        /// </summary>
-        int ID { get; }
-
-        /// <summary>
         /// Gets the mass.
         /// </summary>
-        double Mass { get; }
+        double MonoisotopicMass { get; }
 
         /// <summary>
-        /// Gets the ionization type.
+        /// Gets the typicalIonization type.
         /// </summary>
-        IonizationMethod IonizationType { get; }
+        IonizationAdduct Adduct { get; }
 
         /// <summary>
         /// Gets the target type.
@@ -49,7 +44,12 @@ namespace ImsInformed.Interfaces
         /// <summary>
         /// Gets the composition.
         /// </summary>
-        Composition Composition { get; }
+        Composition CompositionWithoutAdduct { get; }
+
+        /// <summary>
+        /// Gets the composition.
+        /// </summary>
+        Composition CompositionWithAdduct { get; }
 
         /// <summary>
         /// Gets the target descriptor.
@@ -59,6 +59,11 @@ namespace ImsInformed.Interfaces
         /// <summary>
         /// Gets or sets the target m/z.
         /// </summary>
-        double TargetMz { get; set; }
+        double MassWithAdduct { get; }
+
+        /// <summary>
+        /// Gets or sets the target m/z.
+        /// </summary>
+        int ChargeState { get; }
     }
 }

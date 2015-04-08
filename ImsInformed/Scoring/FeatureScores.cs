@@ -76,32 +76,42 @@ namespace ImsInformed.Scoring
         /// to exclude noise but a good shape score helps evaluating the experiment
         /// and thus the reliability of the data analysis result.
         /// </summary>
-        /// <param name="workflow">
-        /// The workflow.
-        /// </param>
-        /// <param name="statistics">
-        /// The statistics.
-        /// </param>
         /// <param name="reader">
         /// The reader.
+        /// </param>
+        /// <param name="massToleranceInPpm">
+        /// The mass Tolerance In Ppm.
+        /// </param>
+        /// <param name="driftTimeToleranceInMs">
+        /// The drift Time Tolerance In Scans.
+        /// </param>
+        /// <param name="imsPeak">
+        /// The imsPeak.
         /// </param>
         /// <param name="voltageGroup">
         /// The voltage group.
         /// </param>
         /// <param name="targetMz">
-        /// The target mz.
+        /// The target MZ.
+        /// </param>
+        /// <param name="globalMaxIntensities">
+        /// The global Max Intensities.
+        /// </param>
+        /// <param name="numberOfScans">
+        /// The number Of Scans.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double PeakShapeScore(DataReader reader, CrossSectionSearchParameters parameters, FeatureBlobStatistics statistics, VoltageGroup voltageGroup, double targetMz, double globalMaxIntensities, int numberOfScans)
+        public static double PeakShapeScore(StandardImsPeak imsPeak, DataReader reader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, double globalMaxIntensities, int numberOfScans)
         {
-            int scanRep = statistics.ScanImsRep;
-            double toleranceInMz = parameters.MassToleranceInPpm / 1e6 * targetMz;
-            int scanWindowSize = parameters.ScanWindowWidth;
+            int scanRep = imsPeak.DriftTimeCenterInScanNumber;
+            double toleranceInMz = massToleranceInPpm / 1e6 * imsPeak.MzCenterInDalton;
+            int scanWidth = (int)Math.Ceiling(driftTimeToleranceInMs / voltageGroup.AverageTofWidthInSeconds);
+            int scanWindowSize = scanWidth * 2 + 1;
 
-            int scanNumberMin = scanRep - scanWindowSize / 2;
-            int scanNumberMax = scanRep + scanWindowSize / 2;
+            int scanNumberMin = scanRep - scanWidth;
+            int scanNumberMax = scanRep + scanWidth;
             if ((scanNumberMin < 0) || (scanNumberMax > numberOfScans - 1))
             {
                 return 0;
@@ -113,15 +123,14 @@ namespace ImsInformed.Scoring
                 DataReader.FrameType.MS1, 
                 scanNumberMin,
                 scanNumberMax,
-                targetMz,
+                imsPeak.MzCenterInDalton,
                 toleranceInMz);
 
             // Average the intensity window across frames
             int frames = intensityWindow.GetLength(0);
-            int scans = scanWindowSize / 2 * 2 + 1;
-            double[] averagedPeak = new double[scans];
+            double[] averagedPeak = new double[scanWindowSize];
             double highestPeak = 0;
-            for (int i = 0; i < scans; i++)
+            for (int i = 0; i < scanWindowSize; i++)
             {
                 for (int j = 0; j < frames; j++)
                 {
@@ -153,15 +162,20 @@ namespace ImsInformed.Scoring
         /// <summary>
         /// The score feature using isotopic profile.
         /// </summary>
-        /// <param name="workflow">
-        /// The workflow.
+        /// <param name="reader">
+        /// The reader.
         /// </param>
-        /// <param name="parameters"></param>
+        /// <param name="massToleranceInPpm">
+        /// The mass Tolerance In Ppm.
+        /// </param>
+        /// <param name="driftTimeToleranceInScans">
+        /// The drift Time Tolerance In Scans.
+        /// </param>
         /// <param name="target">
         /// The target.
         /// </param>
         /// <param name="statistics">
-        /// The statistics.
+        /// The imsPeak.
         /// </param>
         /// <param name="isotopicPeakList">
         /// The isotopic peak list.
@@ -172,13 +186,17 @@ namespace ImsInformed.Scoring
         /// <param name="selectedMethod">
         /// The selected Method.
         /// </param>
-        /// <param name="globalMaxIntensities"></param>
+        /// <param name="globalMaxIntensities">
+        /// </param>
+        /// <param name="numberOfScans">
+        /// The number Of Scans.
+        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(DataReader reader, CrossSectionSearchParameters parameters, IImsTarget target, FeatureBlobStatistics statistics, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, int numberOfScans)
+        public static double IsotopicProfileScore(StandardImsPeak imsPeak, DataReader reader, double massToleranceInPpm, double driftTimeToleranceInMs, IImsTarget target, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, int numberOfScans)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
@@ -190,18 +208,27 @@ namespace ImsInformed.Scoring
             // Find Isotopic Profile
             // List<Peak> massSpectrumPeaks;
             // IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
-            if (target.Composition == null)
+            if (target.CompositionWithoutAdduct == null)
             {
-                throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims target without Composition provided.");
+                throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims target without CompositionWithoutAdduct provided.");
             }
 
             // Bad Feature, so get out
-            if (statistics == null)
+            if (imsPeak == null)
             {
                 return 0;
             }
-            
-            int scanNumber = statistics.ScanImsRep;
+
+            // Get the scanWindow size
+            int scanWindowSize = (int)Math.Ceiling(driftTimeToleranceInMs / voltageGroup.AverageTofWidthInSeconds) * 2 + 1;
+            int scanRep = imsPeak.DriftTimeCenterInScanNumber;
+            int scanNumberMin = (scanRep - scanWindowSize / 2 > 0) ? scanRep - scanWindowSize / 2 : 0;
+            int scanNumberMax = (scanRep + scanWindowSize / 2 < numberOfScans) ? scanRep + scanWindowSize / 2 : numberOfScans - 1;
+            if ((scanNumberMin < 0) || (scanNumberMax > numberOfScans - 1))
+            {
+                return 0;
+            }
+
             List<double> observedIsotopicPeakList = new List<double>();
 
             int totalIsotopicIndex = isotopicPeakList.Count;
@@ -212,11 +239,9 @@ namespace ImsInformed.Scoring
             {
                 // Isotopic Mz
                 double Mz = isotopicPeakList[i].XValue;
-                int scanWindowSize = parameters.ScanWindowWidth;
-                int scanNumberMin = (scanNumber - scanWindowSize / 2 > 0) ? scanNumber - scanWindowSize / 2 : 0;
-                int scanNumberMax = (scanNumber + scanWindowSize / 2 < numberOfScans) ? scanNumber + scanWindowSize / 2 : numberOfScans - 1;
+                
                 var peakList = reader.GetXic(Mz, 
-                    parameters.MassToleranceInPpm,
+                    massToleranceInPpm,
                     voltageGroup.FirstFrameNumber,
                     voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1,
                     scanNumberMin,

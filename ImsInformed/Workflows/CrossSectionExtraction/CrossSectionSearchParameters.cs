@@ -20,19 +20,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        public CrossSectionSearchParameters()
-        {
-            
-            this.MassToleranceInPpm = 10;
-            this.NumPointForSmoothing = 9;
-            this.FeatureFilterLevel = 0.25;
-            this.IntensityThreshold = 0.00;
-            this.PeakShapeThreshold = 0.4;
-            this.IsotopicThreshold = 0.4;
-            this.MinFitPoints = 3;
-            this.ScanWindowWidth = 4;
-            this.PeakDetectorSelection = PeakDetectorEnum.WaterShed;
-            this.ExpectIsomer = false;
+        public CrossSectionSearchParameters() : this(0.5, 10, 9, 0.25, 0.00, 0.4, 0.4, 3, false, PeakDetectorEnum.WaterShed)
+        { 
         }
 
         /// <summary>
@@ -62,9 +51,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="minFitPoints">
         /// The min fit points.
         /// </param>
-        public CrossSectionSearchParameters(int scanWindowWidth, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, bool expectIsomer, PeakDetectorEnum peakDetectorSelection)
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, bool expectIsomer, PeakDetectorEnum peakDetectorSelection)
         {
-            this.ScanWindowWidth = scanWindowWidth;
+            this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
             this.MassToleranceInPpm = massToleranceInPpm;
             this.FeatureFilterLevel = featureFilterLevel;
@@ -114,12 +103,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets or sets the scan window width.
         /// </summary>
-        public int ScanWindowWidth { get; private set; }
+        public double DriftTimeToleranceInMs { get; private set; }
 
         /// <summary>
         /// Gets the peak detector selection.
         /// </summary>
-        public PeakDetectorEnum PeakDetectorSelection{ get; private set; }
+        public PeakDetectorEnum PeakDetectorSelection { get; private set; }
 
         /// <summary>
         /// If ExpectIsomer is set to true. The algorithm will stop assuming there is one and only one

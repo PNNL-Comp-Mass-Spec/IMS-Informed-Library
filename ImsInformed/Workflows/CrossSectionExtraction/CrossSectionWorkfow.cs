@@ -24,11 +24,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using ImsInformed.IO;
     using ImsInformed.Scoring;
     using ImsInformed.Stats;
-    using ImsInformed.Targets;
     using ImsInformed.Util;
-    using ImsInformed.Workflows.LcImsPeptideExtraction;
 
-    using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
 
     using MultiDimensionalPeakFinding;
@@ -179,26 +176,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public string OutputPath { get; set; }
 
         /// <summary>
-        /// The target ion.
-        /// </summary>
-        /// <param name="target">
-        /// The target.
-        /// </param>
-        /// <param name="n">
-        /// The n.
-        /// </param>
-        /// <param name="chargeState">
-        /// The charge state.
-        /// </param>
-        /// <returns>
-        /// The <see cref="Ion"/>.
-        /// </returns>
-        public static Ion TargetIon(MolecularTarget target, int n, int chargeState)
-        {
-            return new Ion(target.Composition, chargeState);
-        }
-
-        /// <summary>
         /// The run cross section work flow.
         /// </summary>
         /// <param name="targetList">
@@ -218,11 +195,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 if (target.EmpiricalFormula != null)
                 {
                     Console.Write("    Target: " + target.EmpiricalFormula);
-                    Console.WriteLine(" (MZ = {0})", target.Mass);
+                    Console.WriteLine(" (MZ = {0})", target.MonoisotopicMass);
                 }
                 else
                 {
-                    Console.WriteLine("    Target: Unknown (MZ = {0})", target.TargetMz);
+                    Console.WriteLine("    Target: Unknown (MZ = {0})", target.MassWithAdduct);
                 }
 
                 CrossSectionWorkflowResult result = this.RunCrossSectionWorkFlow(target, detailedVerbose);
@@ -246,76 +223,67 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public CrossSectionWorkflowResult RunCrossSectionWorkFlow(IImsTarget target, bool detailedVerbose = true)
         {
             string targetDescription = target.TargetDescriptor;
-            double monoisotopicMass = 0;
+            bool hasCompositionInfo = target.CompositionWithoutAdduct != null;
+            double viperFriendlyMass = 0;
 
             CrossSectionWorkflowResult informedResult;
 
             try
             {
-                // Compensate for mass changes due to ionization
-                Composition targetComposition = MoleculeUtil.IonizationCompositionCompensation(target.Composition, target.IonizationType);
-
                 // Get the monoisotopic mass for viper
-                double targetMass = (target.Composition == null) ? target.TargetMz : targetComposition.Mass;
-                if (target.IonizationType == IonizationMethod.ProtonMinus || target.IonizationType == IonizationMethod.APCI || target.IonizationType == IonizationMethod.HCOOMinus || target.IonizationType == IonizationMethod.Proton2MinusSodiumPlus)
+                viperFriendlyMass = target.MassWithAdduct;
+                if (target.ChargeState < 0)
                 {
-                    monoisotopicMass = targetMass + new Composition(0, 1, 0, 0, 0).Mass;
+                    viperFriendlyMass = viperFriendlyMass + new Composition(0, target.ChargeState, 0, 0, 0).Mass;
                 }
                 else
                 {
-                    monoisotopicMass = targetMass - new Composition(0, 1, 0, 0, 0).Mass;
+                    viperFriendlyMass = viperFriendlyMass - new Composition(0, Math.Abs(target.ChargeState), 0, 0, 0).Mass;
                 }
-                
-                // ImsTarget assumes proton+ ionization because it's designed for peptides. Get rid of it here.
-                targetComposition = MoleculeUtil.IonizationCompositionDecompensation(targetComposition, IonizationMethod.ProtonPlus);
                              
-                // Setup target object
-                if (targetComposition != null) 
-                {
-                    // Because Ion class from Informed Proteomics assumes adding a proton, that's the reason for decompensation
-                    Ion targetIon = new Ion(targetComposition, 1);
-                    target.TargetMz = targetIon.GetMonoIsotopicMz();
-                } 
-                
                 Trace.WriteLine(string.Empty);
 
                 if (detailedVerbose)
                 {
                     Trace.WriteLine("Dataset: " + this.DatasetName);
-                    Trace.WriteLine("Ionization method: " + target.IonizationType.ToFriendlyString());
-                    if (targetComposition != null)
+                    Trace.WriteLine("Ionization method: " + target.Adduct);
+                    if (hasCompositionInfo)
                     {
                         Trace.WriteLine("Target Empirical Formula: " + target.EmpiricalFormula);
                     }
 
-                    Trace.WriteLine("Targeting Mz: " + target.TargetMz);
+                    Trace.WriteLine("Targeting Mz: " + target.MassWithAdduct);
                     Trace.WriteLine(string.Empty);
                 } 
                 else
                 {
-                    if (targetComposition == null)
+                    if (hasCompositionInfo)
                     {
-                        Trace.Write(string.Format("Target: Mz = {0}", target.TargetMz));
+                        Trace.Write(string.Format("Target: Mz = {0}", target.MassWithAdduct));
                     }
                     else
                     {
                         Trace.Write(string.Format("Target: {0}", target.EmpiricalFormula));
                     }
 
-                    Trace.WriteLine(target.IonizationType.ToFriendlyString() + ":");
+                    Trace.WriteLine(target.Adduct + ":");
                 }
 
                 // Generate Theoretical Isotopic Profile
                 List<Peak> theoreticalIsotopicProfilePeakList = null;
-                if (targetComposition != null) 
+                if (hasCompositionInfo) 
                 {
-                    string empiricalFormula = targetComposition.ToPlainString();
+                    string empiricalFormula = target.CompositionWithoutAdduct.ToPlainString();
+
+                    // Has to use the composition without adduct because again, this function was written for peptides. But the isotopic profile
+                    // is close regardless.
                     IsotopicProfile theoreticalIsotopicProfile = this.theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+
                     theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                 }
                 
                 // Voltage grouping
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.TargetMz, this.Parameters);
+                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.MassWithAdduct, this.Parameters.MassToleranceInPpm);
 
                 // For each voltage, find 2D XIC features 
                 if (detailedVerbose)
@@ -331,7 +299,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
 
                     PeakFinding.FindPeakUsingMasic(intensityPoints, this.NumberOfScans);
-                    List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters);
+                    List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.MassToleranceInPpm);
                 
                     // Calculate feature statistics and discard features with 
                     foreach (FeatureBlob feature in featureBlobs)
@@ -348,15 +316,16 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     foreach (FeatureBlob featureBlob in featureBlobs)
                     {   
+                        StandardImsPeak feature = new StandardImsPeak(featureBlob);
                         FeatureScoreHolder currentScoreHolder;
                         currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
                         
-                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(this.uimfReader, this.Parameters, featureBlob.Statistics, voltageGroup, target.TargetMz, globalMaxIntensity, (int)this.NumberOfScans);
+                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(feature, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
                 
                         currentScoreHolder.IsotopicScore = 0;
-                        if (targetComposition != null)
+                        if (hasCompositionInfo)
                         {
-                            currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(this.uimfReader, this.Parameters, target, featureBlob.Statistics, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity, (int)this.NumberOfScans);
+                            currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(feature, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, target, theoreticalIsotopicProfilePeakList, voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
                         }
                 
                         scoresTable.Add(featureBlob, currentScoreHolder);
@@ -386,7 +355,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             {
                                 Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
                             
-                                if (targetComposition != null)
+                                if (hasCompositionInfo)
                                 {
                                     Trace.WriteLine(string.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
                                 }
@@ -418,7 +387,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     featureBlobs.RemoveAll(intensityThreshold);
                 
                     featureBlobs.RemoveAll(shapeThreshold);
-                    if (targetComposition != null)
+                    if (hasCompositionInfo)
                     {
                         featureBlobs.RemoveAll(isotopeThreshold);
                     }
@@ -478,7 +447,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     informedResult = new CrossSectionWorkflowResult(
                         this.DatasetName, 
                         targetDescription, 
-                        target.IonizationType, 
+                        target.Adduct, 
                         AnalysisStatus.Negative, 
                         analysisScores, 
                         null);
@@ -490,7 +459,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
                         Trace.WriteLine(string.Format("    Average Best Feature Intensity Score {0:F4}",    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                         
-                        if (targetComposition != null)
+                        if (hasCompositionInfo)
                         {
                             Trace.WriteLine(string.Format("    Average Best Feature Isotopic Score {0:F4}",     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
                         }
@@ -539,14 +508,28 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     voltageGroupDriftTimeInMs = MoleculeUtil.NormalizeDriftTime(voltageGroupDriftTimeInMs, voltageGroup);
                     if (detailedVerbose)
                     {
-                        Trace.WriteLine(string.Format("    Target presence confirmed at {0:F2} ± {1:F2} V.", voltageGroup.MeanVoltageInVolts, Math.Sqrt (voltageGroup.VarianceVoltage)));
-                        Trace.WriteLine(string.Format("        Frame range: [{0}, {1}]", voltageGroup.FirstFrameNumber - 1,     voltageGroup.FirstFrameNumber   +voltageGroup.AccumulationCount - 2));
-                        Trace.WriteLine(string.Format("        Drift time: {0:F4} ms (Scan# = {1})", voltageGroup.FitPoint.X * 1000,    voltageGroup.BestFeature.Statistics.ScanImsRep));
-                                                               
+                        Trace.WriteLine(
+                            string.Format(
+                                "    Target presence confirmed at {0:F2} ± {1:F2} V.",
+                                voltageGroup.MeanVoltageInVolts,
+                                Math.Sqrt(voltageGroup.VarianceVoltage)));
+                        
+                        Trace.WriteLine(
+                            string.Format(
+                                "        Frame range: [{0}, {1}]",
+                                voltageGroup.FirstFrameNumber - 1,
+                                voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
+                        
+                        Trace.WriteLine(
+                            string.Format(
+                                "        Drift time: {0:F4} ms (Scan# = {1})",
+                                voltageGroup.FitPoint.X * 1000,
+                                voltageGroup.BestFeature.Statistics.ScanImsRep));
+
                         Trace.WriteLine(string.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
                         Trace.WriteLine(string.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
                         Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
-                        if (targetComposition != null)
+                        if (hasCompositionInfo)
                         {
                             Trace.WriteLine(string.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
                         }
@@ -574,7 +557,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     informedResult = new CrossSectionWorkflowResult(
                         this.DatasetName, 
                         targetDescription, 
-                        target.IonizationType, 
+                        target.Adduct, 
                         AnalysisStatus.NotSufficientPoints, 
                         scoreHolder, 
                         null);
@@ -597,7 +580,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 }
                     
                 // Export the fit line into QC oxyplot drawings
-                string outputPath = this.OutputPath + this.DatasetName + "_" + target.IonizationType + "_QA.png";
+                string outputPath = this.OutputPath + this.DatasetName + "_" + target.Adduct + "_QA.png";
                 ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
                 if (detailedVerbose)
                 {
@@ -610,7 +593,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 // Compute mobility and cross section area
                 double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
                 Composition bufferGas = new Composition(0, 0, 2, 0, 0);
-                double reducedMass = MoleculeUtil.ComputeReducedMass(target.TargetMz, bufferGas);
+                double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);
                 
                 // Find the average temperature across various non outlier voltage groups.
                 double globalMeanTemperature = 0;
@@ -650,14 +633,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 TargetIsomerReport mostLikelyIsomer;
                 mostLikelyIsomer.Mobility = mobility;
                 mostLikelyIsomer.CrossSectionalArea = crossSection;
-                mostLikelyIsomer.MonoisotopicMass = monoisotopicMass;
+                mostLikelyIsomer.MonoisotopicMass = viperFriendlyMass;
                 mostLikelyIsomer.LastVoltageGroupDriftTimeInMs = voltageGroupDriftTimeInMs;
                 isomers.Add(mostLikelyIsomer);
                 
                 informedResult = new CrossSectionWorkflowResult(
                 this.DatasetName, 
                 targetDescription, 
-                target.IonizationType, 
+                target.Adduct, 
                 finalStatus, 
                 analysisScoreHolder, 
                 isomers);
@@ -671,7 +654,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}", informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
                     Trace.WriteLine(string.Format("    Average Candidate Target Intensity Score {0:F4}",    informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                     
-                    if (targetComposition != null)
+                    if (hasCompositionInfo)
                     {
                         Trace.WriteLine(string.Format("    Average Candidate Target Isotopic Score {0:F4}",     informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
                     }
@@ -732,7 +715,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 informedResult = new CrossSectionWorkflowResult(
                     this.DatasetName, 
                     targetDescription, 
-                    target.IonizationType, 
+                    target.Adduct, 
                     AnalysisStatus.UknownError, 
                     analysisScores, 
                     null);

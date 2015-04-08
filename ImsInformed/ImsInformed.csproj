@@ -108,6 +108,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\IonizationAdduct.cs" />
     <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
     <Compile Include="Domain\DirectInjection\VoltageGroup.cs" />
     <Compile Include="Domain\DirectInjection\VoltageSeparatedAccumulatedXICs.cs" />
@@ -116,11 +117,13 @@
     <Compile Include="Domain\InjectionMethod.cs" />
     <Compile Include="Domain\IonizationMethod.cs" />
     <Compile Include="Domain\LiquidChromatography\FeatureBlobNet.cs" />
+    <Compile Include="Domain\StandardImsPeak.cs" />
     <Compile Include="Filters\AnalysisFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
     <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="Interfaces\IImsTarget.cs" />
     <Compile Include="Interfaces\IImsResult.cs" />
+    <Compile Include="IO\DriftTimeLibraryImporter.cs" />
     <Compile Include="IO\FileFormatEnum.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="IO\RetentionMobilitySwappedMzMLExporter.cs" />
@@ -166,10 +169,15 @@
     <Compile Include="Workflows\LcImsPeptideExtraction\LcImsTargetResult.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\LcImsPeptideSearchParameters.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\LcImsPeptideSearchWorkfow.cs" />
+    <Compile Include="Workflows\DriftTimeLibraryMatch\LibraryMatchParameters.cs" />
+    <Compile Include="Workflows\DriftTimeLibraryMatch\LibraryMatchResult.cs" />
+    <Compile Include="Workflows\DriftTimeLibraryMatch\LibraryMatchWorkflow.cs" />
     <Compile Include="Workflows\VoltageAccumulation\VoltageAccumulationWorkflow.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -183,9 +191,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Workflows\LibraryMatc\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /Y /S /C  "$(SolutionDir)lib\PNNLOmicsElementData.xml" "$(TargetDir)"

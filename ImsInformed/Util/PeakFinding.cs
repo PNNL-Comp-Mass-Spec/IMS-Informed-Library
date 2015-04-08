@@ -14,6 +14,7 @@ namespace ImsInformed.Util
     using System.Collections.Generic;
     using System.Linq;
 
+    using ImsInformed.Domain;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
     using log4net.Util;
@@ -82,13 +83,13 @@ namespace ImsInformed.Util
         /// <param name="smoother">
         /// The smoother.
         /// </param>
-        /// <param name="parameters">
-        /// The parameters.
+        /// <param name="featureFilterLevel">
+        /// The feature Filter Level.
         /// </param>
         /// <returns>
         /// The <see cref="IList"/>.
         /// </returns>
-        public static List<FeatureBlob> FindPeakUsingWatershed(List<IntensityPoint> intensityPoints, SavitzkyGolaySmoother smoother, CrossSectionSearchParameters parameters)
+        public static List<FeatureBlob> FindPeakUsingWatershed(List<IntensityPoint> intensityPoints, SavitzkyGolaySmoother smoother, double featureFilterLevel)
         {
             // Smooth Chromatogram
             IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPoints);
@@ -98,7 +99,7 @@ namespace ImsInformed.Util
             List<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList).ToList();
             
             // Preliminary filtering: reject small feature peaks.
-            featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel).ToList();
+            featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, featureFilterLevel).ToList();
 
             return featureBlobs;
         }
@@ -136,7 +137,7 @@ namespace ImsInformed.Util
             // Moving average filter if 0, Savitzky Golay filter if 2, 4, 6, etc.
             peakFinderOptions.SavitzkyGolayFilterOrder = 2;
 
-            // Set the default Mass Spectra noise threshold options
+            // Set the default MonoisotopicMass Spectra noise threshold options
             peakFinderOptions.MassSpectraNoiseThresholdOptions = NoiseLevelAnalyzer.GetDefaultNoiseThresholdOptions();
 
             // Customize a few values
@@ -149,16 +150,25 @@ namespace ImsInformed.Util
             return peakFinderOptions;
         }
 
-        // Convert the MS feature from MASIC to LC-IMS feature from watershed.
-        private static FeatureBlob MASICPeakToWatershedFeatureConverter(clsPeak peak)
+        /// <summary>
+        /// Convert the MS feature from MASIC to standard feature from watershed.
+        /// </summary>
+        /// <param name="peak">
+        /// The peak.
+        /// </param>
+        /// <returns>
+        /// The <see cref="StandardImsPeak"/>.
+        /// </returns>
+        private static StandardImsPeak NormalizeMASICFeature(clsPeak peak)
         {
-            // TODO write a feature wrapper for both features as I don't think conversion like this will work.
+            // Write it.
             // FeatureBlob watershedFeature = new FeatureBlob(0);
             // watershedFeature.PointList = new List<Point>();
             // 
             // Talor MASIC's sometimes asymetirc peak into watershed flavored peak.
             // 
             // watershedFeature.PointList blablabla
+            throw new NotImplementedException();
         }
     }
 }

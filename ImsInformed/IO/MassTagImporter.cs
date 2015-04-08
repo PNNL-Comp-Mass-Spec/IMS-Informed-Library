@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Data.Common;
     using System.Data.SqlClient;
+    using System.Runtime.CompilerServices;
 
     using ImsInformed.Domain;
     using ImsInformed.Targets;
@@ -78,7 +79,7 @@
                         int chargeState = Convert.ToInt16(reader["Conformer_Charge"]);
                         double driftTime = Convert.ToDouble(reader["Drift_Time_Avg"]);
 
-                        DriftTimeTarget driftTimeTarget = new DriftTimeTarget(chargeState, driftTime);
+                        DriftTimeTarget driftTimeTarget = new DriftTimeTarget(driftTime, currentImsTarget.EmpiricalFormula, new IonizationAdduct(chargeState));
                         currentImsTarget.DriftTimeTargetList.Add(driftTimeTarget);
                     }
                 }

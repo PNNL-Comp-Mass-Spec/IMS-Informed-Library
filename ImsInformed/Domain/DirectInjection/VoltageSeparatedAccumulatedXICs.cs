@@ -16,7 +16,7 @@
         // This constructor intelligently group voltages together by observing
         // sharp changes in running voltage standard deviation. Only the XIC around
         // targeted MZ would be accumulated. 
-        public VoltageSeparatedAccumulatedXICs(DataReader uimfReader, double targetMz, CrossSectionSearchParameters crossSectionSearchParameters) : base()
+        public VoltageSeparatedAccumulatedXICs(DataReader uimfReader, double targetMz, double massToleranceInPpm) : base()
         {
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
             
@@ -37,7 +37,7 @@
 
                 List<IntensityPoint> XIC = uimfReader.GetXic(
                     targetMz,
-                    crossSectionSearchParameters.MassToleranceInPpm,
+                    massToleranceInPpm,
                     i,
                     i,
                     0,

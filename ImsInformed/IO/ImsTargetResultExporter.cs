@@ -35,7 +35,7 @@ namespace ImsInformed.IO
             peptideInfo.Append(target.PeptideSequence + ",");
             peptideInfo.Append(modificationString + ","); // TODO: Mods
             peptideInfo.Append(target.EmpiricalFormula + ",");
-            peptideInfo.Append(target.Mass + ",");
+            peptideInfo.Append(target.MonoisotopicMass + ",");
 
             double targetElutionTime = target.NormalizedElutionTime;
 
@@ -94,7 +94,7 @@ namespace ImsInformed.IO
             peptideInfo.Append(target.PeptideSequence + ",");
             peptideInfo.Append(modificationString + ","); // TODO: Mods
             peptideInfo.Append(target.EmpiricalFormula + ",");
-            peptideInfo.Append(target.Mass + ",");
+            peptideInfo.Append(target.MonoisotopicMass + ",");
 
             double targetElutionTime = target.NormalizedElutionTime;
 

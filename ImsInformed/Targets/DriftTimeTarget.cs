@@ -8,33 +8,73 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Domain
+namespace ImsInformed.Targets
 {
+    using ImsInformed.Domain;
+
     /// <summary>
     /// The drift time target.
     /// </summary>
-    public class DriftTimeTarget
+    public class DriftTimeTarget : MolecularTarget
     {
         /// <summary>
-        /// Gets or sets the charge state.
+        /// Initializes a new instance of the <see cref="DriftTimeTarget"/> class with H+ as default
+        /// ionization, which is a default for peptides.
         /// </summary>
-        public int ChargeState { get; set; }
+        /// <param name="driftTime">
+        /// The drift time.
+        /// </param>
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
+        /// </param>
+        /// <param name="adductMultiplier">
+        /// The adduct multiplier.
+        /// </param>
+        public DriftTimeTarget(double driftTime, PeptideTarget peptide, int chargeState = 1)
+            : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, chargeState)
+        {
+            this.DriftTime = driftTime;
+        }
 
-        public double DriftTime { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DriftTimeTarget"/> class for molercules
+        /// </summary>
+        /// <param name="driftTime">
+        /// The drift time.
+        /// </param>
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
+        /// </param>
+        /// <param name="ionizationMethod">
+        /// The ionization method.
+        /// </param>
+        public DriftTimeTarget(double driftTime, string empiricalFormula, IonizationMethod ionizationMethod, int adductMultiplier = 1)
+            : base(empiricalFormula, ionizationMethod, adductMultiplier)
+        {
+            this.DriftTime = driftTime;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DriftTimeTarget"/> class.
         /// </summary>
-        /// <param name="chargeState">
-        /// The charge state.
-        /// </param>
         /// <param name="driftTime">
         /// The drift time.
         /// </param>
-        public DriftTimeTarget(int chargeState, double driftTime)
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
+        /// </param>
+        /// <param name="adduct">
+        /// The adduct.
+        /// </param>
+        public DriftTimeTarget(double driftTime, string empiricalFormula, IonizationAdduct adduct)
+            : base(empiricalFormula, adduct)
         {
-            this.ChargeState = chargeState;
             this.DriftTime = driftTime;
         }
+
+        /// <summary>
+        /// Gets the drift time.
+        /// </summary>
+        public double DriftTime { get; private set; }
     }
 }

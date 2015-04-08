@@ -254,7 +254,7 @@ namespace ImsInformed.Workflows.VoltageAccumulation
         private bool RunVoltageAccumulationWorkflow(int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, bool fullScan, FileFormatEnum exportFormat)
         {
             CrossSectionSearchParameters defaultParams = new CrossSectionSearchParameters();
-            VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.UimfReader, 100, defaultParams);
+            VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.UimfReader, 100, defaultParams.MassToleranceInPpm);
             IEnumerable<VoltageGroup> voltageGroups = accumulatedXiCs.Keys;
             bool success = true;
             foreach (var voltageGroup in voltageGroups)

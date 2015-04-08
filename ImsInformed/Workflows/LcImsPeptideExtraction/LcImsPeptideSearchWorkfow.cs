@@ -205,7 +205,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
         /// </returns>
         public ChargeStateCorrelationResult RunInformedWorkflow(PeptideTarget target)
         {
-            Composition targetComposition = target.Composition;
+            Composition targetComposition = target.CompositionWithoutAdduct;
             double targetMass = targetComposition.Mass;
             string empiricalFormula = targetComposition.ToPlainString();
 
@@ -232,18 +232,18 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                 if (targetComposition != null) 
                 {
                     Ion targetIon = new Ion(targetComposition, chargeState);
-                    target.TargetMz = targetIon.GetMonoIsotopicMz();
+                    target.MassWithAdduct = targetIon.GetMonoIsotopicMz();
                 } 
 
-                double minMzForSpectrum = target.TargetMz - (1.6 / chargeState);
-                double maxMzForSpectrum = target.TargetMz + (4.6 / chargeState);
+                double minMzForSpectrum = target.MassWithAdduct - (1.6 / chargeState);
+                double maxMzForSpectrum = target.MassWithAdduct + (4.6 / chargeState);
                 
                 // Generate Theoretical Isotopic Profile
                 IsotopicProfile theoreticalIsotopicProfile = this._theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
                 List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
                 // Find XIC Features
-                IEnumerable<FeatureBlob> featureBlobs = this.FindFeatures(target.TargetMz, scanLcSearchMin, scanLcSearchMax);
+                IEnumerable<FeatureBlob> featureBlobs = this.FindFeatures(target.MassWithAdduct, scanLcSearchMin, scanLcSearchMax);
 
                 // Filter away small XIC peaks
                 featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, 0.25);
@@ -288,7 +288,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                         if (!statistics.IsSaturated) break;
 
                         // Target isotope m/z 
-                        double isotopeTargetMz = (target.Composition != null) ? new Ion(targetComposition, chargeState).GetIsotopeMz(i) : target.TargetMz;
+                        double isotopeTargetMz = (target.CompositionWithoutAdduct != null) ? new Ion(targetComposition, chargeState).GetIsotopeMz(i) : target.MassWithAdduct;
 
                         // Find XIC Features
                         IEnumerable<FeatureBlob> newFeatureBlobs = this.FindFeatures(isotopeTargetMz, scanLcMin - 20, scanLcMax + 20);
@@ -365,7 +365,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                             continue;
                         }
 
-                        // TODO: Mass Alignment???
+                        // TODO: MonoisotopicMass Alignment???
                     if (target.TargetType == TargetType.Peptide)
                     {
                         // Filter by NET
@@ -378,7 +378,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
 
                     //Console.WriteLine(target.PeptideSequence + "\t" + targetMass + "\t" + targetMz + "\t" + scanLcRep);
 
-                    // Get Mass Spectrum Data
+                    // Get MonoisotopicMass Spectrum Data
                     XYData massSpectrum = this.GetMassSpectrum(scanLcRep, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
                     List<Peak> massSpectrumPeakList = this._peakDetector.FindPeaks(massSpectrum);
                     //WriteXYDataToFile(massSpectrum, targetMz);
@@ -441,7 +441,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                     // Calculate isotopic fit score
                     if(unsaturatedIsotope > 0)
                     {
-                        int unsaturatedScanLc = this.FindFrameNumberUseForIsotopicProfile(target.TargetMz, scanLcRep, scanImsRep);
+                        int unsaturatedScanLc = this.FindFrameNumberUseForIsotopicProfile(target.MassWithAdduct, scanLcRep, scanImsRep);
 
                         if (unsaturatedScanLc > 0)
                         {
@@ -528,7 +528,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
             foreach (var target in targetList)
             {
                 // Get empirical formula
-                Composition targetComposition = target.Composition;
+                Composition targetComposition = target.CompositionWithoutAdduct;
 
                 double targetNet = target.NormalizedElutionTime;
                 double targetNetMin = targetNet - this._parameters.NetTolerance;

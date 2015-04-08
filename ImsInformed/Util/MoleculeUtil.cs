@@ -43,99 +43,6 @@ namespace ImsInformed.Util
         public static readonly string Close = ")]}>";
 
         /// <summary>
-        /// Compensate the composition based on ionization methods used.
-        /// </summary>
-        /// <param name="composition">
-        /// The composition.
-        /// </param>
-        /// <param name="method">
-        /// The method.
-        /// </param>
-        /// <returns>
-        /// The <see cref="Composition"/>.
-        /// </returns>
-        public static Composition IonizationCompositionCompensation(Composition composition, IonizationMethod method)
-        {
-            if (composition != null)
-            {
-                // compensate for extra composition difference due to different ionization method
-                if (method == IonizationMethod.ProtonPlus)
-                {
-                    return composition + new Composition(0, 1, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.ProtonMinus) 
-                {
-                    return composition - new Composition(0, 1, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.SodiumPlus) 
-                {
-                    return composition + ReadEmpiricalFormulaNoParenthesis("Na");
-                }
-                else if (method == IonizationMethod.APCI) 
-                {
-                    return composition;
-                }
-                else if (method == IonizationMethod.HCOOMinus) 
-                {
-                    return composition + new Composition(1, 1, 0, 2, 0);
-                }
-                else if (method == IonizationMethod.Proton2MinusSodiumPlus)
-                {
-                    Composition newCompo = composition + ReadEmpiricalFormulaNoParenthesis("Na");
-                    return newCompo - new Composition(0, 2, 0, 0, 0);
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Decompensate the extra proton that is usually assumed(not true in metabolitics) to proteomics
-        /// </summary>
-        /// <param name="composition">
-        /// The composition.
-        /// </param>
-        /// <param name="method">
-        /// The method.
-        /// </param>
-        /// <returns>
-        /// The <see cref="Composition"/>.
-        /// </returns>
-        public static Composition IonizationCompositionDecompensation(Composition composition, IonizationMethod method)
-        {
-            if (composition != null)
-            {
-                // decompensate for extra composition difference due to different ionization method
-                if (method == IonizationMethod.ProtonPlus)
-                {
-                    return composition - new Composition(0, 1, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.ProtonMinus) 
-                {
-                    return composition + new Composition(0, 1, 0, 0, 0);
-                }
-                else if (method == IonizationMethod.SodiumPlus) 
-                {
-                    return composition - ReadEmpiricalFormulaNoParenthesis("Na");
-                }
-                else if (method == IonizationMethod.APCI) 
-                {
-                    return composition;
-                }
-                else if (method == IonizationMethod.HCOOMinus) 
-                {
-                    return composition - new Composition(1, 1, 0, 2, 0);
-                }
-                else if (method == IonizationMethod.Proton2MinusSodiumPlus)
-                {
-                    Composition newCompo = composition - ReadEmpiricalFormulaNoParenthesis("Na");
-                    return newCompo + new Composition(0, 2, 0, 0, 0);
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// The math to compute collision cross sectional area.
         /// </summary>
         /// <param name="averageTemperatureInKelvin">
@@ -276,7 +183,7 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
-        /// Convert the empirical formula string to Composition object defined Informed Proteomics
+        /// Convert the empirical formula string to CompositionWithoutAdduct object defined Informed Proteomics
         /// </summary>
         /// <param name="empiricalFormula">
         /// The empirical formula.
@@ -544,18 +451,22 @@ namespace ImsInformed.Util
                         double averageMass;
 
                         // Find the element in the PNNL xml File.
-                        var elemen = xelement.Element("ElementIsotopes").Elements("Element");
-                        IEnumerable<XElement> els = from el in elemen
-                        where (string)(el.Element("Symbol")) == entry.Key select el;
-                        string name = (string)els.Elements("Name").First().Value;
-                        
-                        if (!Double.TryParse(els.Elements("Isotope").First().Element("Mass").Value, out averageMass) ||
-                            !int.TryParse(els.Elements("Isotope").First().Element("IsotopeNumber").Value, out norminalMass))
+                        var xElement = xelement.Element("ElementIsotopes");
+                        if (xElement != null)
                         {
-                            throw new Exception("XML file corrupted");
+                            var elemen = xElement.Elements("Element");
+                            IEnumerable<XElement> els = from el in elemen
+                            where (string)(el.Element("Symbol")) == entry.Key select el;
+                            string name = (string)els.Elements("Name").First().Value;
+                        
+                            if (!Double.TryParse(els.Elements("Isotope").First().Element("Mass").Value, out averageMass) ||
+                                !int.TryParse(els.Elements("Isotope").First().Element("IsotopeNumber").Value, out norminalMass))
+                            {
+                                throw new Exception("XML file corrupted");
+                            }
+                            Atom atom = new Atom(entry.Key, averageMass, norminalMass, name);
+                            additionalElements.Add(new Tuple<Atom, short>(atom, (short)entry.Value));
                         }
-                        Atom atom = new Atom(entry.Key, averageMass, norminalMass, name);
-                        additionalElements.Add(new Tuple<Atom, short>(atom, (short)entry.Value));
                     }
                     catch (Exception e)
                     {

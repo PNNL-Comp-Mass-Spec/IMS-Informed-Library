@@ -53,7 +53,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityScore(StandardImsPeak featurePeak, VoltageGroup voltageGroup, double globalMaxIntensity)
+        public static double IntensityScore(StandardImsPeak featurePeak, double globalMaxIntensity)
         {
             // Sort features by relative intensity
             double summedIntensities = featurePeak.SummedIntensities;
@@ -158,20 +158,14 @@ namespace ImsInformed.Scoring
         /// <summary>
         /// The score feature using isotopic profile.
         /// </summary>
+        /// <param name="imsPeak">
+        /// The ims Peak.
+        /// </param>
         /// <param name="reader">
         /// The reader.
         /// </param>
-        /// <param name="massToleranceInPpm">
-        /// The mass Tolerance In Ppm.
-        /// </param>
-        /// <param name="driftTimeToleranceInScans">
-        /// The drift Time Tolerance In Scans.
-        /// </param>
         /// <param name="target">
         /// The target.
-        /// </param>
-        /// <param name="statistics">
-        /// The imsPeak.
         /// </param>
         /// <param name="isotopicPeakList">
         /// The isotopic peak list.
@@ -184,15 +178,12 @@ namespace ImsInformed.Scoring
         /// </param>
         /// <param name="globalMaxIntensities">
         /// </param>
-        /// <param name="numberOfScans">
-        /// The number Of Scans.
-        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static double IsotopicProfileScore(StandardImsPeak imsPeak, DataReader reader, double massToleranceInPpm, double driftTimeToleranceInMs, IImsTarget target, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, int numberOfScans)
+        public static double IsotopicProfileScore(StandardImsPeak imsPeak, DataReader reader, IImsTarget target, List<Peak> isotopicPeakList, VoltageGroup voltageGroup, IsotopicScoreMethod selectedMethod, double globalMaxIntensities, double totalScans)
         {
             // No need to move on if the isotopic profile is not found
             // if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
@@ -216,14 +207,15 @@ namespace ImsInformed.Scoring
             }
 
             // Get the scanWindow size
-            int scanWindowSize = (int)Math.Ceiling(driftTimeToleranceInMs / voltageGroup.AverageTofWidthInSeconds) * 2 + 1;
-            int scanRep = imsPeak.HighestPeakApex.DriftTimeCenterInScanNumber;
-            int scanNumberMin = (scanRep - scanWindowSize / 2 > 0) ? scanRep - scanWindowSize / 2 : 0;
-            int scanNumberMax = (scanRep + scanWindowSize / 2 < numberOfScans) ? scanRep + scanWindowSize / 2 : numberOfScans - 1;
-            if ((scanNumberMin < 0) || (scanNumberMax > numberOfScans - 1))
+            int scanNumberMin = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
+            int scanNumberMax = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
+            if ((scanNumberMin < 0) || (scanNumberMax > totalScans - 1))
             {
                 return 0;
             }
+
+            // Get the mass error from the observed feature peak from the target theoretical peak
+            double mzOffset = imsPeak.HighestPeakApex.MzCenterInDalton - target.CompositionWithAdduct.Mass;
 
             List<double> observedIsotopicPeakList = new List<double>();
 
@@ -236,8 +228,8 @@ namespace ImsInformed.Scoring
                 // Isotopic Mz
                 double Mz = isotopicPeakList[i].XValue;
                 
-                var peakList = reader.GetXic(Mz, 
-                    massToleranceInPpm,
+                var peakList = reader.GetXic(Mz + mzOffset, 
+                    imsPeak.HighestPeakApex.MzWindowToleranceInPpm,
                     voltageGroup.FirstFrameNumber,
                     voltageGroup.LastFrameNumber,
                     scanNumberMin,

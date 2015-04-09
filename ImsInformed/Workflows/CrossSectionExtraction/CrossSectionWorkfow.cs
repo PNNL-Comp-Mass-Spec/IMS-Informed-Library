@@ -330,14 +330,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   
                         FeatureScoreHolder currentScoreHolder;
-                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, voltageGroup, globalMaxIntensity);
+                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
                         
                         currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
                 
                         currentScoreHolder.IsotopicScore = 0;
                         if (hasCompositionInfo)
                         {
-                            currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, target, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
+                            currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
                         }
                 
                         scoresTable.Add(peak, currentScoreHolder);
@@ -365,7 +365,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         FeatureScoreHolder currentScoreHolder = scoresTable[peak];
                         if (detailedVerbose)
                         {
-                            Trace.WriteLine(string.Format("        Candidate feature found at scan number {0}", peak));
+                            Trace.WriteLine(string.Format("        Candidate feature found at [Mz = {0:F4}, drift time = {1:F2} ms (scan# = {2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs, peak.HighestPeakApex.DriftTimeCenterInScanNumber));
                             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
                             if (!lowIntenstity)
                             {

@@ -20,6 +20,7 @@ namespace ImsInformed.IO
 
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Stats;
+    using ImsInformed.Util;
 
     using MathNet.Numerics.Integration.Algorithms;
 

@@ -140,7 +140,6 @@
     <Compile Include="Stats\FitLine.cs" />
     <Compile Include="Domain\TargetType.cs" />
     <Compile Include="Stats\NormalityTest.cs" />
-    <Compile Include="Stats\UnitConversion.cs" />
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
@@ -161,6 +160,7 @@
     <Compile Include="Util\PeptideUtil.cs" />
     <Compile Include="Util\SaturationDetector.cs" />
     <Compile Include="Stats\ContinuousXYPoint.cs" />
+    <Compile Include="Util\UnitConversion.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionSearchParameters.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkflowResult.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkfow.cs" />

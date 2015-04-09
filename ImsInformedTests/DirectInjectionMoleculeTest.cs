@@ -503,13 +503,11 @@ namespace ImsInformedTests
                 foreach (var peak in standardPeaks)
                 {
                     // Evaluate feature scores.
-                    double intensityScore = FeatureScores.IntensityScore(peak, voltageGroup, globalMaxIntensity);
+                    double intensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
                     
                     double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -520,8 +518,6 @@ namespace ImsInformedTests
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -532,8 +528,6 @@ namespace ImsInformedTests
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -544,8 +538,6 @@ namespace ImsInformedTests
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -556,8 +548,6 @@ namespace ImsInformedTests
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -739,13 +729,11 @@ namespace ImsInformedTests
                 foreach (var featurePeak in standardPeaks)
                 {
                     // Evaluate feature scores.
-                   double intensityScore = FeatureScores.IntensityScore(featurePeak, voltageGroup, globalMaxIntensity);
+                   double intensityScore = FeatureScores.IntensityScore(featurePeak, globalMaxIntensity);
                     
                    double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -756,8 +744,6 @@ namespace ImsInformedTests
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -768,8 +754,6 @@ namespace ImsInformedTests
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -780,8 +764,6 @@ namespace ImsInformedTests
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
@@ -792,8 +774,6 @@ namespace ImsInformedTests
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
-                        workflow.Parameters.MassToleranceInPpm, 
-                        workflow.Parameters.DriftTimeToleranceInMs, 
                         target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 

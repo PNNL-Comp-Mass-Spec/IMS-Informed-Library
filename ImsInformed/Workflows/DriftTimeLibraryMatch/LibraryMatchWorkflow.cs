@@ -238,11 +238,11 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   
                         FeatureScoreHolder currentScoreHolder;
-                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, voltageGroup, globalMaxIntensity);
+                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
                         
                         currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
                 
-                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, target, theoreticalIsotopicProfilePeakList, voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
+                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList, voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
                 
                         scoresTable.Add(peak, currentScoreHolder);
                     }

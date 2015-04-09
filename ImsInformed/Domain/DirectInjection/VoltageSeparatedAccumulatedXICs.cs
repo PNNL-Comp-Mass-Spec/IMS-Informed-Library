@@ -4,6 +4,7 @@
     using System.Collections.Generic;
 
     using ImsInformed.Stats;
+    using ImsInformed.Util;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
     using UIMFLibrary;

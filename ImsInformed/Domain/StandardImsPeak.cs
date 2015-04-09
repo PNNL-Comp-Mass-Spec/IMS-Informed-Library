@@ -27,9 +27,25 @@ namespace ImsInformed.Domain
 
         public double DriftTimeCenterInMs;
 
+        public double DriftTimeWindowToleranceInMs;
+
+        public double DriftTimeFullWidthHalfMaxLowerBondInMs;
+        
+        public double DriftTimeFullWidthHalfMaxHigherBondInMs;
+
+        public int DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
+        
+        public int DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
+
         public int MzCenterInBinNumber;
 
         public double MzCenterInDalton;
+
+        public double MzWindowToleranceInPpm;
+                      
+        public double MzFullWidthHalfMaxLow;
+                      
+        public double MzFullWidthHalfMaxHigh;
 
         public int RetentionTimeCenterInMinutes;
 
@@ -93,7 +109,43 @@ namespace ImsInformed.Domain
             // Somehow frame is zero indexed instead
             uimfReader.GetSpectrum(voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
             
+            int indexOfMax = intensitiesArray.ToList().IndexOf(intensitiesArray.Max());
             highestPeakApex.MzCenterInDalton = mzArray[intensitiesArray.ToList().IndexOf(intensitiesArray.Max())];
+
+            // Get the full width half max window in Mz
+            double halfMax = highestPeakApex.MzCenterInDalton / 2;
+
+            highestPeakApex.MzFullWidthHalfMaxLow = mzArray[0];
+            for (int i = indexOfMax; i > 0; i--)
+            {
+                if (intensitiesArray[i] < halfMax)
+                {
+                    highestPeakApex.MzFullWidthHalfMaxLow = mzArray[i];
+                }
+            }
+
+            int count = mzArray.Count();
+            highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[count - 1];
+            for (int i = indexOfMax; i < mzArray.Count(); i++)
+            {
+                if (intensitiesArray[i] < halfMax)
+                {
+                    highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[i];
+                }
+            }
+
+            double deltaLowInPpm = (highestPeakApex.MzCenterInDalton - highestPeakApex.MzFullWidthHalfMaxLow) / highestPeakApex.MzCenterInDalton * 1000000;
+            double deltaHighInPpm = (highestPeakApex.MzFullWidthHalfMaxHigh - highestPeakApex.MzCenterInDalton) / highestPeakApex.MzCenterInDalton * 1000000;
+            highestPeakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
+
+            // Get the full width half max in DriftTime
+            highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs = this.MaxDriftTimeInMs;
+            highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs = this.MinDriftTimeInMs;
+
+            highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber = this.MaxDriftTimeInScanNumber;
+            highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MaxDriftTimeInScanNumber;
+
+            highestPeakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(highestPeakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs - highestPeakApex.DriftTimeCenterInMs));
 
             this.HighestPeakApex = highestPeakApex;
         }

@@ -12,6 +12,8 @@ namespace ImsInformed.Filters
 {
     using System;
 
+    using ImsInformed.Domain;
+
     using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
@@ -31,9 +33,9 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterExtremeDriftTime(FeatureBlob feature, int totalImsScans)
+        public static bool FilterExtremeDriftTime(StandardImsPeak feature, int totalImsScans)
         {
-            int scanImsRep = feature.Statistics.ScanImsRep;
+            int scanImsRep = feature.HighestPeakApex.DriftTimeCenterInScanNumber;
 
             // Nullify the intensity score if the Scan is in 1% scans left or right areas.
             int errorMargin = (int)Math.Round(totalImsScans * 0.01);
@@ -52,7 +54,7 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterLowIntensity(FeatureBlob feature, double intensityScore, double intensityThreshold = 0.5)
+        public static bool FilterLowIntensity(StandardImsPeak feature, double intensityScore, double intensityThreshold = 0.5)
         {
             return intensityScore < intensityThreshold;
         }
@@ -72,7 +74,7 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterBadPeakShape(FeatureBlob feature, double peakShapeScore, double peakShapeThreshold = 0.4)
+        public static bool FilterBadPeakShape(StandardImsPeak feature, double peakShapeScore, double peakShapeThreshold = 0.4)
         {
             return peakShapeScore < peakShapeThreshold;
         }
@@ -90,7 +92,7 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterBadIsotopicProfile(FeatureBlob feature, double isotopicScore, double isotopicThreshold = 0.4)
+        public static bool FilterBadIsotopicProfile(StandardImsPeak feature, double isotopicScore, double isotopicThreshold = 0.4)
         {
             return isotopicScore < isotopicThreshold;
         }

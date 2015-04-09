@@ -202,7 +202,7 @@ namespace ImsInformed.IO
             writer.WriteAttributeString("count", this.scans.ToString(CultureInfo.InvariantCulture));
 
             int startingFrame = voltageGroup.FirstFrameNumber;
-            int endingFrame = voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1;
+            int endingFrame = voltageGroup.LastFrameNumber;
             Console.Write("Summing frame[{0} - {1}]...    ", startingFrame, endingFrame);
 
             double[,] summedIntensities = reader.AccumulateFrameData(startingFrame, endingFrame, false, 1, this.scans, 1, this.bins, -1, -1);

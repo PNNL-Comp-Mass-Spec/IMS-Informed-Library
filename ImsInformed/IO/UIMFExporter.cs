@@ -72,7 +72,7 @@ namespace ImsInformed.IO
         public bool ExportVoltageGroupAsSingleFrameUimf(string outputPath, VoltageGroup voltageGroup, DataReader originalUIMF, bool averageNotSum, int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, bool fullScan)
         {
             int startingFrame = voltageGroup.FirstFrameNumber;
-            int endingFrame = voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1;
+            int endingFrame = voltageGroup.LastFrameNumber;
 
                 FrameParams frameParam = originalUIMF.GetFrameParams(startingFrame);
                 if (fullScan)
@@ -100,7 +100,7 @@ namespace ImsInformed.IO
                 newGlobalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, 1);
                 if (averageNotSum)
                 {
-                    int postProcessingAccumulation = averageNotSum ? 1 : voltageGroup.AccumulationCount;
+                    int postProcessingAccumulation = averageNotSum ? 1 : voltageGroup.FrameAccumulationCount;
                     int totalAccumulation = newGlobalParams.GetValueInt32(GlobalParamKeyType.PrescanAccumulations) * postProcessingAccumulation;
                     newGlobalParams.AddUpdateValue(GlobalParamKeyType.PrescanAccumulations, totalAccumulation);
                 }
@@ -111,7 +111,7 @@ namespace ImsInformed.IO
                 FrameParams newFrameParams = originalUIMF.GetFrameParams(voltageGroup.FirstFrameNumber);
                 if (averageNotSum)
                 {
-                    int postProcessingAccumulation = averageNotSum ? 1 : voltageGroup.AccumulationCount;
+                    int postProcessingAccumulation = averageNotSum ? 1 : voltageGroup.FrameAccumulationCount;
                     int totalAccumulation = newGlobalParams.GetValueInt32(GlobalParamKeyType.PrescanAccumulations) * postProcessingAccumulation;
                     newFrameParams.AddUpdateValue(FrameParamKeyType.Accumulations, totalAccumulation);
                 }

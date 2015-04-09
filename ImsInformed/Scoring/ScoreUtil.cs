@@ -87,10 +87,10 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="FeatureBlob"/>.
         /// </returns>
-        public static FeatureBlob SelectMostLikelyFeature(IDictionary<FeatureBlob, FeatureScoreHolder> scores, LikelihoodFunc likelihoodFunc)
+        public static StandardImsPeak SelectMostLikelyFeature(IDictionary<StandardImsPeak, FeatureScoreHolder> scores, LikelihoodFunc likelihoodFunc)
         {
             // Select the feature with the highest isotopic score
-            FeatureBlob bestFeature = null;
+            StandardImsPeak bestFeature = null;
             FeatureScoreHolder mostLikelyPeakScores;
             mostLikelyPeakScores.IntensityScore = 0;
             mostLikelyPeakScores.IsotopicScore = 0;

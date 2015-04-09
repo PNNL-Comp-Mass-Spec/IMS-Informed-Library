@@ -468,14 +468,14 @@ namespace ImsInformedTests
                 bool found = false;
                 string formula = form;
                 
-                MolecularTarget sample = new MolecularTarget(formula, new IonizationAdduct(IonizationMethod.ProtonMinus));
+                MolecularTarget target = new MolecularTarget(formula, new IonizationAdduct(IonizationMethod.ProtonMinus));
                 var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
 
                 // Generate Theoretical Isotopic Profile
                 List<Peak> theoreticalIsotopicProfilePeakList = null;
-                if (sample.CompositionWithAdduct != null) 
+                if (target.CompositionWithAdduct != null) 
                 {
-                    string empiricalFormula = sample.CompositionWithAdduct.ToPlainString();
+                    string empiricalFormula = target.CompositionWithAdduct.ToPlainString();
                     var theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
                     IsotopicProfile theoreticalIsotopicProfile = theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
                     theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
@@ -483,19 +483,14 @@ namespace ImsInformedTests
                 
                 // Generate VoltageSeparatedAccumulatedXICs
                 var uimfReader = new DataReader(fileLocation);
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, sample.MassWithAdduct, parameters.MassToleranceInPpm);
+                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
 
                 var voltageGroup = accumulatedXiCs.Keys.First();
 
-                // Smooth Chromatogram
-                IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
-                smoother.Smooth(ref pointList);
-                
-                // Peak Find Chromatogram
-                IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
-
-                // pre-filtering: reject small feature peaks. Fast filtering.
-                featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
+                // Find peaks using multidimensional peak finder.
+                List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
+                List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);
+                List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup, target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
 
                 // feature scorings and target selection.
                 FeatureScoreHolder mostLikelyPeakScores;
@@ -505,19 +500,17 @@ namespace ImsInformedTests
                 double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
 
                 // Check each XIC Peak found
-                foreach (var featureBlob in featureBlobs)
+                foreach (var peak in standardPeaks)
                 {
-                    var feature = new StandardImsPeak(featureBlob);
-
                     // Evaluate feature scores.
-                    double intensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
+                    double intensityScore = FeatureScores.IntensityScore(peak, voltageGroup, globalMaxIntensity);
                     
                     double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        peak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.Angle, 
@@ -525,11 +518,11 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        peak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.EuclideanDistance, 
@@ -537,11 +530,11 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        peak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.PearsonCorrelation, 
@@ -549,11 +542,11 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        peak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.Bhattacharyya, 
@@ -561,56 +554,56 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        peak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.EuclideanDistanceAlternative, 
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(feature, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
+                    double peakShapeScore = FeatureScores.PeakShapeScore(peak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                     
                     // Report all features.
-                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
                     {
                         Console.Write("{0:F4} ", intensityScore);
                         found = true;
                     }
 
                     // Report all features.
-                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
                     {
                         Console.Write("{0:F4} ", isotopicScoreDistance);
                         found = true;
                     }
 
                     // Report all features.
-                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
                     {
                         Console.Write("{0:F4} ", isotopicScoreDistanceAlternative);
                         found = true;
                     }
 
                     // Report all features.
-                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
                     {
                         Console.Write("{0:F4} ", isotopicScoreAngle);
                         found = true;
                     }
 
                     // Report all features.
-                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
                     {
                         Console.Write("{0:F4} ", isotopicScorePerson);
                         found = true;
                     }
 
                     // Report all features.
-                    if (featureBlob.Statistics.ScanImsRep == 115)
+                    if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
                     {
                         Console.Write("{0:F4} ", isotopicScoreBhattacharyya);
                         found = true;
@@ -694,11 +687,11 @@ namespace ImsInformedTests
         {
             string formula = "C9H13ClN6";
             string fileLocation = Cae;
-            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
+            MolecularTarget target = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
             
             Console.WriteLine("Dataset: {0}", fileLocation);
-            Console.WriteLine("CompositionWithoutAdduct: " + sample.CompositionWithoutAdduct);
-            Console.WriteLine("Monoisotopic MonoisotopicMass: " + sample.MonoisotopicMass);
+            Console.WriteLine("CompositionWithoutAdduct: " + target.CompositionWithoutAdduct);
+            Console.WriteLine("Monoisotopic MonoisotopicMass: " + target.MonoisotopicMass);
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -706,14 +699,14 @@ namespace ImsInformedTests
 
             CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
 
-            Console.WriteLine("Ionization method: " + sample.Adduct);
-            Console.WriteLine("Targeting Mz: " + sample.MassWithAdduct);
+            Console.WriteLine("Ionization method: " + target.Adduct);
+            Console.WriteLine("Targeting Mz: " + target.MassWithAdduct);
                 
             // Generate Theoretical Isotopic Profile
             List<Peak> theoreticalIsotopicProfilePeakList = null;
-            if (sample.CompositionWithAdduct != null) 
+            if (target.CompositionWithAdduct != null) 
             {
-                string empiricalFormula = sample.CompositionWithAdduct.ToPlainString();
+                string empiricalFormula = target.CompositionWithAdduct.ToPlainString();
                 var theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
                 IsotopicProfile theoreticalIsotopicProfile = theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
                 theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
@@ -722,24 +715,18 @@ namespace ImsInformedTests
             // Generate VoltageSeparatedAccumulatedXICs
             var uimfReader = new DataReader(fileLocation);
             Console.WriteLine("Input file: {0}", fileLocation);
-            VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, sample.MassWithAdduct, parameters.MassToleranceInPpm);
+            VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
 
             Console.WriteLine();
 
             // For each voltage, find 2D XIC features 
             foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
             {
-                Console.WriteLine("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount);
+                Console.WriteLine("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber);
 
-                // Smooth Chromatogram
-                IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(accumulatedXiCs[voltageGroup].IntensityPoints);
-                smoother.Smooth(ref pointList);
-                
-                // Peak Find Chromatogram
-                IEnumerable<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList);
-
-                // pre-filtering: reject small feature peaks. Fast filtering.
-                featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, parameters.FeatureFilterLevel);
+                List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
+                List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);
+                List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup, target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
 
                 // feature scorings and target selection.
                 FeatureScoreHolder mostLikelyPeakScores;
@@ -749,18 +736,17 @@ namespace ImsInformedTests
                 double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
 
                 // Check each XIC Peak found
-                foreach (var featureBlob in featureBlobs)
+                foreach (var featurePeak in standardPeaks)
                 {
                     // Evaluate feature scores.
-                   var feature = new StandardImsPeak(featureBlob);
-                   double intensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
+                   double intensityScore = FeatureScores.IntensityScore(featurePeak, voltageGroup, globalMaxIntensity);
                     
                    double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        featurePeak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.Angle, 
@@ -768,11 +754,11 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        featurePeak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.EuclideanDistance, 
@@ -780,11 +766,11 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        featurePeak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.PearsonCorrelation, 
@@ -792,11 +778,11 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        featurePeak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.Bhattacharyya, 
@@ -804,21 +790,21 @@ namespace ImsInformedTests
                         workflow.NumberOfScans);
 
                     double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
-                        feature, 
+                        featurePeak, 
                         workflow.uimfReader, 
                         workflow.Parameters.MassToleranceInPpm, 
                         workflow.Parameters.DriftTimeToleranceInMs, 
-                        sample, 
+                        target, 
                         theoreticalIsotopicProfilePeakList, 
                         voltageGroup, 
                         IsotopicScoreMethod.EuclideanDistanceAlternative, 
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(feature, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
+                    double peakShapeScore = FeatureScores.PeakShapeScore(featurePeak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                     
                     // Report all features.
-                    Console.WriteLine(" feature found at scan number {0}", featureBlob.Statistics.ScanImsRep);
+                    Console.WriteLine(" feature found at scan number {0}", featurePeak.HighestPeakApex.DriftTimeCenterInScanNumber);
                     Console.WriteLine("     IntensityScore: {0}", intensityScore);
                     Console.WriteLine("     peakShapeScore: {0}", peakShapeScore);
                     Console.WriteLine("     isotopicScore - Angle:    {0}", isotopicScoreAngle);

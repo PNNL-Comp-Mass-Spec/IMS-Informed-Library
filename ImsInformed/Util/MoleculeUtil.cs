@@ -104,7 +104,7 @@ namespace ImsInformed.Util
             GlobalParams global = reader.GetGlobalParams();
             FrameParams param = reader.GetFrameParams(group.FirstFrameNumber);
             int firstFrame = group.FirstFrameNumber;
-            int lastFrame = group.FirstFrameNumber + group.AccumulationCount;
+            int lastFrame = group.LastFrameNumber;
             int firstScan = 1;
             int lastScan = param.Scans;
             int firstBin = 0;
@@ -179,7 +179,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static double MaxDigitization(VoltageGroup group, DataReader reader)
         {
-            return 255 * group.AccumulationCount * reader.GetFrameParams(group.FirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
+            return 255 * group.FrameAccumulationCount * reader.GetFrameParams(group.FirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
         }
 
         /// <summary>

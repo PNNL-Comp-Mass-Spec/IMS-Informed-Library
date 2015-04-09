@@ -42,10 +42,7 @@ namespace ImsInformed.Scoring
         /// <summary>
         /// The intensity score.
         /// </summary>
-        /// <param name="workflow">
-        /// The workflow.
-        /// </param>
-        /// <param name="featureBlob">
+        /// <param name="featurePeak">
         /// The feature blob.
         /// </param>
         /// <param name="voltageGroup">
@@ -56,14 +53,13 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityScore(FeatureBlob featureBlob, VoltageGroup voltageGroup, double globalMaxIntensity)
+        public static double IntensityScore(StandardImsPeak featurePeak, VoltageGroup voltageGroup, double globalMaxIntensity)
         {
             // Sort features by relative intensity
-            FeatureBlobStatistics statistics = featureBlob.Statistics;
-            double summedIntensities = statistics.SumIntensities;
+            double summedIntensities = featurePeak.SummedIntensities;
             
             // Divide intensities by accumulation (If summing instead of averaging is used)
-            // summedIntensities /= voltageGroup.AccumulationCount;
+            // summedIntensities /= voltageGroup.FrameAccumulationCount;
 
             // normalize the score
             return ScoreUtil.MapToZeroOne(summedIntensities, false, globalMaxIntensity / 3);
@@ -105,9 +101,9 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double PeakShapeScore(StandardImsPeak imsPeak, DataReader reader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, double globalMaxIntensities, int numberOfScans)
         {
-            int scanRep = imsPeak.DriftTimeCenterInScanNumber;
-            double toleranceInMz = massToleranceInPpm / 1e6 * imsPeak.MzCenterInDalton;
-            int scanWidth = (int)Math.Ceiling(driftTimeToleranceInMs / voltageGroup.AverageTofWidthInSeconds);
+            int scanRep = imsPeak.HighestPeakApex.DriftTimeCenterInScanNumber;
+            double toleranceInMz = massToleranceInPpm / 1e6 * imsPeak.HighestPeakApex.MzCenterInDalton;
+            int scanWidth = (int)Math.Ceiling(driftTimeToleranceInMs / 1000 / voltageGroup.AverageTofWidthInSeconds);
             int scanWindowSize = scanWidth * 2 + 1;
 
             int scanNumberMin = scanRep - scanWidth;
@@ -119,11 +115,11 @@ namespace ImsInformed.Scoring
                                   
             int[][] intensityWindow = reader.GetFramesAndScanIntensitiesForAGivenMz(
                 voltageGroup.FirstFrameNumber,
-                voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount,
+                voltageGroup.LastFrameNumber,
                 DataReader.FrameType.MS1, 
                 scanNumberMin,
                 scanNumberMax,
-                imsPeak.MzCenterInDalton,
+                imsPeak.HighestPeakApex.MzCenterInDalton,
                 toleranceInMz);
 
             // Average the intensity window across frames
@@ -221,7 +217,7 @@ namespace ImsInformed.Scoring
 
             // Get the scanWindow size
             int scanWindowSize = (int)Math.Ceiling(driftTimeToleranceInMs / voltageGroup.AverageTofWidthInSeconds) * 2 + 1;
-            int scanRep = imsPeak.DriftTimeCenterInScanNumber;
+            int scanRep = imsPeak.HighestPeakApex.DriftTimeCenterInScanNumber;
             int scanNumberMin = (scanRep - scanWindowSize / 2 > 0) ? scanRep - scanWindowSize / 2 : 0;
             int scanNumberMax = (scanRep + scanWindowSize / 2 < numberOfScans) ? scanRep + scanWindowSize / 2 : numberOfScans - 1;
             if ((scanNumberMin < 0) || (scanNumberMax > numberOfScans - 1))
@@ -243,7 +239,7 @@ namespace ImsInformed.Scoring
                 var peakList = reader.GetXic(Mz, 
                     massToleranceInPpm,
                     voltageGroup.FirstFrameNumber,
-                    voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 1,
+                    voltageGroup.LastFrameNumber,
                     scanNumberMin,
                     scanNumberMax,
                     DataReader.FrameType.MS1, 
@@ -260,7 +256,7 @@ namespace ImsInformed.Scoring
                     }
                 }
 
-                sumIntensities /= voltageGroup.AccumulationCount;
+                sumIntensities /= voltageGroup.FrameAccumulationCount;
                 observedIsotopicPeakList.Add(sumIntensities);
             }
 

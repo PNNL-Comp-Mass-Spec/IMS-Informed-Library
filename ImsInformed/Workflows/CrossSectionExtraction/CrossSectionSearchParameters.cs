@@ -20,7 +20,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        public CrossSectionSearchParameters() : this(0.5, 10, 9, 0.25, 0.00, 0.4, 0.4, 3, false, PeakDetectorEnum.WaterShed)
+        public CrossSectionSearchParameters() : this(0.5, 250, 9, 0.25, 0.00, 0.4, 0.4, 3, false, PeakDetectorEnum.WaterShed)
         { 
         }
 

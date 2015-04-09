@@ -28,8 +28,12 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 
     using InformedProteomics.Backend.Data.Composition;
 
+    using MagnitudeConcavityPeakFinder;
+
     using MultiDimensionalPeakFinding;
     using MultiDimensionalPeakFinding.PeakDetection;
+
+    using PNNLOmics.Data.Features;
 
     using UIMFLibrary;
 
@@ -222,48 +226,40 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 
                     double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this.uimfReader);
                 
+                    // Find peaks using multidimensional peak finder.
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
-
-                    PeakFinding.FindPeakUsingMasic(intensityPoints, this.NumberOfScans);
                     List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
-                
-                    // Calculate feature statistics and discard features with 
-                    foreach (FeatureBlob feature in featureBlobs)
-                    {
-                        feature.CalculateStatistics();
-                    }
+                    List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
                 
                     // Score features
-                    IDictionary<FeatureBlob, FeatureScoreHolder> scoresTable = new Dictionary<FeatureBlob, FeatureScoreHolder>();
-                    Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber - 1, voltageGroup.FirstFrameNumber + voltageGroup.AccumulationCount - 2));
+                    IDictionary<StandardImsPeak, FeatureScoreHolder> scoresTable = new Dictionary<StandardImsPeak, FeatureScoreHolder>();
+                    Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
 
-                    foreach (FeatureBlob featureBlob in featureBlobs)
+                    foreach (StandardImsPeak peak in standardPeaks)
                     {   
-                        StandardImsPeak feature = new StandardImsPeak(featureBlob);
-
                         FeatureScoreHolder currentScoreHolder;
-                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(featureBlob, voltageGroup, globalMaxIntensity);
+                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, voltageGroup, globalMaxIntensity);
                         
-                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(feature, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
+                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
                 
-                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(feature, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, target, theoreticalIsotopicProfilePeakList, voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
+                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, target, theoreticalIsotopicProfilePeakList, voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
                 
-                        scoresTable.Add(featureBlob, currentScoreHolder);
+                        scoresTable.Add(peak, currentScoreHolder);
                     }
                 
                     // filter out features with Ims scans at 1% left or right.
-                    Predicate<FeatureBlob> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
-                    Predicate<FeatureBlob> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
-                    Predicate<FeatureBlob> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
+                    Predicate<StandardImsPeak> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
+                    Predicate<StandardImsPeak> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
+                    Predicate<StandardImsPeak> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
                 
                     // Print out candidate features that pass the intensity threshold.
-                    foreach (FeatureBlob featureBlob in featureBlobs)
+                    foreach (StandardImsPeak peak in standardPeaks)
                     {  
-                        bool badScanRange = scanPredicate(featureBlob);
-                        bool badPeakShape = shapeThreshold(featureBlob);
-                        bool lowIsotopicAffinity = isotopeThreshold(featureBlob);
-                        FeatureScoreHolder currentScoreHolder = scoresTable[featureBlob];
-                        Trace.WriteLine(string.Format("        Candidate feature found at scan number {0}", featureBlob.Statistics.ScanImsRep));
+                        bool badScanRange = scanPredicate(peak);
+                        bool badPeakShape = shapeThreshold(peak);
+                        bool lowIsotopicAffinity = isotopeThreshold(peak);
+                        FeatureScoreHolder currentScoreHolder = scoresTable[peak];
+                        Trace.WriteLine(string.Format("        Candidate feature found at scan number {0}", peak.HighestPeakApex.DriftTimeCenterInScanNumber));
                         Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
                         Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
                         Trace.WriteLine(string.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));

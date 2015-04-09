@@ -37,7 +37,7 @@ namespace ImsInformed.Util
         /// <param name="intensityPoints">
         /// The intensity points.
         /// </param>
-        public static void FindPeakUsingMasic(List<IntensityPoint> intensityPoints, int totalScans)
+        public static IList<clsPeak> FindPeakUsingMasic(List<IntensityPoint> intensityPoints, int totalScans)
         {
             PeakDetector.udtSICPeakFinderOptionsType option = TuneMasicOption();
 
@@ -51,27 +51,7 @@ namespace ImsInformed.Util
 
             // Find the peaks
             List<clsPeak> detectedPeaks = detector.FindPeaks(option, cartesianData, 1, out smoothedYData);
-
-            IList<FeatureBlob> features = new List<FeatureBlob>();
-
-            // Display the peaks
-            int peakNumber = 0;
-            foreach (var peak in detectedPeaks)
-            {
-                FeatureBlob feature = new FeatureBlob(peakNumber);
-
-                peakNumber++;
-                Console.WriteLine("Peak " + peakNumber);
-                Console.WriteLine("  Location =  " + peak.LocationIndex);
-                Console.WriteLine("  Width =     " + peak.PeakWidth + " points");
-                Console.WriteLine("  Area =      " + peak.Area.ToString("0.00"));
-                Console.WriteLine("  LeftEdge =  " + peak.LeftEdge);
-                Console.WriteLine("  RightEdge = " + peak.RightEdge);
-                features.Add(feature);
-            }
-
-            // Convert the peakList to feature blob list
-            
+            return detectedPeaks;
         }
 
         /// <summary>

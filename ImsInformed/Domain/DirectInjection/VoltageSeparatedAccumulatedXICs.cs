@@ -72,7 +72,7 @@
             {
                 foreach (var item in this[voltageGroup].IntensityPoints)   
                 {
-                    item.Intensity /= voltageGroup.AccumulationCount;
+                    item.Intensity /= voltageGroup.FrameAccumulationCount;
                 }
             }
         }

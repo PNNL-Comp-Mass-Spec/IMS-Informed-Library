@@ -38,7 +38,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             this.MeanVoltageInVolts = meanVoltageInVolts;
             this.VarianceVoltage = varianceVoltage;
-            this.AccumulationCount = count;
+            this.FrameAccumulationCount = count;
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace ImsInformed.Domain.DirectInjection
             this.VarianceVoltage = 0;
             this.MeanTemperatureNondimensionalized = 0;
             this.VarianceTemperature = 0;
-            this.AccumulationCount = 0;
+            this.FrameAccumulationCount = 0;
             this.MeanPressureNondimensionalized = 0;
             this.AverageTofWidthInSeconds = 0;
             this.VariancePressure = 0;
@@ -68,7 +68,18 @@ namespace ImsInformed.Domain.DirectInjection
         /// <summary>
         /// Gets the first frame number.
         /// </summary>
-        public int FirstFrameNumber {get; private set;}
+        public int FirstFrameNumber { get; private set; }
+
+        /// <summary>
+        /// Gets the first frame number.
+        /// </summary>
+        public int LastFrameNumber
+        {
+            get
+            {
+                return this.FirstFrameNumber + this.FrameAccumulationCount - 1;
+            }
+        }
 
         /// <summary>
         /// Gets the mean voltage in volts.
@@ -83,7 +94,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <summary>
         /// Gets the accumulation count.
         /// </summary>
-        public int AccumulationCount { get; private set; }
+        public int FrameAccumulationCount { get; private set; }
 
         /// <summary>
         /// Gets the mean temperature nondimensionalized.
@@ -124,7 +135,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <summary>
         /// Gets or sets the best feature.
         /// </summary>
-        public FeatureBlob BestFeature { get; set; }
+        public StandardImsPeak BestFeature { get; set; }
 
         /// <summary>
         /// Gets or sets the fit point.
@@ -148,33 +159,33 @@ namespace ImsInformed.Domain.DirectInjection
         /// </param>
         public void AddVoltage(double newVoltage, double newPressure, double newTemperature, double newTOFWidth)
         {
-            this.AccumulationCount++;
+            this.FrameAccumulationCount++;
 
             // Calculate the mean from prev mean
-            double newMeanVoltage = (this.MeanVoltageInVolts * (this.AccumulationCount - 1) + newVoltage)
-                                    / this.AccumulationCount;
+            double newMeanVoltage = (this.MeanVoltageInVolts * (this.FrameAccumulationCount - 1) + newVoltage)
+                                    / this.FrameAccumulationCount;
 
             // Calculate the std.dev from previous mean and std deviation
-            this.VarianceVoltage = ((this.AccumulationCount - 1) * this.VarianceVoltage + (newVoltage - newMeanVoltage) * (newVoltage - this.MeanVoltageInVolts)) / this.AccumulationCount;
+            this.VarianceVoltage = ((this.FrameAccumulationCount - 1) * this.VarianceVoltage + (newVoltage - newMeanVoltage) * (newVoltage - this.MeanVoltageInVolts)) / this.FrameAccumulationCount;
             this.MeanVoltageInVolts = newMeanVoltage;
 
             // Accumulate temperature
-            double newMeanTemperature = (this.MeanTemperatureNondimensionalized * (this.AccumulationCount - 1)
-                                         + newTemperature) / this.AccumulationCount;
-            this.VarianceTemperature = ((this.AccumulationCount - 1) * this.VarianceTemperature
+            double newMeanTemperature = (this.MeanTemperatureNondimensionalized * (this.FrameAccumulationCount - 1)
+                                         + newTemperature) / this.FrameAccumulationCount;
+            this.VarianceTemperature = ((this.FrameAccumulationCount - 1) * this.VarianceTemperature
                                         + (newTemperature - newMeanTemperature)
                                         * (newTemperature - this.MeanTemperatureNondimensionalized))
-                                       / this.AccumulationCount;
+                                       / this.FrameAccumulationCount;
             this.MeanTemperatureNondimensionalized = newMeanTemperature;
 
             // Accumulate pressure
-            double newMeanPressure = (this.MeanPressureNondimensionalized * (this.AccumulationCount - 1) + newPressure)/this.AccumulationCount;
-            this.VariancePressure = ((this.AccumulationCount - 1) * this.VariancePressure + (newPressure - newMeanPressure) * (newPressure - this.MeanPressureNondimensionalized)) / this.AccumulationCount;
+            double newMeanPressure = (this.MeanPressureNondimensionalized * (this.FrameAccumulationCount - 1) + newPressure)/this.FrameAccumulationCount;
+            this.VariancePressure = ((this.FrameAccumulationCount - 1) * this.VariancePressure + (newPressure - newMeanPressure) * (newPressure - this.MeanPressureNondimensionalized)) / this.FrameAccumulationCount;
             this.MeanPressureNondimensionalized = newMeanPressure;
 
             // Accumulate TOF scans
-            this.AverageTofWidthInSeconds = (this.AverageTofWidthInSeconds * (this.AccumulationCount - 1) + newTOFWidth)
-                                   / this.AccumulationCount;
+            this.AverageTofWidthInSeconds = (this.AverageTofWidthInSeconds * (this.FrameAccumulationCount - 1) + newTOFWidth)
+                                   / this.FrameAccumulationCount;
         }
 
         /// <summary>
@@ -232,7 +243,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// </returns>
         public object Clone()
         {
-            VoltageGroup vg = new VoltageGroup(this.MeanVoltageInVolts, this.VarianceVoltage, this.AccumulationCount);
+            VoltageGroup vg = new VoltageGroup(this.MeanVoltageInVolts, this.VarianceVoltage, this.FrameAccumulationCount);
             return vg;
         }
 
@@ -253,7 +264,7 @@ namespace ImsInformed.Domain.DirectInjection
             const double MinDifferentialVoltage = 5;
             
             // if first voltage, declare it as similar.
-            if ((this.AccumulationCount == 0) ||
+            if ((this.FrameAccumulationCount == 0) ||
 
                 // if the new voltage is within 3 standard deviation, declare it as a similar point.
                 (Math.Abs(newVoltage - this.MeanVoltageInVolts) < 3 * Math.Sqrt(this.VarianceVoltage)) ||

@@ -43,7 +43,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// The number of frames.
         /// </summary>
-        public readonly double NumberOfFrames;
+        public readonly int NumberOfFrames;
 
         /// <summary>
         /// The number of scans.
@@ -254,21 +254,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine("Target Empirical Formula: " + target.EmpiricalFormula);
                     }
 
-                    Trace.WriteLine("Targeting Mz: " + target.MassWithAdduct);
+                    Trace.WriteLine("Targeting centerMz: " + target.MassWithAdduct);
                     Trace.WriteLine(string.Empty);
                 } 
                 else
                 {
-                    if (hasCompositionInfo)
-                    {
-                        Trace.Write(string.Format("Target: Mz = {0}", target.MassWithAdduct));
-                    }
-                    else
-                    {
-                        Trace.Write(string.Format("Target: {0}", target.EmpiricalFormula));
-                    }
-
-                    Trace.WriteLine(target.Adduct + ":");
+                    Trace.WriteLine("Target: " + targetDescription);
                 }
 
                 // Generate Theoretical Isotopic Profile
@@ -287,7 +278,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 double targetMz = Math.Abs(target.MassWithAdduct / target.ChargeState);
 
                 // Voltage grouping
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, targetMz, this.Parameters.MassToleranceInPpm);
+                VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MassToleranceInPpm);
 
                 // For each voltage, find 2D XIC features 
                 if (detailedVerbose)
@@ -298,7 +289,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
                 foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                 {    
-                    double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this.uimfReader);
+                    double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, this.uimfReader);
                 
                     List<StandardImsPeak> standardPeaks;
                     if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.WaterShed)
@@ -365,7 +356,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         FeatureScoreHolder currentScoreHolder = scoresTable[peak];
                         if (detailedVerbose)
                         {
-                            Trace.WriteLine(string.Format("        Candidate feature found at [Mz = {0:F4}, drift time = {1:F2} ms (scan# = {2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs, peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+                            Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms (scan# = {2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs, peak.HighestPeakApex.DriftTimeCenterInScanNumber));
                             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
                             if (!lowIntenstity)
                             {
@@ -522,7 +513,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     voltageGroupDriftTimeInMs = voltageGroup.FitPoint.X * 1000;
                 
                     // Normalize the drift time to be displayed.
-                    voltageGroupDriftTimeInMs = MoleculeUtil.NormalizeDriftTime(voltageGroupDriftTimeInMs, voltageGroup);
+                    voltageGroupDriftTimeInMs = IMSUtil.NormalizeDriftTime(voltageGroupDriftTimeInMs, voltageGroup);
                     if (detailedVerbose)
                     {
                         Trace.WriteLine(
@@ -639,9 +630,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {
                     voltageGroupDriftTimeInMs = -1;
                 }
-                
+
                 // Check if the last voltage remaining is the last voltage group in the experiment.
-                if (accumulatedXiCs.Keys.Last().LastFrameNumber != (int)this.NumberOfFrames)
+                if (!IMSUtil.IsLastVoltageGroup(accumulatedXiCs.Keys.Last(), this.NumberOfFrames))
                 {
                     voltageGroupDriftTimeInMs = -2;
                 }
@@ -685,7 +676,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {
                     if (!onlyOneIsomer)
                     {
-                        Trace.WriteLine(string.Format("    Isomer #[{0}]" , isomerIndex));
+                        Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
                     }
                 
                     Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms", isomer.LastVoltageGroupDriftTimeInMs));

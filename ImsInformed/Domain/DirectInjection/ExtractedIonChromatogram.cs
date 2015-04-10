@@ -1,19 +1,146 @@
-﻿namespace ImsInformed.Domain.DirectInjection
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ExtractedIonChromatogram.cs" company="PNNL">
+//   Written for the Department of Energy (PNNL, Richland, WA)
+//   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
+// </copyright>
+// <summary>
+//   This is the XIC summed over the centerMz but not mobilityScan axis.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace ImsInformed.Domain.DirectInjection
 {
     using System;
     using System.Collections.Generic;
+    using System.Windows.Controls;
+
+    using ImsInformed.Util;
 
     using UIMFLibrary;
 
     /// <summary>
-    /// This is the XIC summed over the mz but not mobilityScan axis.
+    /// This is the XIC summed over the centerMz but not mobilityScan axis.
     /// </summary>
     public class ExtractedIonChromatogram 
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// Get the extracted ion chromatogram from the whole drift time scan range.
+        /// </summary>
+        /// <param name="uimfReader">
+        /// The UIMF reader.
+        /// </param>
+        /// <param name="frameNumber">
+        /// The frame number.
+        /// </param>
+        /// <param name="centerMz">
+        /// The MZ.
+        /// </param>
+        /// <param name="massToleranceInPpm">
+        /// The mass Tolerance In Ppm.
+        /// </param>
+        public ExtractedIonChromatogram(DataReader uimfReader, int frameNumber, double centerMz, double massToleranceInPpm)
+        {
+            FrameParams param = uimfReader.GetFrameParams(frameNumber);
+
+            this.IntensityPoints = uimfReader.GetXic(
+                    centerMz,
+                    massToleranceInPpm,
+                    frameNumber,
+                    frameNumber,
+                    1,
+                    param.Scans,
+                    DataReader.FrameType.MS1,
+                    DataReader.ToleranceType.PPM);
+
+            this.CenterMz = centerMz;
+            this.MassToleranceInPpm = massToleranceInPpm;
+            this.NumberOfMobilityScans = param.Scans;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class.
+        /// Get the extracted ion chromatogram from the a particular drift time scan range.
+        /// </summary>
+        /// <param name="uimfReader">
+        /// The uimf reader.
+        /// </param>
+        /// <param name="frameNumber">
+        /// The frame number.
+        /// </param>
+        /// <param name="centerMz">
+        /// The center mz.
+        /// </param>
+        /// <param name="massToleranceInPpm">
+        /// The mass tolerance in ppm.
+        /// </param>
+        /// <param name="centerDriftTimeInMs">
+        /// The center drift time.
+        /// </param>
+        /// <param name="driftTimeErrorInMs">
+        /// The drift time error in ms.
+        /// </param>
+        public ExtractedIonChromatogram(DataReader uimfReader, int frameNumber, double centerMz, double massToleranceInPpm, double centerDriftTimeInMs, double driftTimeErrorInMs)
+        {
+            FrameParams param = uimfReader.GetFrameParams(frameNumber);
+
+            double driftTimeMin = centerDriftTimeInMs - driftTimeErrorInMs;
+
+            double driftTimeMax = centerDriftTimeInMs + driftTimeErrorInMs;
+
+            double scanWidthInSeconds = param.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000000;
+
+            int scanNumberMin = UnitConversion.DriftTimeInMsToNearestImsScanNumber(driftTimeMin, scanWidthInSeconds, param.Scans);
+            int scanNumberMax = UnitConversion.DriftTimeInMsToNearestImsScanNumber(driftTimeMax, scanWidthInSeconds, param.Scans);
+
+            this.IntensityPoints = uimfReader.GetXic(
+                    centerMz,
+                    massToleranceInPpm,
+                    frameNumber,
+                    frameNumber,
+                    scanNumberMin,
+                    scanNumberMax,
+                    DataReader.FrameType.MS1,
+                    DataReader.ToleranceType.PPM);
+
+            this.CenterMz = centerMz;
+            this.MassToleranceInPpm = massToleranceInPpm;
+            this.NumberOfMobilityScans = param.Scans;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// XIC is a list of intensity points sorted by Mobility Scan number from low to high.
+        /// </summary>
+        /// <param name="a">
+        /// The a.
+        /// </param>
+        /// <param name="b">
+        /// The b.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// </exception>
+        private ExtractedIonChromatogram(ExtractedIonChromatogram a, ExtractedIonChromatogram b)
+        {
+            if (a.NumberOfMobilityScans != b.NumberOfMobilityScans || !a.CenterMz.Equals(b.CenterMz))
+            {
+                throw new InvalidOperationException("Cannot sum XICs with different mobilities or MZ.");
+            }
+
+            this.CenterMz = a.CenterMz;
+            this.NumberOfMobilityScans = b.NumberOfMobilityScans;
+            this.IntensityPoints = addSortedIntensityPointList(a.IntensityPoints, b.IntensityPoints, this.NumberOfMobilityScans);
+        }
+
+        /// <summary>
         /// Gets the MZ.
         /// </summary>
-        public double Mz {get; private set; }
+        public double CenterMz {get; private set; }
+
+        /// <summary>
+        /// Gets the mass tolerance in ppm.
+        /// </summary>
+        public double MassToleranceInPpm { get; private set; }
 
         /// <summary>
         /// Gets the intensity points.
@@ -24,36 +151,6 @@
         /// Gets the number of mobility scans.
         /// </summary>
         public int NumberOfMobilityScans { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
-        /// XIC is a list of intensity points sorted by Mobility Scan number from low to high.
-        /// </summary>
-        /// <param name="A">
-        /// The a.
-        /// </param>
-        /// <param name="B">
-        /// The b.
-        /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// </exception>
-        private ExtractedIonChromatogram(ExtractedIonChromatogram A, ExtractedIonChromatogram B)
-        {
-            if (A.NumberOfMobilityScans != B.NumberOfMobilityScans || !A.Mz.Equals(B.Mz))
-                throw new InvalidOperationException("Cannot sum XICs with different mobilities or MZ.");
-            this.Mz = A.Mz;
-            this.NumberOfMobilityScans = B.NumberOfMobilityScans;
-            this.IntensityPoints = addSortedIntensityPointList(A.IntensityPoints, B.IntensityPoints, this.NumberOfMobilityScans);
-        }
-
-        // XIC is a dictionary represented TIC sorted by Mobility Scan number from low to high.
-        public ExtractedIonChromatogram(List<IntensityPoint> XIC, DataReader uimfReader, int frameNumber, double Mz)
-        {
-            this.Mz = Mz;
-            FrameParams param = uimfReader.GetFrameParams(frameNumber);
-            this.NumberOfMobilityScans = param.Scans;
-            this.IntensityPoints = XIC;
-        }
 
         /// <summary>
         /// The +.

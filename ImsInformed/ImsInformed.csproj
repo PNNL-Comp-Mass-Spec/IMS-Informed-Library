@@ -165,6 +165,7 @@
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkflowResult.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkfow.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\TargetIsomerReport.cs" />
+    <Compile Include="Workflows\DriftTimeLibraryMatch\DriftTimeFeatureDistance.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\ChargeStateCorrelationResult.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\LcImsTargetResult.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\LcImsPeptideSearchParameters.cs" />

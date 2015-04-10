@@ -10,6 +10,8 @@
 
 namespace ImsInformed.Util
 {
+    using System;
+
     /// <summary>
     /// The unit conversion.
     /// </summary>
@@ -68,6 +70,15 @@ namespace ImsInformed.Util
             return (PascalPerTorr * pressureInTorr) / AtmosphericPressureInPascal;
         }
 
+        /// <summary>
+        /// The nondimensionalized 2 torr.
+        /// </summary>
+        /// <param name="pressureNondimensionalized">
+        /// The pressure nondimensionalized.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double Nondimensionalized2Torr(double pressureNondimensionalized)
         {
             return pressureNondimensionalized * AtmosphericPressureInPascal / PascalPerTorr;
@@ -101,14 +112,67 @@ namespace ImsInformed.Util
             return DegreeCelsius2Kelvin(temperatureInCelsius) / AbsoluteZeroInKelvin;
         }
 
+        /// <summary>
+        /// The nondimensionalized 2 kelvin.
+        /// </summary>
+        /// <param name="nondimensionalizedTemperature">
+        /// The nondimensionalized temperature.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double Nondimensionalized2Kelvin(double nondimensionalizedTemperature)
         {
             return nondimensionalizedTemperature * AbsoluteZeroInKelvin;
         }
 
+        /// <summary>
+        /// The ims scan number to drift time in ms.
+        /// </summary>
+        /// <param name="scanNumber">
+        /// The scan number.
+        /// </param>
+        /// <param name="scanWidthInSeconds">
+        /// The scan width in seconds.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
         public static double ImsScanNumberToDriftTimeInMs(double scanNumber, double scanWidthInSeconds)
         {
             return scanWidthInSeconds * scanNumber * 1000;
+        }
+
+        /// <summary>
+        /// The drift time in ms to ims scan number.
+        /// </summary>
+        /// <param name="driftTimeInMs">
+        /// The drift time in ms.
+        /// </param>
+        /// <param name="scanWidthInSeconds">
+        /// The scan width in seconds.
+        /// </param>
+        /// <param name="totalScans">
+        /// The total Scans.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static int DriftTimeInMsToNearestImsScanNumber(double driftTimeInMs, double scanWidthInSeconds, int totalScans)
+        {
+            int scan = (int)Math.Round(driftTimeInMs / scanWidthInSeconds / 1000);
+            if (scan < 1)
+            {
+                return 1;
+            }
+            else if (scan > totalScans)
+            {
+                return totalScans;
+            }
+            else
+            {
+                return scan;     
+            }
         }
     }
 }

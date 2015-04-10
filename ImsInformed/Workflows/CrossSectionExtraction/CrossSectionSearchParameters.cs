@@ -112,7 +112,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
         /// <summary>
         /// If ExpectIsomer is set to true. The algorithm will stop assuming there is one and only one
-        /// target match in the expected Mz range. Instead if there are isomers the workflow will report 
+        /// target match in the expected centerMz range. Instead if there are isomers the workflow will report 
         /// all isomers with reasonable socres.
         /// </summary>
         public bool ExpectIsomer{ get; private set; }

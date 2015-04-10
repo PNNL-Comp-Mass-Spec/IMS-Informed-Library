@@ -42,14 +42,11 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Constructor for non peptides with composition
         /// </summary>
-        /// <param name="id">
-        /// The id.
+        /// <param name="empiricalFormula">
+        /// The empirical formula.
         /// </param>
         /// <param name="ionization">
         /// The ionization.
-        /// </param>
-        /// <param name="empiricalFormula">
-        /// The empirical formula.
         /// </param>
         public MolecularTarget(string empiricalFormula, IonizationAdduct ionization)
         {
@@ -112,11 +109,11 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the target descriptor.
         /// </summary>
-        public string TargetDescriptor
+        public virtual string TargetDescriptor
         {
             get
             {
-                return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : this.EmpiricalFormula;;
+                return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
             }
         }
 

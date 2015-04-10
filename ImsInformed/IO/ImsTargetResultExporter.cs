@@ -42,7 +42,7 @@ namespace ImsInformed.IO
             foreach (LcImsTargetResult result in target.ResultList)
             {
                 int chargeState = result.ChargeState;
-                IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.DriftTime - result.DriftTime));
+                IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.NormalizedDriftTimeInMs - result.DriftTime));
 
                 double targetDriftTime = 0;
                 double driftTimeError = 0;
@@ -50,7 +50,7 @@ namespace ImsInformed.IO
                 if (possibleDriftTimeTargets.Any())
                 {
                     DriftTimeTarget driftTimeTarget = possibleDriftTimeTargets.First();
-                    targetDriftTime = driftTimeTarget.DriftTime;
+                    targetDriftTime = driftTimeTarget.NormalizedDriftTimeInMs;
                     driftTimeError = result.DriftTime - targetDriftTime;
                 }
 
@@ -101,7 +101,7 @@ namespace ImsInformed.IO
             foreach (var result in correlationResult.CorrelatedResults)
             {
                 int chargeState = result.ChargeState;
-                IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.DriftTime - result.DriftTime));
+                IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = target.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.NormalizedDriftTimeInMs - result.DriftTime));
 
                 double targetDriftTime = 0;
                 double driftTimeError = 0;
@@ -109,7 +109,7 @@ namespace ImsInformed.IO
                 if(possibleDriftTimeTargets.Any())
                 {
                     DriftTimeTarget driftTimeTarget = possibleDriftTimeTargets.First();
-                    targetDriftTime = driftTimeTarget.DriftTime;
+                    targetDriftTime = driftTimeTarget.NormalizedDriftTimeInMs;
                     driftTimeError = result.DriftTime - targetDriftTime;
                 }
 

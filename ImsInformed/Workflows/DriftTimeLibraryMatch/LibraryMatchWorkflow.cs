@@ -12,6 +12,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -26,14 +27,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
     using ImsInformed.Targets;
     using ImsInformed.Util;
 
-    using InformedProteomics.Backend.Data.Composition;
-
-    using MagnitudeConcavityPeakFinder;
-
     using MultiDimensionalPeakFinding;
     using MultiDimensionalPeakFinding.PeakDetection;
-
-    using PNNLOmics.Data.Features;
 
     using UIMFLibrary;
 
@@ -42,7 +37,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <summary>
         /// The number of frames.
         /// </summary>
-        public readonly double NumberOfFrames;
+        public readonly int NumberOfFrames;
 
         /// <summary>
         /// The number of scans.
@@ -167,7 +162,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <summary>
         /// The run library match workflow.
         /// </summary>
-        /// <param name="targetList">
+        /// <param name="targetList">dD
         /// The target list.
         /// </param>
         /// <returns>
@@ -178,11 +173,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             IDictionary<DriftTimeTarget, LibraryMatchResult> targetResultMap = new Dictionary<DriftTimeTarget, LibraryMatchResult>();
             foreach (DriftTimeTarget target in targetList)
             {
-                Console.Write("    Target: " + target.EmpiricalFormula);
-                Console.WriteLine(" (m/z = {0})", target.MonoisotopicMass);
-                Console.WriteLine(" (Drift time = {0})", target.DriftTime);
-
-                LibraryMatchResult result = this.RunCrossSectionWorkFlow(target);
+                LibraryMatchResult result = this.RunLibrayMatchWorkflow(target);
                 targetResultMap.Add(target, result);
             }
 
@@ -190,7 +181,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         }
 
         /// <summary>
-        /// The run cross section work flow.
+        /// The run libray match workflow.
         /// </summary>
         /// <param name="target">
         /// The target.
@@ -198,39 +189,35 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <returns>
         /// The <see cref="LibraryMatchResult"/>.
         /// </returns>
-        public LibraryMatchResult RunCrossSectionWorkFlow(DriftTimeTarget target)
+        private LibraryMatchResult RunLibrayMatchWorkflow(DriftTimeTarget target)
         {
-            string targetDescription = target.TargetDescriptor;
+            Trace.WriteLine("Dataset: " + this.DatasetName);
+            Trace.WriteLine("target: " + target.TargetDescriptor);
+            Trace.WriteLine(string.Empty);
 
-            try
+            // Generate Theoretical Isotopic Profile
+            List<Peak> theoreticalIsotopicProfilePeakList = null;
+            string empiricalFormula = target.CompositionWithAdduct.ToPlainString();
+            ITheorFeatureGenerator featureGenerator = new JoshTheorFeatureGenerator();
+            IsotopicProfile theoreticalIsotopicProfile = featureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+            theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
+
+            // Voltage grouping
+            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.MassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs);
+
+            foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
             {
-                Trace.WriteLine("Dataset: " + this.DatasetName);
-                Trace.WriteLine("Ionization method: " + target.Adduct);
-                Trace.WriteLine("Target Mz: " + target.MassWithAdduct);
-                Trace.WriteLine("Target Drift time: " + target.DriftTime);
-                Trace.WriteLine(string.Empty);
-
-                // Generate Theoretical Isotopic Profile
-                List<Peak> theoreticalIsotopicProfilePeakList = null;
-                string empiricalFormula = target.CompositionWithAdduct.ToPlainString();
-                ITheorFeatureGenerator featureGenerator = new JoshTheorFeatureGenerator();
-                IsotopicProfile theoreticalIsotopicProfile = featureGenerator.GenerateTheorProfile(empiricalFormula, 1);
-                theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
-                
-                // Voltage grouping
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(this.uimfReader, target.MassWithAdduct, this.Parameters.FeatureFilterLevel);
-
-                foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
-                {    
-                    // Verify the temperature, pressure and drift tube voltage of the voltage group
-
-                    double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, this.uimfReader);
-                
+                // TODO Verify the temperature, pressure and drift tube voltage of the voltage group
+                // Because we don't record TVP info in the AMT library. we can't verify it yet, so stick with last voltage group.
+                if (IMSUtil.IsLastVoltageGroup(voltageGroup, this.NumberOfFrames))
+                {
+                    double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, this.uimfReader);
+            
                     // Find peaks using multidimensional peak finder.
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                     List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
                     List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
-                
+            
                     // Score features
                     IDictionary<StandardImsPeak, FeatureScoreHolder> scoresTable = new Dictionary<StandardImsPeak, FeatureScoreHolder>();
                     Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
@@ -241,29 +228,49 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
                         
                         currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
-                
-                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList, voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
-                
+
+                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList,voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
+            
                         scoresTable.Add(peak, currentScoreHolder);
                     }
-                
+            
                     // filter out features with Ims scans at 1% left or right.
                     Predicate<StandardImsPeak> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
                     Predicate<StandardImsPeak> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
                     Predicate<StandardImsPeak> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
-                
+            
                     // Print out candidate features that pass the intensity threshold.
                     foreach (StandardImsPeak peak in standardPeaks)
                     {  
                         bool badScanRange = scanPredicate(peak);
                         bool badPeakShape = shapeThreshold(peak);
                         bool lowIsotopicAffinity = isotopeThreshold(peak);
+
+                        DriftTimeFeatureDistance distance = new DriftTimeFeatureDistance(target, peak, voltageGroup);
+
                         FeatureScoreHolder currentScoreHolder = scoresTable[peak];
-                        Trace.WriteLine(string.Format("        Candidate feature found at scan number {0}", peak.HighestPeakApex.DriftTimeCenterInScanNumber));
-                        Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
-                        Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
-                        Trace.WriteLine(string.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
-                
+                        Trace.WriteLine(string.Format("        Temperature/Pressure/Voltage Adjusted Drift time: {0:F4} ms", IMSUtil.DeNormalizeDriftTime(target.NormalizedDriftTimeInMs, voltageGroup)));
+                        Trace.WriteLine(string.Format("        Candidate feature found. at drift time {0:F2} ms (scan number {1})",
+                            peak.HighestPeakApex.DriftTimeCenterInMs,
+                            peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+                        Trace.WriteLine(
+                            string.Format(
+                                "            M/Z: {0:F2} Dalton", peak.HighestPeakApex.MzCenterInDalton));
+                        Trace.WriteLine(
+                            string.Format(
+                                "            Drift time: {0:F2} ms (scan number {1})",
+                                peak.HighestPeakApex.DriftTimeCenterInMs,
+                                peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+                        Trace.WriteLine(
+                            string.Format("            Mz difference: {0:F2} ppm", distance.MassDifferenceInPpm));
+                        Trace.WriteLine(
+                            string.Format("            Drift time difference: {0:F4} ms", distance.DriftTimeDifferenceInMs));
+
+                        Trace.WriteLine(string.Format("            Intensity Score: {0:F4}", currentScoreHolder.IntensityScore));
+                        Trace.WriteLine(string.Format("            Peak Shape Score: {0:F4}", currentScoreHolder.PeakShapeScore));
+                        Trace.WriteLine(string.Format("            Isotopic Score:  {0:F4}", currentScoreHolder.IsotopicScore));
+                        Trace.WriteLine(string.Format("            AveragedPeakIntensities:  {0:F4}", peak.SummedIntensities));
+            
                         string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
                         rejectionReason += badPeakShape ? "[Bad Peak Shape] " : string.Empty;
                         rejectionReason += lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
@@ -274,36 +281,39 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         }
                         else
                         {
-                            Trace.WriteLine("        [PASS]");
+                            Trace.WriteLine("        [Match]");
                         }
-                
+            
                         Trace.WriteLine(string.Empty);
                     }
-                }
 
-                return new LibraryMatchResult();
+                    standardPeaks.RemoveAll(scanPredicate);
+            
+                    standardPeaks.RemoveAll(shapeThreshold);
+
+                    standardPeaks.RemoveAll(isotopeThreshold);
+
+                    if (standardPeaks.Count == 0)
+                    {
+                        return new LibraryMatchResult(null, AnalysisStatus.Negative, null);
+                    }
+
+                    StandardImsPeak closestPeak = standardPeaks.First();
+                    DriftTimeFeatureDistance shortestDistance = new DriftTimeFeatureDistance(target, standardPeaks.First(), voltageGroup);
+                    foreach (var peak in standardPeaks)
+                    {
+                        DriftTimeFeatureDistance distance = new DriftTimeFeatureDistance(target, peak, voltageGroup);
+                        if (distance.CompareTo(shortestDistance) < 0)
+                        {
+                            closestPeak = peak;
+                        }
+                    }
+
+                    return new LibraryMatchResult(closestPeak, AnalysisStatus.Positive, shortestDistance);
+                }
             }
-            catch (Exception e)
-            {
-                // Print result
-                Trace.Listeners.Clear();
-                ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
-                consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
-                string result = this.OutputPath + this.ResultFileName;
-                
-                TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.resultFileWriter)
-                {
-                    Name = "this.DatasetName" + "_Result", 
-                    TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
-                };
-                
-                Trace.Listeners.Add(consoleTraceListener);
-                Trace.Listeners.Add(resultFileTraceListener);
-                Trace.AutoFlush = true;
-                Trace.WriteLine(e.Message);
-                Trace.WriteLine(e.StackTrace);
-                return new LibraryMatchResult();
-            }
+
+            throw new Exception("No voltage groups in the Dataset match temerature, pressure, or drift tube voltage setting from the library. Matching failed.");
         }
 
         /// <summary>

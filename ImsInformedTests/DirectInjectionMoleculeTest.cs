@@ -18,7 +18,6 @@ namespace ImsInformedTests
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
     using DeconTools.Backend.Utilities;
-    using DeconTools.Backend.Workflows;
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
@@ -29,6 +28,7 @@ namespace ImsInformedTests
     using ImsInformed.Targets;
     using ImsInformed.Util;
     using ImsInformed.Workflows.CrossSectionExtraction;
+    using ImsInformed.Workflows.DriftTimeLibraryMatch;
     using ImsInformed.Workflows.VoltageAccumulation;
 
     using InformedProteomics.Backend.Data.Composition;
@@ -40,11 +40,8 @@ namespace ImsInformedTests
 
     using NUnit.Framework;
 
-    using PNNLOmics.Data;
-
     using UIMFLibrary;
 
-    using Ion = InformedProteomics.Backend.Data.Biology.Ion;
     using Peak = DeconTools.Backend.Core.Peak;
     using PeptideTarget = ImsInformed.Targets.PeptideTarget;
 
@@ -81,8 +78,13 @@ namespace ImsInformedTests
         /// <summary>
         /// The bps.
         /// </summary>
-        public const string Bps = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BPS_neg2_28Aug14_Columbia_DI.uimf";
+        public const string BPSNegative = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BPS_neg2_28Aug14_Columbia_DI.uimf";
 
+        /// <summary>
+        /// The bps postive.
+        /// </summary>
+        public const string BPSPostive = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BPS_pos2_13Sep14_Columbia_DI.uimf";
+            
         /// <summary>
         /// The cae.
         /// </summary>
@@ -204,10 +206,15 @@ namespace ImsInformedTests
             // MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
             // string fileLocation = F1E;
 
-            // BPS Na
+            // BPS Negative
+            // string formula = "C12H10O4S";
+            // MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.prot);
+            // string fileLocation = BPSNegative;
+
+            // BPS Positive
             string formula = "C12H10O4S";
-            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonMinus);
-            string fileLocation = Bps;
+            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
+            string fileLocation = BPSPostive;
 
             Console.WriteLine("Dataset: {0}", fileLocation);
 
@@ -226,7 +233,7 @@ namespace ImsInformedTests
         {
             // Good BPS data
             // double mz = 249.02160599;
-            // string uimfFile = DirectInjectionMoleculeTest.Bps;
+            // string uimfFile = DirectInjectionMoleculeTest.BPSNegative;
 
             // Acetaminophen
             // double mz = 150.0555008;
@@ -459,7 +466,7 @@ namespace ImsInformedTests
             formulas.Add("C12H6O4S ");
             Console.WriteLine("[Intensity], [Distance1], [Distance2], [Angle], [Pearson], [Bucha]");
 
-            string fileLocation = Bps;
+            string fileLocation = BPSNegative;
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
             CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
 
@@ -483,7 +490,7 @@ namespace ImsInformedTests
                 
                 // Generate VoltageSeparatedAccumulatedXICs
                 var uimfReader = new DataReader(fileLocation);
-                VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
+                VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
 
                 var voltageGroup = accumulatedXiCs.Keys.First();
 
@@ -497,7 +504,7 @@ namespace ImsInformedTests
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;
                 mostLikelyPeakScores.PeakShapeScore = 0;
-                double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
+                double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, uimfReader);
 
                 // Check each XIC Peak found
                 foreach (var peak in standardPeaks)
@@ -612,11 +619,31 @@ namespace ImsInformedTests
             workflow.Dispose();
         }
 
+         /// <summary>
+        /// The test single molecule MZ only.
+        /// </summary>
+        [Test][STAThread]
+        public void TestMixedSampleLibraryMatching()
+        {
+            // TODO Import AMT library instead of manually add them
+            IList<DriftTimeTarget> imsTargets = new List<DriftTimeTarget>();
+            DriftTimeTarget t1 = new DriftTimeTarget(23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
+            DriftTimeTarget t2 = new DriftTimeTarget(31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
+            
+            imsTargets.Add(t2);
+            imsTargets.Add(t1);
+
+            LibraryMatchWorkflow workflow = new LibraryMatchWorkflow(BPSPostive, "output", "result.txt", new LibraryMatchParameters());
+            IDictionary<DriftTimeTarget, LibraryMatchResult> results = workflow.RunLibraryMatchWorkflow(imsTargets);
+            Assert.AreEqual(results[t1].AnalysisStatus, AnalysisStatus.Positive);
+            Assert.AreEqual(results[t2].AnalysisStatus, AnalysisStatus.Positive);
+        }
+
         /// <summary>
         /// The test single molecule MZ only.
         /// </summary>
         [Test][STAThread]
-        public void TestMixedSamples()
+        public void TestMixedSampleCrossSectionExtraction()
         {
             double targetK = 120.5;
             string targetL = "DGWHSWPIAHQWPQGPSAVDAAFSWEEK";
@@ -690,7 +717,7 @@ namespace ImsInformedTests
             CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
 
             Console.WriteLine("Ionization method: " + target.Adduct);
-            Console.WriteLine("Targeting Mz: " + target.MassWithAdduct);
+            Console.WriteLine("Targeting centerMz: " + target.MassWithAdduct);
                 
             // Generate Theoretical Isotopic Profile
             List<Peak> theoreticalIsotopicProfilePeakList = null;
@@ -705,7 +732,7 @@ namespace ImsInformedTests
             // Generate VoltageSeparatedAccumulatedXICs
             var uimfReader = new DataReader(fileLocation);
             Console.WriteLine("Input file: {0}", fileLocation);
-            VoltageSeparatedAccumulatedXICs accumulatedXiCs = new VoltageSeparatedAccumulatedXICs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
+            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
 
             Console.WriteLine();
 
@@ -723,7 +750,7 @@ namespace ImsInformedTests
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;
                 mostLikelyPeakScores.PeakShapeScore = 0;
-                double globalMaxIntensity = MoleculeUtil.MaxDigitization(voltageGroup, uimfReader);
+                double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, uimfReader);
 
                 // Check each XIC Peak found
                 foreach (var featurePeak in standardPeaks)

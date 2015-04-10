@@ -591,7 +591,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
             Console.WriteLine("Slow = " + slowTimePerTarget + " ms per target.");
         }
 
-        // Find the target Mz across different frames.
+        // Find the target centerMz across different frames.
         protected IEnumerable<FeatureBlob> FindFeatures(double targetMz)
         {
             // Generate Chromatogram
@@ -607,7 +607,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
             return featureBlobs;
         }
 
-        // Find the target Mz across a range of frames.
+        // Find the target centerMz across a range of frames.
         public IEnumerable<FeatureBlob> FindFeatures(double targetMz, int scanLcMin, int scanLcMax)
         {
             // Generate Chromatogram

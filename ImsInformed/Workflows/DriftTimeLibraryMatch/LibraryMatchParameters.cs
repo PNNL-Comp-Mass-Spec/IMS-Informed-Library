@@ -18,7 +18,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMatchParameters"/> class.
         /// </summary>
-        public LibraryMatchParameters() : this(1, 10, 9, 0.4, 0.4, 0.25)
+        public LibraryMatchParameters() : this(1, 250, 9, 0.4, 0.4, 0.25)
         {
         }
 

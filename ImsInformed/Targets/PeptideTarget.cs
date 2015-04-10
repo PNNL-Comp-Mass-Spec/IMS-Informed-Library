@@ -225,7 +225,7 @@ namespace ImsInformed.Targets
             //    conformerQuery.Append(",");
             //    conformerQuery.Append(driftTimeTarget.ChargeState);
             //    conformerQuery.Append(",");
-            //    conformerQuery.Append(driftTimeTarget.DriftTime);
+            //    conformerQuery.Append(driftTimeTarget.NormalizedDriftTimeInMs);
             //    conformerQuery.Append(");");
             //    allQueries.Append("\n");
             //    allQueries.Append(conformerQuery.ToString());
@@ -238,7 +238,7 @@ namespace ImsInformed.Targets
                 int chargeState = imsTargetResult.ChargeState;
                 double driftTime = imsTargetResult.DriftTime;
 
-                IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = this.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.DriftTime - driftTime));
+                IEnumerable<DriftTimeTarget> possibleDriftTimeTargets = this.DriftTimeTargetList.Where(x => x.ChargeState == chargeState).OrderBy(x => Math.Abs(x.NormalizedDriftTimeInMs - driftTime));
 
                 double targetDriftTime = 0;
                 double driftTimeError = 0;
@@ -246,7 +246,7 @@ namespace ImsInformed.Targets
                 if (possibleDriftTimeTargets.Any())
                 {
                     DriftTimeTarget driftTimeTarget = possibleDriftTimeTargets.First();
-                    targetDriftTime = driftTimeTarget.DriftTime;
+                    targetDriftTime = driftTimeTarget.NormalizedDriftTimeInMs;
                     driftTimeError = driftTime - targetDriftTime;
                 }
 

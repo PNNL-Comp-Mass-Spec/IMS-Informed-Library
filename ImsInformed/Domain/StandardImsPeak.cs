@@ -100,7 +100,7 @@ namespace ImsInformed.Domain
             highestPeakApex.MzCenterInBinNumber = 0;
             highestPeakApex.MzCenterInDalton = 0;
 
-            // TODO : Add Mz edge there too.
+            // TODO : Add centerMz edge there too.
             double[] mzArray;
             int[] intensitiesArray;
             double targetMzMin = targetMz * (1 - massToleranceInPpm / 1000000);
@@ -112,8 +112,8 @@ namespace ImsInformed.Domain
             int indexOfMax = intensitiesArray.ToList().IndexOf(intensitiesArray.Max());
             highestPeakApex.MzCenterInDalton = mzArray[intensitiesArray.ToList().IndexOf(intensitiesArray.Max())];
 
-            // Get the full width half max window in Mz
-            double halfMax = highestPeakApex.MzCenterInDalton / 2;
+            // Get the full width half max window intensity in centerMz
+            double halfMax = intensitiesArray[indexOfMax] / 2;
 
             highestPeakApex.MzFullWidthHalfMaxLow = mzArray[0];
             for (int i = indexOfMax; i > 0; i--)
@@ -138,12 +138,12 @@ namespace ImsInformed.Domain
             double deltaHighInPpm = (highestPeakApex.MzFullWidthHalfMaxHigh - highestPeakApex.MzCenterInDalton) / highestPeakApex.MzCenterInDalton * 1000000;
             highestPeakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
 
-            // Get the full width half max in DriftTime
+            // Get the full width half max in NormalizedDriftTimeInMs
             highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs = this.MaxDriftTimeInMs;
             highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs = this.MinDriftTimeInMs;
 
             highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber = this.MaxDriftTimeInScanNumber;
-            highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MaxDriftTimeInScanNumber;
+            highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MinDriftTimeInScanNumber;
 
             highestPeakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(highestPeakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs - highestPeakApex.DriftTimeCenterInMs));
 
@@ -158,7 +158,7 @@ namespace ImsInformed.Domain
         /// </param>
         public StandardImsPeak(clsPeak magnitudeConcavityPeakFinder)
         {
-            
+            throw new NotImplementedException();
         }
 
         public double SummedIntensities { get; private set; }

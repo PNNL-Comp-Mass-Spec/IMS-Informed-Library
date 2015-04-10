@@ -3,25 +3,99 @@ namespace ImsInformed.Domain
 {
     using System;
 
+    /// <summary>
+    /// The analysis status.
+    /// </summary>
     public enum AnalysisStatus
     {
-        Positive, // Result positive, ion found and mobility calculated.
-        Negative, // Result negative, taget not found at the given UIMF file.
-        Rejected, // Result rejected due to low analysis score.
-        NotSufficientPoints, // No sufficient points for the fitline.
-        UknownError, // Error
-        TargetError, // Target construction problem
-        NoAnalysis, // Analysis not scheduled
+        /// <summary>
+        /// Result positive, depending on workflows used this have different meanings.
+        /// </summary>
+        Positive,
+
+        /// <summary>
+        /// Result negative, depending on workflows used this have different meanings.
+        /// </summary>
+        Negative,
+
+        /// <summary>
+        /// Result rejected, depending on workflows used this have different meanings.
+        /// </summary>
+        Rejected,
+
+        /// <summary>
+        /// No sufficient points for the fit line.
+        /// </summary>
+        NotSufficientPoints, 
+
+        /// <summary>
+        /// Unknown error.
+        /// </summary>
+        UknownError,
+
+        /// <summary>
+        /// Errors occurred in the target construction process
+        /// </summary>
+        TargetError, 
+
+        /// <summary>
+        /// No analysis was performed on this target.
+        /// </summary>
+        NoAnalysis, 
+
+        /// <summary>
+        /// Replicates of the same experiment give conflicting analysis results.
+        /// </summary>
         ConflictRuns, // Conflict between experiments
-        XicNotFound, // XIC is empty at the target MZ
-        IsotopicProfileNotFound, // Target does not have an isotopic profile
-        IsotopicProfileNotMatchTheoretical, 
-        IsotopicProfileNotEnoughPeaks, // There are not enough peaks to compose isotopic profile.
-        IsotopicFitScoreError, // Isotopic fit score is too low
-        ElutionTimeError, 
+
+        /// <summary>
+        /// XIC is empty at the target MZ
+        /// </summary>
+        XicNotFound,
+
+        /// <summary>
+        /// Target does not have an isotopic profile
+        /// </summary>
+        IsotopicProfileNotFound, 
+
+        /// <summary>
+        /// The isotopic profile not match theoretical.
+        /// </summary>
+        IsotopicProfileNotMatchTheoretical,
+
+        /// <summary>
+        /// There are not enough peaks to compose isotopic profile.
+        /// </summary>
+        IsotopicProfileNotEnoughPeaks,
+
+        /// <summary>
+        /// Isotopic fit score is below threshold
+        /// </summary>
+        IsotopicFitScoreError, 
+
+        /// <summary>
+        /// The elution time error.
+        /// </summary>
+        ElutionTimeError,
+
+        /// <summary>
+        /// The drift time error.
+        /// </summary>
         DriftTimeError,
+
+        /// <summary>
+        /// The mass error.
+        /// </summary>
         MassError,
-        PeakToLeft, 
+
+        /// <summary>
+        /// The peak to left.
+        /// </summary>
+        PeakToLeft,
+
+        /// <summary>
+        /// The charge state correlation.
+        /// </summary>
         ChargeStateCorrelation
     }
 

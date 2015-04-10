@@ -207,15 +207,15 @@ namespace ImsInformed.Scoring
             }
 
             // Get the scanWindow size
-            int scanNumberMin = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
-            int scanNumberMax = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
+            int scanNumberMax = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
+            int scanNumberMin = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
             if ((scanNumberMin < 0) || (scanNumberMax > totalScans - 1))
             {
                 return 0;
             }
 
             // Get the mass error from the observed feature peak from the target theoretical peak
-            double mzOffset = imsPeak.HighestPeakApex.MzCenterInDalton - target.CompositionWithAdduct.Mass;
+            double mzOffset = imsPeak.HighestPeakApex.MzCenterInDalton - target.MassWithAdduct;
 
             List<double> observedIsotopicPeakList = new List<double>();
 
@@ -225,7 +225,7 @@ namespace ImsInformed.Scoring
             // Find an unsaturated peak in the isotopic profile
             for (int i = 0; i < totalIsotopicIndex; i++)
             {
-                // Isotopic Mz
+                // Isotopic centerMz
                 double Mz = isotopicPeakList[i].XValue;
                 
                 var peakList = reader.GetXic(Mz + mzOffset, 

@@ -51,7 +51,7 @@
                     while (reader.Read())
                     {
                         int massTagId = Convert.ToInt32(reader["Mass_Tag_ID"]);
-                        string peptide = Convert.ToString(reader["PeptideSequence"]);
+                        string peptide = Convert.ToString(reader["peptide"]);
                         double normalizedElutionTime = Convert.ToDouble(reader["Avg_GANET"]);
                         int modCount = Convert.ToInt16(reader["Mod_Count"]);
                         
@@ -129,7 +129,7 @@
         {
             return "SELECT " +
                         "MT.Mass_Tag_ID, " +
-                        "MT.PeptideSequence, " +
+                        "MT.Peptide, " +
                         "MTN.Avg_GANET," +
                         "MT.Mod_Count," +
                         "MT.Mod_Description," +
@@ -147,7 +147,7 @@
         {
             return "SELECT " +
                         "MT.Mass_Tag_ID, " +
-                        "MT.PeptideSequence, " +
+                        "MT.Peptide, " +
                         "MTN.Avg_GANET," +
                         "MT.Mod_Count," +
                         "MT.Mod_Description," +

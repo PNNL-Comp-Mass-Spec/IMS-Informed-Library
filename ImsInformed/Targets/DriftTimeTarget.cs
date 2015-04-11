@@ -10,6 +10,8 @@
 
 namespace ImsInformed.Targets
 {
+    using System.Collections.Generic;
+
     using ImsInformed.Domain;
 
     /// <summary>
@@ -36,6 +38,8 @@ namespace ImsInformed.Targets
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, PeptideTarget peptide, int chargeState = 1)
             : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, chargeState)
         {
+            peptide.DriftTimeTargetList.Add(this);    
+
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
             this.LibraryEntryName = libraryEntryName;
         }

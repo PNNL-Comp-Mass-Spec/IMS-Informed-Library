@@ -40,7 +40,7 @@ namespace ImsInformedTests
         /// <summary>
         /// The cheetah UIMF file.
         /// </summary>
-        public const string Cheetah = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\peptide\Sarc_MS2_90_6Apr11_Cheetah_11-02-19.uimf";
+        public const string Cheetah = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\peptide\Sarc_MS2_90_6Apr11_Cheetah_11-02-19.uimf";
 
         /// <summary>
         /// The test single peptide.
@@ -633,7 +633,6 @@ namespace ImsInformedTests
         public void TestCalibration()
         {
             string uimfFileLocation = Cheetah;
-            //string uimfFileLocation = @"..\..\..\testFiles\Sarc_P23_C07_2143_23Feb12_Cheetah_11-05-40.uimf";
 
             LcImsPeptideSearchParameters parameters = new LcImsPeptideSearchParameters
             {
@@ -954,7 +953,7 @@ namespace ImsInformedTests
         [Test]
         public void TestSaturation()
         {
-            const string uimfLocation = @"..\..\..\testFiles\DR_40ms_100_23Apr14_0002.UIMF";
+            const string uimfLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\peptide\DR_40ms_100_23Apr14_0002.UIMF";
             //const double mz = 432.90; // Angiotensin +3
             //const double mz = 712.20; // Melittin +4
             //const double mz = 569.96; // Melittin +5

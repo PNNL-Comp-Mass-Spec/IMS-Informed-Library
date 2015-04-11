@@ -67,6 +67,7 @@ namespace ImsInformed.Targets
             this.ModificationList = modificationList;
             this.TargetType = TargetType.Peptide;
             this.Adduct = new IonizationAdduct(IonizationMethod.ProtonPlus);
+            this.DriftTimeTargetList = new List<DriftTimeTarget>();
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the drift time target list.
         /// </summary>
-        public IList<DriftTimeTarget> DriftTimeTargetList { get; private set; } 
+        public IList<DriftTimeTarget> DriftTimeTargetList { get; set; } 
 
         /// <summary>
         /// Gets the target descriptor.

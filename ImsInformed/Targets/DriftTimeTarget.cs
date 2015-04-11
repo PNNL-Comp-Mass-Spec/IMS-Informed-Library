@@ -21,24 +21,31 @@ namespace ImsInformed.Targets
         /// Initializes a new instance of the <see cref="DriftTimeTarget"/> class with H+ as default
         /// ionization, which is a default for peptides.
         /// </summary>
+        /// <param name="libraryEntryName">
+        /// The library Entry Name.
+        /// </param>
         /// <param name="normalizedDriftTimeInMs">
         /// The drift time.
         /// </param>
-        /// <param name="empiricalFormula">
-        /// The empirical formula.
+        /// <param name="peptide">
+        /// The peptide.
         /// </param>
-        /// <param name="adductMultiplier">
-        /// The adduct multiplier.
+        /// <param name="chargeState">
+        /// The charge State.
         /// </param>
-        public DriftTimeTarget(double normalizedDriftTimeInMs, PeptideTarget peptide, int chargeState = 1)
+        public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, PeptideTarget peptide, int chargeState = 1)
             : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, chargeState)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
+            this.LibraryEntryName = libraryEntryName;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DriftTimeTarget"/> class for molercules
         /// </summary>
+        /// <param name="libraryEntryName">
+        /// The library Entry Name.
+        /// </param>
         /// <param name="normalizedDriftTimeInMs">
         /// The drift time.
         /// </param>
@@ -48,15 +55,22 @@ namespace ImsInformed.Targets
         /// <param name="ionizationMethod">
         /// The ionization method.
         /// </param>
-        public DriftTimeTarget(double normalizedDriftTimeInMs, string empiricalFormula, IonizationMethod ionizationMethod, int adductMultiplier = 1)
+        /// <param name="adductMultiplier">
+        /// The adduct Multiplier.
+        /// </param>
+        public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, string empiricalFormula, IonizationMethod ionizationMethod, int adductMultiplier = 1)
             : base(empiricalFormula, ionizationMethod, adductMultiplier)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
+            this.LibraryEntryName = libraryEntryName;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DriftTimeTarget"/> class.
         /// </summary>
+        /// <param name="libraryEntryName">
+        /// The library Entry Name.
+        /// </param>
         /// <param name="normalizedDriftTimeInMs">
         /// The drift time.
         /// </param>
@@ -66,10 +80,11 @@ namespace ImsInformed.Targets
         /// <param name="adduct">
         /// The adduct.
         /// </param>
-        public DriftTimeTarget(double normalizedDriftTimeInMs, string empiricalFormula, IonizationAdduct adduct)
+        public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, string empiricalFormula, IonizationAdduct adduct)
             : base(empiricalFormula, adduct)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
+            this.LibraryEntryName = libraryEntryName;
         }
 
         /// <summary>
@@ -87,5 +102,7 @@ namespace ImsInformed.Targets
         /// Gets the drift time.
         /// </summary>
         public double NormalizedDriftTimeInMs { get; private set; }
+
+        public string LibraryEntryName { get; private set; }
     }
 }

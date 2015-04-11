@@ -90,6 +90,11 @@ namespace ImsInformedTests
         /// </summary>
         public const string Cae = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-CAE_pos2_9Oct14_Columbia_DI.uimf";
 
+        /// <summary>
+        /// The amt lib pos.
+        /// </summary>
+        public const string AmtLibPos = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\example_library_files\viper_pos_chemical_based.txt";
+
                 /// <summary>
         /// The test empirical formula utilities.
         /// </summary>
@@ -627,8 +632,8 @@ namespace ImsInformedTests
         {
             // TODO Import AMT library instead of manually add them
             IList<DriftTimeTarget> imsTargets = new List<DriftTimeTarget>();
-            DriftTimeTarget t1 = new DriftTimeTarget(23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
-            DriftTimeTarget t2 = new DriftTimeTarget(31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
+            DriftTimeTarget t1 = new DriftTimeTarget("Test 1", 23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
+            DriftTimeTarget t2 = new DriftTimeTarget("Test 2", 31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
             
             imsTargets.Add(t2);
             imsTargets.Add(t1);
@@ -827,6 +832,16 @@ namespace ImsInformedTests
             }
 
             workflow.Dispose();
+        }
+
+        /// <summary>
+        /// The test scoring.
+        /// </summary>
+        [Test][STAThread]
+        public void TestImportingDriftTimeLibrary()
+        {
+            IList<DriftTimeTarget> targets = DriftTimeLibraryImporter.ImportDriftTimeLibrary(AmtLibPos);
+            Assert.AreEqual(targets.Count, 351);
         }
     }
 }

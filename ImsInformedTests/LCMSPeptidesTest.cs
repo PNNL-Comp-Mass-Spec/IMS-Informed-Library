@@ -90,7 +90,7 @@ namespace ImsInformedTests
             double net = 0.3612;
 
             PeptideTarget target = new PeptideTarget(1, peptide, net);
-            DriftTimeTarget driftTimeTarget = new DriftTimeTarget(19.62, target, 2);
+            DriftTimeTarget driftTimeTarget = new DriftTimeTarget("Test Target", 19.62, target, 2);
             target.DriftTimeTargetList.Add(driftTimeTarget);
 
             LcImsPeptideSearchWorkfow lcImsPeptideSearchWorkfow = new LcImsPeptideSearchWorkfow(uimfFileLocation, parameters);

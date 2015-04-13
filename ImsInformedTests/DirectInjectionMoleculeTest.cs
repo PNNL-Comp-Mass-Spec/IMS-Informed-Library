@@ -632,16 +632,22 @@ namespace ImsInformedTests
         {
             // TODO Import AMT library instead of manually add them
             IList<DriftTimeTarget> imsTargets = new List<DriftTimeTarget>();
-            DriftTimeTarget t1 = new DriftTimeTarget("Test 1", 23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
-            DriftTimeTarget t2 = new DriftTimeTarget("Test 2", 31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
+            DriftTimeTarget t1 = new DriftTimeTarget("BPS protonated", 23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
+            DriftTimeTarget t2 = new DriftTimeTarget("BPS sodiated", 31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
+            DriftTimeTarget t3 = new DriftTimeTarget("I made it up", 15, "C10H10O4S", IonizationMethod.SodiumPlus);
+            DriftTimeTarget t4 = new DriftTimeTarget("I made it up again", 15, "C12H11O4S", IonizationMethod.SodiumPlus);
             
-            imsTargets.Add(t2);
+            imsTargets.Add(t3);
             imsTargets.Add(t1);
+            imsTargets.Add(t2);
+            imsTargets.Add(t4);
 
             LibraryMatchWorkflow workflow = new LibraryMatchWorkflow(BPSPostive, "output", "result.txt", new LibraryMatchParameters());
             IDictionary<DriftTimeTarget, LibraryMatchResult> results = workflow.RunLibraryMatchWorkflow(imsTargets);
             Assert.AreEqual(results[t1].AnalysisStatus, AnalysisStatus.Positive);
             Assert.AreEqual(results[t2].AnalysisStatus, AnalysisStatus.Positive);
+            Assert.AreEqual(results[t3].AnalysisStatus, AnalysisStatus.Negative);
+            Assert.AreEqual(results[t4].AnalysisStatus, AnalysisStatus.Negative);
         }
 
         /// <summary>

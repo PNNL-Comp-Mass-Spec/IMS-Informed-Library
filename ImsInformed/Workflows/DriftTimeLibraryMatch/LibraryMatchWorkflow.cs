@@ -16,6 +16,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Windows.Media.TextFormatting;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
@@ -170,6 +171,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// </returns>
         public IDictionary<DriftTimeTarget, LibraryMatchResult> RunLibraryMatchWorkflow(IEnumerable<DriftTimeTarget> targetList)
         {
+            Trace.WriteLine(string.Format("Dataset: " + this.DatasetName));
+
             IDictionary<DriftTimeTarget, LibraryMatchResult> targetResultMap = new Dictionary<DriftTimeTarget, LibraryMatchResult>();
             foreach (DriftTimeTarget target in targetList)
             {
@@ -191,9 +194,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// </returns>
         private LibraryMatchResult RunLibrayMatchWorkflow(DriftTimeTarget target)
         {
-            Trace.WriteLine("Dataset: " + this.DatasetName);
-            Trace.WriteLine("target: " + target.TargetDescriptor);
-            Trace.WriteLine(string.Empty);
+            Trace.WriteLine("    Target: " + target.LibraryEntryName);
+            Trace.WriteLine("    Target Info: " + target.TargetDescriptor);
 
             // Generate Theoretical Isotopic Profile
             List<Peak> theoreticalIsotopicProfilePeakList = null;
@@ -212,6 +214,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                 if (IMSUtil.IsLastVoltageGroup(voltageGroup, this.NumberOfFrames))
                 {
                     double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, this.uimfReader);
+
+                    Trace.WriteLine(string.Format("    Temperature/Pressure/Voltage Adjusted Drift time: {0:F4} ms", IMSUtil.DeNormalizeDriftTime(target.NormalizedDriftTimeInMs, voltageGroup)));
             
                     // Find peaks using multidimensional peak finder.
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
@@ -249,8 +253,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         DriftTimeFeatureDistance distance = new DriftTimeFeatureDistance(target, peak, voltageGroup);
 
                         FeatureScoreHolder currentScoreHolder = scoresTable[peak];
-                        Trace.WriteLine(string.Format("        Temperature/Pressure/Voltage Adjusted Drift time: {0:F4} ms", IMSUtil.DeNormalizeDriftTime(target.NormalizedDriftTimeInMs, voltageGroup)));
-                        Trace.WriteLine(string.Format("        Candidate feature found. at drift time {0:F2} ms (scan number {1})",
+                        Trace.WriteLine(string.Empty);
+                        Trace.WriteLine(string.Format("        Candidate feature found at drift time {0:F2} ms (scan number {1})",
                             peak.HighestPeakApex.DriftTimeCenterInMs,
                             peak.HighestPeakApex.DriftTimeCenterInScanNumber));
                         Trace.WriteLine(
@@ -281,10 +285,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         }
                         else
                         {
-                            Trace.WriteLine("        [Match]");
+                            Trace.WriteLine("        [Pass]");
                         }
-            
-                        Trace.WriteLine(string.Empty);
                     }
 
                     standardPeaks.RemoveAll(scanPredicate);
@@ -295,7 +297,10 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 
                     if (standardPeaks.Count == 0)
                     {
+                        Trace.WriteLine(string.Format("    [No Match]"));
+                        Trace.WriteLine(string.Empty);
                         return new LibraryMatchResult(null, AnalysisStatus.Negative, null);
+                        
                     }
 
                     StandardImsPeak closestPeak = standardPeaks.First();
@@ -309,6 +314,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         }
                     }
 
+                    Trace.WriteLine(string.Format("    [Match]"));
+                    Trace.WriteLine(string.Empty);
                     return new LibraryMatchResult(closestPeak, AnalysisStatus.Positive, shortestDistance);
                 }
             }

@@ -237,8 +237,8 @@ namespace ImsInformedTests
         public void TestSingleMoleculeMzOnly()
         {
             // Good BPS data
-            // double mz = 249.02160599;
-            // string uimfFile = DirectInjectionMoleculeTest.BPSNegative;
+            double mz = 251.037804609;
+            string uimfFile = BPSPostive;
 
             // Acetaminophen
             // double mz = 150.0555008;
@@ -252,11 +252,7 @@ namespace ImsInformedTests
             // double mz = 161.10787;
             // string uimfFile = NicoFile;
 
-            // AcetamipridFile
-            double mz = 221.059395;
-            string uimfFile = AcetamipridFile;
-
-            MolecularTarget target= new MolecularTarget(mz, IonizationMethod.ProtonMinus);
+            MolecularTarget target= new MolecularTarget(mz, IonizationMethod.ProtonPlus);
             Console.WriteLine("Nicotine:");
             Console.WriteLine("MZ:   " + mz);
 
@@ -504,7 +500,7 @@ namespace ImsInformedTests
                 List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);
                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup, target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
 
-                // feature scorings and target selection.
+                // feature scorings and Target selection.
                 FeatureScoreHolder mostLikelyPeakScores;
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;
@@ -692,7 +688,7 @@ namespace ImsInformedTests
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 
 
             CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
-            IDictionary<string, CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
+            IEnumerable<CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
             informedWorkflow.Dispose();
         }
         
@@ -756,7 +752,7 @@ namespace ImsInformedTests
                 List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);
                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup, target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
 
-                // feature scorings and target selection.
+                // feature scorings and Target selection.
                 FeatureScoreHolder mostLikelyPeakScores;
                 mostLikelyPeakScores.IntensityScore = 0;
                 mostLikelyPeakScores.IsotopicScore = 0;

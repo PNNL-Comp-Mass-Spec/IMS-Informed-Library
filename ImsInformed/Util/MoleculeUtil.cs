@@ -69,7 +69,7 @@ namespace ImsInformed.Util
         /// The reduced mass.
         /// </summary>
         /// <param name="targetMz">
-        /// The target MZ.
+        /// The Target MZ.
         /// </param>
         /// <param name="bufferGas">
         /// The buffer gas composition. 

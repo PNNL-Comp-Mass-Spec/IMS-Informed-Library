@@ -18,7 +18,7 @@ namespace ImsInformed.Scoring
     public class TargetPresenceLikelihoodFunctions
     {
         /// <summary>
-        /// The intensity only likelihood function. Better used if your target/feature match is more dependent on intensity then anything else.
+        /// The intensity only likelihood function. Better used if your Target/feature match is more dependent on intensity then anything else.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -48,7 +48,7 @@ namespace ImsInformed.Scoring
 
         /// <summary>
         /// The intensity dependent likelihood function. Better used if you have good faith in the isotopic score 75% and/or your sample is really mixed intensity is 
-        /// no longer a good indicator of feature/target match.
+        /// no longer a good indicator of feature/Target match.
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.
@@ -62,7 +62,7 @@ namespace ImsInformed.Scoring
         }
 
         /// <summary>
-        /// The neutral likelihood function. Better used if you are not sure what your target/feature match depends on
+        /// The neutral likelihood function. Better used if you are not sure what your Target/feature match depends on
         /// </summary>
         /// <param name="featureScores">
         /// The feature scores.

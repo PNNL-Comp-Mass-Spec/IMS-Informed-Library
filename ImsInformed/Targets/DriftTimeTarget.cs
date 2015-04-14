@@ -10,13 +10,15 @@
 
 namespace ImsInformed.Targets
 {
+    using System;
     using System.Collections.Generic;
 
     using ImsInformed.Domain;
 
     /// <summary>
-    /// The drift time target.
+    /// The drift time Target.
     /// </summary>
+    [Serializable]
     public class DriftTimeTarget : MolecularTarget
     {
         /// <summary>
@@ -36,12 +38,11 @@ namespace ImsInformed.Targets
         /// The charge State.
         /// </param>
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, PeptideTarget peptide, int chargeState = 1)
-            : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, chargeState)
+            : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, chargeState, libraryEntryName)
         {
             peptide.DriftTimeTargetList.Add(this);    
 
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
-            this.LibraryEntryName = libraryEntryName;
         }
 
         /// <summary>
@@ -63,10 +64,9 @@ namespace ImsInformed.Targets
         /// The adduct Multiplier.
         /// </param>
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, string empiricalFormula, IonizationMethod ionizationMethod, int adductMultiplier = 1)
-            : base(empiricalFormula, ionizationMethod, adductMultiplier)
+            : base(empiricalFormula, ionizationMethod, adductMultiplier, libraryEntryName)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
-            this.LibraryEntryName = libraryEntryName;
         }
 
         /// <summary>
@@ -85,14 +85,13 @@ namespace ImsInformed.Targets
         /// The adduct.
         /// </param>
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, string empiricalFormula, IonizationAdduct adduct)
-            : base(empiricalFormula, adduct)
+            : base(empiricalFormula, adduct, libraryEntryName)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
-            this.LibraryEntryName = libraryEntryName;
         }
 
         /// <summary>
-        /// Gets the target descriptor.
+        /// Gets the Target descriptor.
         /// </summary>
         public override string TargetDescriptor
         {
@@ -106,7 +105,5 @@ namespace ImsInformed.Targets
         /// Gets the drift time.
         /// </summary>
         public double NormalizedDriftTimeInMs { get; private set; }
-
-        public string LibraryEntryName { get; private set; }
     }
 }

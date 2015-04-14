@@ -34,12 +34,12 @@ namespace ImsInformed.Domain
         UknownError,
 
         /// <summary>
-        /// Errors occurred in the target construction process
+        /// Errors occurred in the Target construction process
         /// </summary>
         TargetError, 
 
         /// <summary>
-        /// No analysis was performed on this target.
+        /// No analysis was performed on this Target.
         /// </summary>
         NoAnalysis, 
 
@@ -49,7 +49,7 @@ namespace ImsInformed.Domain
         ConflictRuns, // Conflict between experiments
 
         /// <summary>
-        /// XIC is empty at the target MZ
+        /// XIC is empty at the Target MZ
         /// </summary>
         XicNotFound,
 

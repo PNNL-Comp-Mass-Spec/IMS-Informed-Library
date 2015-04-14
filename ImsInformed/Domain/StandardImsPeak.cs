@@ -109,45 +109,48 @@ namespace ImsInformed.Domain
             // Somehow frame is zero indexed instead
             uimfReader.GetSpectrum(voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
             
-            int indexOfMax = intensitiesArray.ToList().IndexOf(intensitiesArray.Max());
-            highestPeakApex.MzCenterInDalton = mzArray[intensitiesArray.ToList().IndexOf(intensitiesArray.Max())];
-
-            // Get the full width half max window intensity in centerMz
-            double halfMax = intensitiesArray[indexOfMax] / 2;
-
-            highestPeakApex.MzFullWidthHalfMaxLow = mzArray[0];
-            for (int i = indexOfMax; i > 0; i--)
+            if (mzArray.Count() != 0)
             {
-                if (intensitiesArray[i] < halfMax)
+                int indexOfMax = intensitiesArray.ToList().IndexOf(intensitiesArray.Max());
+                highestPeakApex.MzCenterInDalton = mzArray[intensitiesArray.ToList().IndexOf(intensitiesArray.Max())];
+
+                // Get the full width half max window intensity in centerMz
+                double halfMax = intensitiesArray[indexOfMax] / 2;
+            
+
+                highestPeakApex.MzFullWidthHalfMaxLow = mzArray[0];
+                for (int i = indexOfMax; i > 0; i--)
                 {
-                    highestPeakApex.MzFullWidthHalfMaxLow = mzArray[i];
+                    if (intensitiesArray[i] < halfMax)
+                    {
+                        highestPeakApex.MzFullWidthHalfMaxLow = mzArray[i];
+                    }
                 }
-            }
 
-            int count = mzArray.Count();
-            highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[count - 1];
-            for (int i = indexOfMax; i < mzArray.Count(); i++)
-            {
-                if (intensitiesArray[i] < halfMax)
+                int count = mzArray.Count();
+                highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[count - 1];
+                for (int i = indexOfMax; i < mzArray.Count(); i++)
                 {
-                    highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[i];
+                    if (intensitiesArray[i] < halfMax)
+                    {
+                        highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[i];
+                    }
                 }
+
+                double deltaLowInPpm = (highestPeakApex.MzCenterInDalton - highestPeakApex.MzFullWidthHalfMaxLow) / highestPeakApex.MzCenterInDalton * 1000000;
+                double deltaHighInPpm = (highestPeakApex.MzFullWidthHalfMaxHigh - highestPeakApex.MzCenterInDalton) / highestPeakApex.MzCenterInDalton * 1000000;
+                highestPeakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
+
+                // Get the full width half max in NormalizedDriftTimeInMs
+                highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs = this.MaxDriftTimeInMs;
+                highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs = this.MinDriftTimeInMs;
+
+                highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber = this.MaxDriftTimeInScanNumber;
+                highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MinDriftTimeInScanNumber;
+
+                highestPeakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(highestPeakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs   - highestPeakApex.DriftTimeCenterInMs));
+                this.HighestPeakApex = highestPeakApex;
             }
-
-            double deltaLowInPpm = (highestPeakApex.MzCenterInDalton - highestPeakApex.MzFullWidthHalfMaxLow) / highestPeakApex.MzCenterInDalton * 1000000;
-            double deltaHighInPpm = (highestPeakApex.MzFullWidthHalfMaxHigh - highestPeakApex.MzCenterInDalton) / highestPeakApex.MzCenterInDalton * 1000000;
-            highestPeakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
-
-            // Get the full width half max in NormalizedDriftTimeInMs
-            highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs = this.MaxDriftTimeInMs;
-            highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs = this.MinDriftTimeInMs;
-
-            highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber = this.MaxDriftTimeInScanNumber;
-            highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MinDriftTimeInScanNumber;
-
-            highestPeakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(highestPeakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs - highestPeakApex.DriftTimeCenterInMs));
-
-            this.HighestPeakApex = highestPeakApex;
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Windows.Documents;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.PeakDetectors;
@@ -187,11 +188,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The detailed verbose.
         /// </param>
         /// <returns>
-        /// The <see cref="IDictionary"/>.
+        /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public IDictionary<string, CrossSectionWorkflowResult> RunCrossSectionWorkFlow(IEnumerable<IImsTarget> targetList, bool detailedVerbose = true)
+        public IEnumerable<CrossSectionWorkflowResult> RunCrossSectionWorkFlow(IEnumerable<IImsTarget> targetList, bool detailedVerbose = true)
         {
-            IDictionary<string, CrossSectionWorkflowResult> targetResultMap = new Dictionary<string, CrossSectionWorkflowResult>();
+            IList<CrossSectionWorkflowResult> targetResultMap = new List<CrossSectionWorkflowResult>();
             foreach (IImsTarget target in targetList)
             {
                 if (target.EmpiricalFormula != null)
@@ -205,7 +206,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 }
 
                 CrossSectionWorkflowResult result = this.RunCrossSectionWorkFlow(target, detailedVerbose);
-                targetResultMap.Add(target.TargetDescriptor, result);
+                targetResultMap.Add(result);
             }
 
             return targetResultMap;
@@ -215,7 +216,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The run molecule informed work flow.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        /// The Target.
         /// </param>
         /// <param name="detailedVerbose">
         /// </param>
@@ -224,7 +225,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         public CrossSectionWorkflowResult RunCrossSectionWorkFlow(IImsTarget target, bool detailedVerbose = true)
         {
-            string targetDescription = target.TargetDescriptor;
             bool hasCompositionInfo = target.CompositionWithoutAdduct != null;
             double viperFriendlyMass = 0;
 
@@ -259,7 +259,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 } 
                 else
                 {
-                    Trace.WriteLine("Target: " + targetDescription);
+                    Trace.WriteLine("Target: " + target.TargetDescriptor);
                 }
 
                 // Generate Theoretical Isotopic Profile
@@ -334,7 +334,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         scoresTable.Add(peak, currentScoreHolder);
                     }
                 
-                    // 2st round filtering: filter out non target peaks and noise. 
+                    // 2st round filtering: filter out non Target peaks and noise. 
                     Predicate<StandardImsPeak> intensityThreshold = blob => FeatureFilters.FilterLowIntensity(blob, scoresTable[blob].IntensityScore, this.Parameters.IntensityThreshold);
                 
                     // filter out features with Ims scans at 1% left or right.
@@ -352,7 +352,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         bool badScanRange = scanPredicate(peak);
                         bool lowIntenstity = intensityThreshold(peak);
                         bool badPeakShape = shapeThreshold(peak);
-                        bool lowIsotopicAffinity = isotopeThreshold(peak);
+                        bool lowIsotopicAffinity = hasCompositionInfo ? isotopeThreshold(peak) : false;
                         FeatureScoreHolder currentScoreHolder = scoresTable[peak];
                         if (detailedVerbose)
                         {
@@ -431,7 +431,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         rejectionList.Add(voltageGroup);
                     }
                 
-                    // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the target ion.
+                    // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the Target ion.
                     voltageGroup.VoltageGroupScore = VoltageGroupScore.ComputeVoltageGroupStabilityScore(voltageGroup);
                 }
                 
@@ -454,11 +454,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     analysisScores.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                     informedResult = new CrossSectionWorkflowResult(
                         this.DatasetName, 
-                        targetDescription, 
-                        target.Adduct, 
+                        target,
                         AnalysisStatus.Negative, 
-                        analysisScores, 
-                        null);
+                        analysisScores);
                     
                     Trace.WriteLine("Analysis result");
                     Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
@@ -564,11 +562,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     scoreHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
                     informedResult = new CrossSectionWorkflowResult(
                         this.DatasetName, 
-                        targetDescription, 
-                        target.Adduct, 
+                        target,
                         AnalysisStatus.NotSufficientPoints, 
-                        scoreHolder, 
-                        null);
+                        scoreHolder);
                     return informedResult;
                 }
                 
@@ -647,8 +643,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 
                 informedResult = new CrossSectionWorkflowResult(
                 this.DatasetName, 
-                targetDescription, 
-                target.Adduct, 
+                target,
                 finalStatus, 
                 analysisScoreHolder, 
                 isomers);
@@ -722,8 +717,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                 informedResult = new CrossSectionWorkflowResult(
                     this.DatasetName, 
-                    targetDescription, 
-                    target.Adduct, 
+                    target, 
                     AnalysisStatus.UknownError, 
                     analysisScores, 
                     null);

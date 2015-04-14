@@ -164,7 +164,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// The run library match workflow.
         /// </summary>
         /// <param name="targetList">dD
-        /// The target list.
+        /// The Target list.
         /// </param>
         /// <returns>
         /// The <see cref="IDictionary"/>.
@@ -187,14 +187,14 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// The run libray match workflow.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        /// The Target.
         /// </param>
         /// <returns>
         /// The <see cref="LibraryMatchResult"/>.
         /// </returns>
         private LibraryMatchResult RunLibrayMatchWorkflow(DriftTimeTarget target)
         {
-            Trace.WriteLine("    Target: " + target.LibraryEntryName);
+            Trace.WriteLine("    Target: " + target.ChemicalIdentifier);
             Trace.WriteLine("    Target Info: " + target.TargetDescriptor);
 
             // Generate Theoretical Isotopic Profile

@@ -10,6 +10,7 @@
 
 namespace ImsInformed.Interfaces
 {
+    using System;
     using System.Globalization;
 
     using ImsInformed.Domain;
@@ -19,7 +20,7 @@ namespace ImsInformed.Interfaces
     /// <summary>
     /// The IMS Target interface.
     /// </summary>
-    public interface IImsTarget
+    public interface IImsTarget 
     {
         /// <summary>
         /// Gets the mass.
@@ -32,7 +33,7 @@ namespace ImsInformed.Interfaces
         IonizationAdduct Adduct { get; }
 
         /// <summary>
-        /// Gets the target type.
+        /// Gets the Target type.
         /// </summary>
         TargetType TargetType { get; }
 
@@ -52,17 +53,17 @@ namespace ImsInformed.Interfaces
         Composition CompositionWithAdduct { get; }
 
         /// <summary>
-        /// Gets the target descriptor.
+        /// Gets the Target descriptor.
         /// </summary>
         string TargetDescriptor { get; }
 
         /// <summary>
-        /// Gets or sets the target m/z.
+        /// Gets or sets the Target m/z.
         /// </summary>
         double MassWithAdduct { get; }
 
         /// <summary>
-        /// Gets or sets the target m/z.
+        /// Gets or sets the Target m/z.
         /// </summary>
         int ChargeState { get; }
     }

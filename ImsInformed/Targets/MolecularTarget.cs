@@ -10,6 +10,7 @@
 
 namespace ImsInformed.Targets
 {
+    using System;
     using System.Globalization;
 
     using ImsInformed.Domain;
@@ -19,24 +20,34 @@ namespace ImsInformed.Targets
     using InformedProteomics.Backend.Data.Composition;
 
     /// <summary>
-    /// The molecular target.
+    /// The molecular Target.
     /// </summary>
+    [Serializable]
     public class MolecularTarget : IImsTarget
     {
+        /// <summary>
+        /// The chemical identifier.
+        /// </summary>
+        public readonly string ChemicalIdentifier;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MolecularTarget"/> class.
         /// </summary>
         /// <param name="targetMz">
-        /// The target MZ.
+        /// The Target MZ.
         /// </param>
         /// <param name="ionization">
         /// The ionization.
         /// </param>
-        public MolecularTarget(double targetMz, IonizationMethod ionization)
+        /// <param name="chemicalIdentifier">
+        /// The chemical Identifier.
+        /// </param>
+        public MolecularTarget(double targetMz, IonizationMethod ionization, string chemicalIdentifier = null)
         {
             this.MassWithAdduct = targetMz;
             this.TargetType = TargetType.Molecule;
             this.Adduct = new IonizationAdduct(ionization);
+            this.ChemicalIdentifier = chemicalIdentifier;
         }
 
         /// <summary>
@@ -48,8 +59,12 @@ namespace ImsInformed.Targets
         /// <param name="ionization">
         /// The ionization.
         /// </param>
-        public MolecularTarget(string empiricalFormula, IonizationAdduct ionization)
+        /// <param name="chemicalIdentifier">
+        /// The chemical Identifier.
+        /// </param>
+        public MolecularTarget(string empiricalFormula, IonizationAdduct ionization, string chemicalIdentifier = null)
         {
+            this.ChemicalIdentifier = chemicalIdentifier;
             this.Setup(empiricalFormula, ionization);
         }
 
@@ -65,8 +80,10 @@ namespace ImsInformed.Targets
         /// <param name="adductMultiplier">
         /// The adductMultiplier.
         /// </param>
-        public MolecularTarget(string empiricalFormula, IonizationMethod ionization, int adductMultiplier = 1)
+        /// <param name="chemicalIdentifier"></param>
+        public MolecularTarget(string empiricalFormula, IonizationMethod ionization, int adductMultiplier = 1, string chemicalIdentifier = null)
         {
+            this.ChemicalIdentifier = chemicalIdentifier;
             IonizationAdduct adduct = new IonizationAdduct(ionization, adductMultiplier);
             this.Setup(empiricalFormula, adduct);
         }
@@ -82,7 +99,7 @@ namespace ImsInformed.Targets
         public IonizationAdduct Adduct { get; private set; }
 
         /// <summary>
-        /// Gets the target type.
+        /// Gets the Target type.
         /// </summary>
         public TargetType TargetType { get; private set; }
 
@@ -107,13 +124,20 @@ namespace ImsInformed.Targets
         public double MassWithAdduct { get; set; }
 
         /// <summary>
-        /// Gets the target descriptor.
+        /// Gets the Target descriptor.
         /// </summary>
         public virtual string TargetDescriptor
         {
             get
             {
-                return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
+                if (this.ChemicalIdentifier == null)
+                {
+                    return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
+                }
+                else
+                {
+                    return this.ChemicalIdentifier + this.Adduct;
+                }
             }
         }
 

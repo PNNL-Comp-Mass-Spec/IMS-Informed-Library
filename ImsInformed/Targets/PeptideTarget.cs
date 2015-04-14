@@ -25,8 +25,9 @@ namespace ImsInformed.Targets
     using InformedProteomics.Backend.Data.Sequence;
 
     /// <summary>
-    /// The peptide target.
+    /// The peptide Target.
     /// </summary>
+    [Serializable]
     public class PeptideTarget : IImsTarget
     {
         /// <summary>
@@ -86,7 +87,7 @@ namespace ImsInformed.Targets
         public IonizationAdduct Adduct { get; private set; }
 
         /// <summary>
-        /// Gets the target type.
+        /// Gets the Target type.
         /// </summary>
         public TargetType TargetType { get; private set; }
 
@@ -122,12 +123,12 @@ namespace ImsInformed.Targets
         public double NormalizedElutionTime { get; private set; }
 
         /// <summary>
-        /// Gets the drift time target list.
+        /// Gets the drift time Target list.
         /// </summary>
         public IList<DriftTimeTarget> DriftTimeTargetList { get; set; } 
 
         /// <summary>
-        /// Gets the target descriptor.
+        /// Gets the Target descriptor.
         /// </summary>
         public string TargetDescriptor
         {
@@ -148,7 +149,7 @@ namespace ImsInformed.Targets
         public IList<LcImsTargetResult> ResultList { get; private set; } 
 
         /// <summary>
-        /// Gets or sets the target MZ.
+        /// Gets or sets the Target MZ.
         /// </summary>
         public double MassWithAdduct { get; set; }
 

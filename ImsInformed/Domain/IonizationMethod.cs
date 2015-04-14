@@ -167,6 +167,23 @@
         }
 
         /// <summary>
+        /// Convert the ionization method to adduct, which is more generic.
+        /// </summary>
+        /// <param name="ionizationMethod">
+        /// The ionization method.
+        /// </param>
+        /// <param name="multiplier">
+        /// The multiplier.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IonizationAdduct"/>.
+        /// </returns>
+        public static IonizationAdduct ToAdduct(this IonizationMethod ionizationMethod, int multiplier = 1)
+        {
+            return new IonizationAdduct(ionizationMethod, multiplier);
+        }
+
+        /// <summary>
         /// The parse ionization method.
         /// </summary>
         /// <param name="ionization">

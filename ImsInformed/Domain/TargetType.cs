@@ -4,14 +4,14 @@
 //   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   The target type.
+//   The Target type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace ImsInformed.Domain
 {
     /// <summary>
-    /// The target type.
+    /// The Target type.
     /// </summary>
     public enum TargetType
     {

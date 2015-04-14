@@ -88,7 +88,7 @@ namespace ImsInformed.Scoring
         /// The voltage group.
         /// </param>
         /// <param name="targetMz">
-        /// The target MZ.
+        /// The Target MZ.
         /// </param>
         /// <param name="globalMaxIntensities">
         /// The global Max Intensities.
@@ -165,7 +165,7 @@ namespace ImsInformed.Scoring
         /// The reader.
         /// </param>
         /// <param name="target">
-        /// The target.
+        /// The Target.
         /// </param>
         /// <param name="isotopicPeakList">
         /// The isotopic peak list.
@@ -197,7 +197,7 @@ namespace ImsInformed.Scoring
             // IsotopicProfile observedIsotopicProfile = _msFeatureFinder.IterativelyFindMSFeature(massSpectrum, theoreticalIsotopicProfile, out massSpectrumPeaks);
             if (target.CompositionWithoutAdduct == null)
             {
-                throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims target without CompositionWithoutAdduct provided.");
+                throw new InvalidOperationException("Cannot score feature using isotopic profile for Ims Target without CompositionWithoutAdduct provided.");
             }
 
             // Bad Feature, so get out
@@ -214,7 +214,7 @@ namespace ImsInformed.Scoring
                 return 0;
             }
 
-            // Get the mass error from the observed feature peak from the target theoretical peak
+            // Get the mass error from the observed feature peak from the Target theoretical peak
             double mzOffset = imsPeak.HighestPeakApex.MzCenterInDalton - target.MassWithAdduct;
 
             List<double> observedIsotopicPeakList = new List<double>();

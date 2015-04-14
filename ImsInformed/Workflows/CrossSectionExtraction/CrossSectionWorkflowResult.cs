@@ -16,7 +16,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Interfaces;
     using ImsInformed.Scoring;
+    using ImsInformed.Targets;
 
     /// <summary>
     /// The molecule informed workflow result.
@@ -30,14 +32,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public readonly string DatasetName;
 
         /// <summary>
-        /// TargetDescriptor, either the empirical formula or the MZ used.
+        /// The Target.
         /// </summary>
-        public readonly string TargetDescriptor;
-
-        /// <summary>
-        /// The ionization method.
-        /// </summary>
-        public readonly IonizationAdduct Adduct;
+        public readonly IImsTarget Target;
 
         /// <summary>
         /// The analysis status.
@@ -60,11 +57,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="datasetName">
         /// The dataset name.
         /// </param>
-        /// <param name="targetDescriptor">
-        /// The target descriptor.
-        /// </param>
-        /// <param name="adduct">
-        /// The ionization method.
+        /// <param name="target">
+        /// The target.
         /// </param>
         /// <param name="analysisStatus">
         /// The analysis status.
@@ -75,15 +69,77 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="isomerResults">
         /// The isomer results.
         /// </param>
-        public CrossSectionWorkflowResult(string datasetName, string targetDescriptor, IonizationAdduct adduct, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
+        public CrossSectionWorkflowResult(string datasetName, IImsTarget target, AnalysisStatus analysisStatus, AnalysisScoresHolder analysisScoresHolder, IEnumerable<TargetIsomerReport> isomerResults)
         {
             this.DatasetName = datasetName;
-            this.TargetDescriptor = targetDescriptor;
-            this.Adduct = adduct;
+            this.Target = target;
             this.AnalysisStatus = analysisStatus;
             this.AnalysisScoresHolder = analysisScoresHolder;
             this.isomerResults = isomerResults;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class.
+        /// </summary>
+        /// <param name="datasetName">
+        /// The dataset name.
+        /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <param name="analysisStatus">
+        /// The analysis status.
+        /// </param>
+        /// <param name="analysisScoresHolder">
+        /// The analysis scores holder.
+        /// </param>
+        /// <param name="isomerResult">
+        /// The isomer result.
+        /// </param>
+        public CrossSectionWorkflowResult(
+            string datasetName,
+            IImsTarget target,
+            AnalysisStatus analysisStatus,
+            AnalysisScoresHolder analysisScoresHolder,
+            TargetIsomerReport isomerResult)
+            : this(
+                datasetName,
+                target,
+                analysisStatus,
+                analysisScoresHolder,
+                new List<TargetIsomerReport> { isomerResult })
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class.
+        /// </summary>
+        /// <param name="datasetName">
+        /// The dataset name.
+        /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <param name="analysisStatus">
+        /// The analysis status.
+        /// </param>
+        /// <param name="analysisScoresHolder">
+        /// The analysis scores holder.
+        /// </param>
+        public CrossSectionWorkflowResult(
+            string datasetName,
+            IImsTarget target,
+            AnalysisStatus analysisStatus,
+            AnalysisScoresHolder analysisScoresHolder)
+            : this(
+                datasetName,
+                target,
+                analysisStatus,
+                analysisScoresHolder,
+                new List<TargetIsomerReport>())
+        {
+        }
+
 
         /// <summary>
         /// The isomer results.

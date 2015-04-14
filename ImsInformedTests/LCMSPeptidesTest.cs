@@ -328,7 +328,7 @@ namespace ImsInformedTests
                             // Run calibration workflow on each of the calibration targets
                             foreach (var imsTarget in calibrationTargetList.OrderBy(x => x.NormalizedElutionTime))
                             {
-                                //Console.WriteLine(DateTime.Now + ": Processing target " + index);
+                                //Console.WriteLine(DateTime.Now + ": Processing Target " + index);
                                 ChargeStateCorrelationResult correlationResult = calibrationWorkflow.RunInformedWorkflow(imsTarget);
 
                                 if (correlationResult != null && correlationResult.CorrelatedResults.Any())
@@ -341,9 +341,9 @@ namespace ImsInformedTests
                                     }
                                 }
 
-                                //Console.WriteLine(DateTime.Now + ": Done Processing target " + index);
+                                //Console.WriteLine(DateTime.Now + ": Done Processing Target " + index);
                                 imsTarget.RemoveResults();
-                                //Console.WriteLine(DateTime.Now + ": Removed results from target " + index);
+                                //Console.WriteLine(DateTime.Now + ": Removed results from Target " + index);
 
                                 index++;
                             }
@@ -391,7 +391,7 @@ namespace ImsInformedTests
 
                         Console.WriteLine(DateTime.Now + ": Processing targets");
 
-                        // Execute workflow on each target and write results to database
+                        // Execute workflow on each Target and write results to database
                         foreach (var imsTarget in targetList)
                         {
                             using (var transaction = connection.BeginTransaction())
@@ -415,7 +415,7 @@ namespace ImsInformedTests
                                 transaction.Commit();
                             }
 
-                            // Reset the target so it can be used again by another dataset
+                            // Reset the Target so it can be used again by another dataset
                             imsTarget.RemoveResults();
                         }
                     }
@@ -491,9 +491,9 @@ namespace ImsInformedTests
                     {
                         Console.WriteLine(DateTime.Now + ": Writing MonoisotopicMass Tags to database");
 
-                        //foreach (var target in targetList)
+                        //foreach (var Target in targetList)
                         //{
-                        //    string insertMassTagsQuery = target.CreateSqlMassTagQueries();
+                        //    string insertMassTagsQuery = Target.CreateSqlMassTagQueries();
                         //    command.CommandText = insertMassTagsQuery;
                         //    command.ExecuteNonQuery();
                         //}
@@ -521,7 +521,7 @@ namespace ImsInformedTests
                             // Run calibration workflow on each of the calibration targets
                             foreach (var imsTarget in calibrationTargetList.OrderBy(x => x.NormalizedElutionTime))
                             {
-                                //Console.WriteLine(DateTime.Now + ": Processing target " + index);
+                                //Console.WriteLine(DateTime.Now + ": Processing Target " + index);
                                 ChargeStateCorrelationResult correlationResult = calibrationWorkflow.RunInformedWorkflow(imsTarget);
 
                                 if (correlationResult != null && correlationResult.CorrelatedResults.Any())
@@ -534,9 +534,9 @@ namespace ImsInformedTests
                                     }
                                 }
 
-                                //Console.WriteLine(DateTime.Now + ": Done Processing target " + index);
+                                //Console.WriteLine(DateTime.Now + ": Done Processing Target " + index);
                                 imsTarget.RemoveResults();
-                                //Console.WriteLine(DateTime.Now + ": Removed results from target " + index);
+                                //Console.WriteLine(DateTime.Now + ": Removed results from Target " + index);
 
                                 index++;
                             }
@@ -611,7 +611,7 @@ namespace ImsInformedTests
                                 //transaction.Commit();
                             }
 
-                            // Reset the target so it can be used again by another dataset
+                            // Reset the Target so it can be used again by another dataset
                             imsTarget.RemoveResults();
                         }
 
@@ -840,7 +840,7 @@ namespace ImsInformedTests
         }
 
         /// <summary>
-        /// The test data extraction speed single target.
+        /// The test data extraction speed single Target.
         /// </summary>
         [Test]
         public void TestDataExtractionSpeedSingleTarget()
@@ -917,9 +917,9 @@ namespace ImsInformedTests
 
                 //LcImsPeptideSearchWorkfow warmupInformedWorkflow = new LcImsPeptideSearchWorkfow(uimfFileInfo.FullName, parameters, interpolation);
 
-                //foreach (var target in targetList.Take(10))
+                //foreach (var Target in targetList.Take(10))
                 //{
-                //    warmupInformedWorkflow.RunInformedWorkflow(target);
+                //    warmupInformedWorkflow.RunInformedWorkflow(Target);
                 //}
 
                 //warmupInformedWorkflow.PrintFeatureFindStatistics();

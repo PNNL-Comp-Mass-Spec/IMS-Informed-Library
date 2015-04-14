@@ -34,13 +34,13 @@ namespace ImsInformed.Domain.DirectInjection
         /// The UIMF reader.
         /// </param>
         /// <param name="targetMz">
-        /// The target MZ.
+        /// The Target MZ.
         /// </param>
         /// <param name="massToleranceInPpm">
         /// The mass tolerance in PPM.
         /// </param>
         /// <param name="normalizedTargetDriftTimeInMs">
-        /// The target drift time.
+        /// The Target drift time.
         /// </param>
         /// <param name="driftTimeToleranceInMs">
         /// The drift time tolerance in milliseconds.
@@ -123,7 +123,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// The UIMF reader.
         /// </param>
         /// <param name="targetMz">
-        /// The target M/Z.
+        /// The Target M/Z.
         /// </param>
         /// <param name="massToleranceInPpm">
         /// The mass tolerance in ppm.

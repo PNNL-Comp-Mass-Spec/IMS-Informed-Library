@@ -18,7 +18,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
     using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
-    /// The IMS target result.
+    /// The IMS Target result.
     /// </summary>
     public class LcImsTargetResult
     {

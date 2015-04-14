@@ -198,7 +198,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
         /// The run informed workflow.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        /// The Target.
         /// </param>
         /// <returns>
         /// The <see cref="ChargeStateCorrelationResult"/>.
@@ -376,7 +376,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                         }
                     }
 
-                    //Console.WriteLine(target.PeptideSequence + "\t" + targetMass + "\t" + targetMz + "\t" + scanLcRep);
+                    //Console.WriteLine(Target.PeptideSequence + "\t" + targetMass + "\t" + targetMz + "\t" + scanLcRep);
 
                     // Get MonoisotopicMass Spectrum Data
                     XYData massSpectrum = this.GetMassSpectrum(scanLcRep, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
@@ -587,11 +587,11 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
 
             Console.WriteLine("Num Targets = " + targetList.Count());
             Console.WriteLine("Num CS Targets = " + totalChargeStateTargets);
-            Console.WriteLine("Fast = " + fastTimePerTarget + " ms per target.");
-            Console.WriteLine("Slow = " + slowTimePerTarget + " ms per target.");
+            Console.WriteLine("Fast = " + fastTimePerTarget + " ms per Target.");
+            Console.WriteLine("Slow = " + slowTimePerTarget + " ms per Target.");
         }
 
-        // Find the target centerMz across different frames.
+        // Find the Target centerMz across different frames.
         protected IEnumerable<FeatureBlob> FindFeatures(double targetMz)
         {
             // Generate Chromatogram
@@ -607,7 +607,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
             return featureBlobs;
         }
 
-        // Find the target centerMz across a range of frames.
+        // Find the Target centerMz across a range of frames.
         public IEnumerable<FeatureBlob> FindFeatures(double targetMz, int scanLcMin, int scanLcMax)
         {
             // Generate Chromatogram

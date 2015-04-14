@@ -47,7 +47,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// </param>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm, double normalizedTargetDriftTimeInMs, double driftTimeToleranceInMs) : base()
+        public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm, double normalizedTargetDriftTimeInMs, double driftTimeToleranceInMs)
         {
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
             

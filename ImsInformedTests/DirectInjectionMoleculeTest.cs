@@ -634,7 +634,7 @@ namespace ImsInformedTests
             IList<DriftTimeTarget> imsTargets = new List<DriftTimeTarget>();
             DriftTimeTarget t1 = new DriftTimeTarget("BPS protonated", 23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
             DriftTimeTarget t2 = new DriftTimeTarget("BPS sodiated", 31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
-            DriftTimeTarget t3 = new DriftTimeTarget("I made it up", 15, "C10H10O4S", IonizationMethod.SodiumPlus);
+            DriftTimeTarget t3 = new DriftTimeTarget("I made it up", 15, "C14H14O4S", IonizationMethod.SodiumPlus);
             DriftTimeTarget t4 = new DriftTimeTarget("I made it up again", 15, "C12H11O4S", IonizationMethod.SodiumPlus);
             
             imsTargets.Add(t3);

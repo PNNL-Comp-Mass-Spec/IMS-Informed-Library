@@ -28,7 +28,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// The chemical identifier.
         /// </summary>
-        public readonly string ChemicalIdentifier;
+        private string chemicalIdentifier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MolecularTarget"/> class.
@@ -42,15 +42,16 @@ namespace ImsInformed.Targets
         /// <param name="chemicalIdentifier">
         /// The chemical Identifier.
         /// </param>
-        public MolecularTarget(double targetMz, IonizationMethod ionization, string chemicalIdentifier = null)
+        public MolecularTarget(double targetMz, IonizationMethod ionization, string chemicalIdentifier)
         {
             this.MassWithAdduct = targetMz;
             this.TargetType = TargetType.Molecule;
             this.Adduct = new IonizationAdduct(ionization);
-            this.ChemicalIdentifier = chemicalIdentifier;
+            this.chemicalIdentifier = chemicalIdentifier;
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="MolecularTarget"/> class. 
         /// Constructor for non peptides with composition
         /// </summary>
         /// <param name="empiricalFormula">
@@ -62,9 +63,9 @@ namespace ImsInformed.Targets
         /// <param name="chemicalIdentifier">
         /// The chemical Identifier.
         /// </param>
-        public MolecularTarget(string empiricalFormula, IonizationAdduct ionization, string chemicalIdentifier = null)
+        public MolecularTarget(string empiricalFormula, IonizationAdduct ionization, string chemicalIdentifier)
         {
-            this.ChemicalIdentifier = chemicalIdentifier;
+            this.chemicalIdentifier = chemicalIdentifier;
             this.Setup(empiricalFormula, ionization);
         }
 
@@ -77,13 +78,14 @@ namespace ImsInformed.Targets
         /// <param name="ionization">
         /// The ionization.
         /// </param>
+        /// <param name="chemicalIdentifier">
+        /// </param>
         /// <param name="adductMultiplier">
         /// The adductMultiplier.
         /// </param>
-        /// <param name="chemicalIdentifier"></param>
-        public MolecularTarget(string empiricalFormula, IonizationMethod ionization, int adductMultiplier = 1, string chemicalIdentifier = null)
+        public MolecularTarget(string empiricalFormula, IonizationMethod ionization, string chemicalIdentifier, int adductMultiplier = 1)
         {
-            this.ChemicalIdentifier = chemicalIdentifier;
+            this.chemicalIdentifier = chemicalIdentifier;
             IonizationAdduct adduct = new IonizationAdduct(ionization, adductMultiplier);
             this.Setup(empiricalFormula, adduct);
         }
@@ -119,6 +121,17 @@ namespace ImsInformed.Targets
         public Composition CompositionWithoutAdduct { get; private set; }
 
         /// <summary>
+        /// Gets the chemical identifier.
+        /// </summary>
+        public string ChemicalIdentifier
+        {
+            get
+            {
+                return this.chemicalIdentifier;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the mass with adduct.
         /// </summary>
         public double MassWithAdduct { get; set; }
@@ -130,14 +143,7 @@ namespace ImsInformed.Targets
         {
             get
             {
-                if (this.ChemicalIdentifier == null)
-                {
-                    return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
-                }
-                else
-                {
-                    return this.ChemicalIdentifier + this.Adduct;
-                }
+                return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
             }
         }
 

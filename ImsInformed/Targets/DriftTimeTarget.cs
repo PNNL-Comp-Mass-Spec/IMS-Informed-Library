@@ -38,7 +38,7 @@ namespace ImsInformed.Targets
         /// The charge State.
         /// </param>
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, PeptideTarget peptide, int chargeState = 1)
-            : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, chargeState, libraryEntryName)
+            : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, libraryEntryName, chargeState)
         {
             peptide.DriftTimeTargetList.Add(this);    
 
@@ -64,7 +64,7 @@ namespace ImsInformed.Targets
         /// The adduct Multiplier.
         /// </param>
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, string empiricalFormula, IonizationMethod ionizationMethod, int adductMultiplier = 1)
-            : base(empiricalFormula, ionizationMethod, adductMultiplier, libraryEntryName)
+            : base(empiricalFormula, ionizationMethod, libraryEntryName, adductMultiplier)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
         }

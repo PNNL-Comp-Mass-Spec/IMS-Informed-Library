@@ -1,7 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IImsTarget.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
-//   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
+//   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
 //   Defines the IImsTarget type.
@@ -10,9 +10,6 @@
 
 namespace ImsInformed.Interfaces
 {
-    using System;
-    using System.Globalization;
-
     using ImsInformed.Domain;
 
     using InformedProteomics.Backend.Data.Composition;
@@ -53,17 +50,22 @@ namespace ImsInformed.Interfaces
         Composition CompositionWithAdduct { get; }
 
         /// <summary>
-        /// Gets the Target descriptor.
+        /// Gets the target descriptor, human-readable information of what the target is about in terms of drift time, MZ, and so on.
         /// </summary>
         string TargetDescriptor { get; }
 
         /// <summary>
-        /// Gets or sets the Target m/z.
+        /// Gets the chemical identifier, googleable, adduct independent information of what the chemical is.
+        /// </summary>
+        string ChemicalIdentifier { get; }
+
+        /// <summary>
+        /// Gets the Target m/z.
         /// </summary>
         double MassWithAdduct { get; }
 
         /// <summary>
-        /// Gets or sets the Target m/z.
+        /// Gets the Target m/z.
         /// </summary>
         int ChargeState { get; }
     }

@@ -79,6 +79,12 @@ namespace ImsInformed.IO
             }
         }
 
+        /// <summary>
+        /// The append correlation result to csv.
+        /// </summary>
+        /// <param name="correlationResult">
+        /// The correlation result.
+        /// </param>
         public void AppendCorrelationResultToCsv(ChargeStateCorrelationResult correlationResult)
         {
             PeptideTarget target = correlationResult.ImsTarget;

@@ -190,7 +190,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public IEnumerable<CrossSectionWorkflowResult> RunCrossSectionWorkFlow(IEnumerable<IImsTarget> targetList, bool detailedVerbose = true)
+        public IList<CrossSectionWorkflowResult> RunCrossSectionWorkFlow(IEnumerable<IImsTarget> targetList, bool detailedVerbose = true)
         {
             IList<CrossSectionWorkflowResult> targetResultMap = new List<CrossSectionWorkflowResult>();
             foreach (IImsTarget target in targetList)

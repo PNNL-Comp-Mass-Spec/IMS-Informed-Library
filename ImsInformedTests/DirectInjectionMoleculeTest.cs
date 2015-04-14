@@ -218,7 +218,7 @@ namespace ImsInformedTests
 
             // BPS Positive
             string formula = "C12H10O4S";
-            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
+            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus, "BPS");
             string fileLocation = BPSPostive;
 
             Console.WriteLine("Dataset: {0}", fileLocation);
@@ -252,9 +252,7 @@ namespace ImsInformedTests
             // double mz = 161.10787;
             // string uimfFile = NicoFile;
 
-            MolecularTarget target= new MolecularTarget(mz, IonizationMethod.ProtonPlus);
-            Console.WriteLine("Nicotine:");
-            Console.WriteLine("MZ:   " + mz);
+            MolecularTarget target= new MolecularTarget(mz, IonizationMethod.ProtonPlus, "Nicotine");
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -300,7 +298,7 @@ namespace ImsInformedTests
             // double mz = 221.059395;
             // string uimfFile = AcetamipridFile;
 
-            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.ProtonMinus);
+            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.ProtonMinus, "BPS");
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -443,7 +441,7 @@ namespace ImsInformedTests
         public void TestSingleMoleculeBadTarget()
         {
             string formula = "NotAFormula";
-            Assert.Throws<Exception>(() => new MolecularTarget(formula, IonizationMethod.ProtonMinus));
+            Assert.Throws<Exception>(() => new MolecularTarget(formula, IonizationMethod.ProtonMinus, "Magic molecule"));
         }
 
         /// <summary>
@@ -452,19 +450,20 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestFormulaPerturbance()
         {
-            List<string> formulas = new List<string>();
+            List<Tuple<string, string>> formulas = new List<Tuple<string, string>>();
+            
             // truth
-            formulas.Add("C12H10O4S");
-            formulas.Add("C12H11O4S");
-            formulas.Add("C12H12O4S");
-            formulas.Add("C12H13O4S");
-            formulas.Add("C12H14O4S");
-            formulas.Add("C12H15O4S");
-            formulas.Add("C12H16O4S");
-            formulas.Add("C12H9O4S ");
-            formulas.Add("C12H8O4S ");
-            formulas.Add("C12H7O4S ");
-            formulas.Add("C12H6O4S ");
+            formulas.Add(new Tuple<string, string>("True formula", "C12H10O4S"));
+            formulas.Add(new Tuple<string, string>("1 extra H", "C12H11O4S"));
+            formulas.Add(new Tuple<string, string>("2 extra H", "C12H12O4S"));
+            formulas.Add(new Tuple<string, string>("3 extra H", "C12H13O4S"));
+            formulas.Add(new Tuple<string, string>("3 extra H", "C12H14O4S"));
+            formulas.Add(new Tuple<string, string>("4 extra H", "C12H15O4S"));
+            formulas.Add(new Tuple<string, string>("5 extra H", "C12H16O4S"));
+            formulas.Add(new Tuple<string, string>("1 less H", "C12H9O4S"));
+            formulas.Add(new Tuple<string, string>("2 less H", "C12H8O4S"));
+            formulas.Add(new Tuple<string, string>("3 less H", "C12H7O4S"));
+            formulas.Add(new Tuple<string, string>("4 less H", "C12H6O4S"));
             Console.WriteLine("[Intensity], [Distance1], [Distance2], [Angle], [Pearson], [Bucha]");
 
             string fileLocation = BPSNegative;
@@ -474,9 +473,9 @@ namespace ImsInformedTests
             foreach (var form in formulas)
             {
                 bool found = false;
-                string formula = form;
                 
-                MolecularTarget target = new MolecularTarget(formula, new IonizationAdduct(IonizationMethod.ProtonMinus));
+                MolecularTarget target = new MolecularTarget(form.Item2, new IonizationAdduct(IonizationMethod.ProtonMinus), form.Item1);
+                Console.Write(form.Item1 + ": ");
                 var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
 
                 // Generate Theoretical Isotopic Profile
@@ -610,7 +609,7 @@ namespace ImsInformedTests
 
                 if (!found)
                 {
-                    Console.WriteLine("0");
+                    Console.Write("No features");
                 }
 
                 Console.WriteLine();
@@ -652,35 +651,22 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestMixedSampleCrossSectionExtraction()
         {
-            double targetK = 120.5;
-            string targetL = "DGWHSWPIAHQWPQGPSAVDAAFSWEEK";
-            string targetA = "C3H7O7P";
-            string targetB = "C3H7O6P";
-            string targetC = "C6H14O12P2";
-            string targetD = "C4H6O5";
-            string targetE = "C3H4O3";
-            string targetF = "C5H11O8P";
-            string targetG = "C6H8O7";
-            string targetH = "C4H6O4";
-            string targetI = "C3H5O6P";
-            string targetJ = "C7H15O10P";
-            
             string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
             IonizationMethod method = IonizationMethod.SodiumPlus;
 
             IList<IImsTarget> targetList = new List<IImsTarget>();
-            targetList.Add(new PeptideTarget(12, targetL, 1.0));
-            targetList.Add(new MolecularTarget(targetA, method));
-            targetList.Add(new MolecularTarget(targetB, method));
-            targetList.Add(new MolecularTarget(targetC, method));
-            targetList.Add(new MolecularTarget(targetD, method));
-            targetList.Add(new MolecularTarget(targetE, method));
-            targetList.Add(new MolecularTarget(targetF, method));
-            targetList.Add(new MolecularTarget(targetG, method));
-            targetList.Add(new MolecularTarget(targetH, method));
-            targetList.Add(new MolecularTarget(targetI, method));
-            targetList.Add(new MolecularTarget(targetJ, method));
-            targetList.Add(new MolecularTarget(targetK, method));
+            targetList.Add(new PeptideTarget(12, "DGWHSWPIAHQWPQGPSAVDAAFSWEEK", 1.0));
+            targetList.Add(new MolecularTarget("C3H7O7P", method, "chemical A"));
+            targetList.Add(new MolecularTarget("C3H7O7P", method, "chemical B(A's isomer)"));
+            targetList.Add(new MolecularTarget("C6H14O12P2", method, "chemical C"));
+            targetList.Add(new MolecularTarget("C4H6O5", method, "chemical D"));
+            targetList.Add(new MolecularTarget("C3H4O3", method, "chemical E"));
+            targetList.Add(new MolecularTarget("C5H11O8P", method, "chemical F"));
+            targetList.Add(new MolecularTarget("C6H8O7", method, "chemical G"));
+            targetList.Add(new MolecularTarget("C4H6O4", method, "chemical H"));
+            targetList.Add(new MolecularTarget("C3H5O6P", method, "chemical I"));
+            targetList.Add(new MolecularTarget("C7H15O10P", method, "chemical J"));
+            targetList.Add(new MolecularTarget(120.5, method, "Mz specified chemical L"));
             
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("TargetList: ");
@@ -711,7 +697,7 @@ namespace ImsInformedTests
         {
             string formula = "C9H13ClN6";
             string fileLocation = Cae;
-            MolecularTarget target = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
+            MolecularTarget target = new MolecularTarget(formula, IonizationMethod.ProtonPlus, "CAE");
             
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("CompositionWithoutAdduct: " + target.CompositionWithoutAdduct);

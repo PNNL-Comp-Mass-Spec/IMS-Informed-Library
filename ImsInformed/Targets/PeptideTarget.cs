@@ -134,6 +134,17 @@ namespace ImsInformed.Targets
         {
             get
             {
+                return this.PeptideSequence + this.Adduct;
+            }
+        }
+
+        /// <summary>
+        /// Gets the chemical identifier.
+        /// </summary>
+        public string ChemicalIdentifier
+        {
+            get
+            {
                 return this.PeptideSequence;
             }
         }

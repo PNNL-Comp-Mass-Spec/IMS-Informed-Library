@@ -1,6 +1,8 @@
 ﻿namespace ImsInformed.Domain
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     using ImsInformed.Util;
 
@@ -73,6 +75,11 @@
             {
                 return 1;
             }
+        }
+
+        public static IEnumerable<IonizationMethod> GetAll()
+        {
+            return Enum.GetValues(typeof(IonizationMethod)).Cast<IonizationMethod>();
         }
 
         /// <summary>
@@ -186,10 +193,9 @@
         /// <summary>
         /// The parse ionization method.
         /// </summary>
-        /// <param name="ionization">
-        /// The ionization.
+        /// <param name="ionizationMethod">
+        /// user input for ionization method 
         /// </param>
-        /// <param name="ionizationMethod"> user input for ionization method </param>
         /// <returns>
         /// The <see cref="IonizationMethod"/>.
         /// </returns>

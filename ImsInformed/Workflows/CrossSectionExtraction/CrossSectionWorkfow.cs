@@ -248,7 +248,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 if (detailedVerbose)
                 {
                     Trace.WriteLine("Dataset: " + this.DatasetName);
-                    Trace.WriteLine("Ionization method: " + target.Adduct);
+                    Trace.WriteLine("Target chemical: " + target.ChemicalIdentifier);
+                    Trace.WriteLine("Target description: " + target.TargetDescriptor);
                     if (hasCompositionInfo)
                     {
                         Trace.WriteLine("Target Empirical Formula: " + target.EmpiricalFormula);

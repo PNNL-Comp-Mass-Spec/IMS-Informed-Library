@@ -101,7 +101,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UIMFLibrary, Version=2.1.5394.28939, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="UIMFLibrary, Version=3.0.5583.29600, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\UIMFLibrary\UIMFLibrary.dll</HintPath>
     </Reference>

@@ -55,18 +55,18 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// Initializes a new instance of the <see cref="CrossSectionWorkfow"/> class.
         /// </summary>
         /// <param name="uimfFileLocation">
-        /// The UIMF file location.
+        /// The uimf file location.
         /// </param>
         /// <param name="outputDirectory">
         /// The output directory.
         /// </param>
-        /// <param name="resultFileName">
-        /// The result path.
+        /// <param name="logFileName">
+        /// The log file name.
         /// </param>
         /// <param name="parameters">
         /// The parameters.
         /// </param>
-        public CrossSectionWorkfow(string uimfFileLocation, string outputDirectory, string resultFileName, CrossSectionSearchParameters parameters)
+        public CrossSectionWorkfow(string uimfFileLocation, string outputDirectory, string logFileName, CrossSectionSearchParameters parameters)
         {
             this.uimfReader = new DataReader(uimfFileLocation);
 
@@ -89,7 +89,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
             this.Parameters = parameters;
 
-            this.ResultFileName = resultFileName;
+            this.LogFileName = logFileName;
             
             if (outputDirectory == string.Empty)
             {
@@ -119,8 +119,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             Trace.Listeners.Clear();
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
             consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
-            string result = this.OutputPath + this.ResultFileName;
-            this.resultFileWriter = File.AppendText(result);
+            string logFilePath = this.OutputPath + this.LogFileName;
+            this.resultFileWriter = File.AppendText(logFilePath);
             TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.resultFileWriter)
             {
                 Name = "this.DatasetName" + "_Result", 
@@ -171,7 +171,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets the result path.
         /// </summary>
-        public string ResultFileName { get; private set; }
+        public string LogFileName { get; private set; }
 
         /// <summary>
         /// Gets or sets the output path.
@@ -694,7 +694,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 Trace.Listeners.Clear();
                 ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
                 consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;
-                string result = this.OutputPath + this.ResultFileName;
+                string result = this.OutputPath + this.LogFileName;
                 
                 TextWriterTraceListener resultFileTraceListener = new TextWriterTraceListener(this.resultFileWriter)
                 {

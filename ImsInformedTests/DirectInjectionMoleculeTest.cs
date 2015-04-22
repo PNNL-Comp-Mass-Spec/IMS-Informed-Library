@@ -225,7 +225,7 @@ namespace ImsInformedTests
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
-            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             workfow.RunCrossSectionWorkFlow(sample, true);
             workfow.Dispose();
         }
@@ -256,7 +256,7 @@ namespace ImsInformedTests
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
-            CrossSectionWorkfow workflow = new CrossSectionWorkfow(uimfFile, "output", "result.txt", parameters);
+            CrossSectionWorkfow workflow = new CrossSectionWorkfow(uimfFile, "output",  parameters);
             workflow.RunCrossSectionWorkFlow(target);
             workflow.Dispose();
         }
@@ -302,7 +302,7 @@ namespace ImsInformedTests
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
-            Assert.Throws<FileNotFoundException>(() => new CrossSectionWorkfow(uimfFile, "output", "result.txt", parameters));
+            Assert.Throws<FileNotFoundException>(() => new CrossSectionWorkfow(uimfFile, "output", parameters));
         }
 
         [Test][STAThread]
@@ -468,7 +468,7 @@ namespace ImsInformedTests
 
             string fileLocation = BPSNegative;
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
-            CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", parameters);
 
             foreach (var form in formulas)
             {
@@ -673,7 +673,7 @@ namespace ImsInformedTests
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 
 
-            CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             IEnumerable<CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
             informedWorkflow.Dispose();
         }
@@ -707,7 +707,7 @@ namespace ImsInformedTests
 
             var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
 
-            CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", "result.txt", parameters);
+            CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", parameters);
 
             Console.WriteLine("Ionization method: " + target.Adduct);
             Console.WriteLine("Targeting centerMz: " + target.MassWithAdduct);

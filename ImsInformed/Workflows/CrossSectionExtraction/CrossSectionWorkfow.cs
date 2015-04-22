@@ -241,7 +241,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     List<Peak> theoreticalIsotopicProfilePeakList = null;
                     if (hasCompositionInfo) 
                     {
-                        string empiricalFormula = target.CompositionWithoutAdduct.ToPlainString();
+                        string empiricalFormula = target.CompositionWithAdduct.ToPlainString();
 
                         // Has to use the composition without adduct because again, this function was written for peptides. But the isotopic    profile
                         // is close regardless.
@@ -303,7 +303,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             currentScoreHolder.IsotopicScore = 0;
                             if (hasCompositionInfo)
                             {
-                                currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target,    theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity,   this.NumberOfScans);
+                                currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target,
+                                    theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity,   this.NumberOfScans);
                             }
                     
                             scoresTable.Add(peak, currentScoreHolder);

@@ -23,6 +23,11 @@ namespace ImsInformed.Domain
         /// <summary>
         /// The small molecule, characterized by empirical formula
         /// </summary>
-        Molecule
+        Molecule,
+
+        /// <summary>
+        /// The molecule with known drift time.
+        /// </summary>
+        MoleculeWithKnownDriftTime
     }
 }

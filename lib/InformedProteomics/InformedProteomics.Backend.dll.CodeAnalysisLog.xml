@@ -12,7 +12,7 @@
          <Members>
           <Member Name="#ReadIndexFromEnd()" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
            <Messages>
-            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2015-04-20 17:45:57Z" FixCategory="DependsOnFix">
+            <Message TypeName="Do not dispose objects multiple times" Category="Microsoft.Usage" CheckId="CA2202" Status="Active" Created="2015-04-20 17:55:35Z" FixCategory="DependsOnFix">
              <Issue Certainty="75" Level="Warning" Path="c:\Users\maji301\Desktop\TrackedProjects\informedproteomics\trunk\InformedProteomics.Backend\MassSpecData" File="MzMLReader.cs" Line="626">Object 'stream' can be disposed more than once in method 'MzMLReader.ReadIndexFromEnd()'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 626, 682</Issue>
              <Issue Certainty="75" Level="Warning" Path="c:\Users\maji301\Desktop\TrackedProjects\informedproteomics\trunk\InformedProteomics.Backend\MassSpecData" File="MzMLReader.cs" Line="626">Object 'streamReader' can be disposed more than once in method 'MzMLReader.ReadIndexFromEnd()'. To avoid generating a System.ObjectDisposedException you should not call Dispose more than one time on an object.: Lines: 626</Issue>
             </Message>
@@ -22,7 +22,7 @@
         </Type>
         <Type Name="PbfLcMsRun" Kind="Class" Accessibility="Public" ExternallyVisible="True">
          <Messages>
-          <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Active" Created="2015-04-20 17:45:57Z" FixCategory="DependsOnFix">
+          <Message TypeName="TypesThatOwnDisposableFieldsShouldBeDisposable" Category="Microsoft.Design" CheckId="CA1001" Status="Active" Created="2015-04-20 17:55:35Z" FixCategory="DependsOnFix">
            <Issue Name="DependsOnFix" Certainty="95" Level="CriticalError">Implement IDisposable on 'PbfLcMsRun' because it creates members of the following IDisposable types: 'BinaryReader'. If 'PbfLcMsRun' has previously shipped, adding new members that implement IDisposable to this type is considered a breaking change to existing consumers.</Issue>
           </Message>
          </Messages>

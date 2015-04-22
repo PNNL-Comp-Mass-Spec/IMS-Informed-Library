@@ -24,6 +24,8 @@ namespace ImsInformed.Targets
     using InformedProteomics.Backend.Data.Composition;
     using InformedProteomics.Backend.Data.Sequence;
 
+    using PNNLOmics.Data;
+
     /// <summary>
     /// The peptide Target.
     /// </summary>
@@ -301,6 +303,43 @@ namespace ImsInformed.Targets
             }
 
             return allQueries.ToString();
+        }
+
+        public bool Equals(IImsTarget other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other.TargetType != TargetType.Peptide) return false;
+            return this.Equals(other as PeptideTarget);
+        }
+
+        public bool Equals(PeptideTarget other)
+        {
+            return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) && 
+                this.NormalizedElutionTime == other.NormalizedElutionTime &&
+                this.TargetDescriptor == other.TargetDescriptor && 
+                this.PeptideSequence == other.PeptideSequence;
+        }
+
+        public override bool Equals(object other) 
+        {
+            return this.Equals(other as IImsTarget);
+        }
+
+        /// <summary>
+        /// The get hash code.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public override int GetHashCode() 
+        {
+            int result = 29;
+            result = result * 13 + this.CompositionWithAdduct.ToPlainString().GetHashCode();
+            result = result * 13 + this.ChargeState;
+            result = result * 13 + this.TargetDescriptor.GetHashCode();
+            result = result * 13 + this.PeptideSequence.GetHashCode();
+            return result;
         }
     }
 }

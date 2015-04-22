@@ -18,6 +18,7 @@ namespace ImsInformed.Util
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Properties;
     using ImsInformed.Stats;
 
     using InformedProteomics.Backend.Data.Biology;
@@ -358,7 +359,7 @@ namespace ImsInformed.Util
             try
             {
                 //load PNNLOmicsElementData.xml on runtime and consult it to construct the Atom profile
-                string xml_str = Properties.Resources.PNNLOmicsElementData;
+                string xml_str = Resources.PNNLOmicsElementData;
                 XElement xelement = XElement.Parse(xml_str);
 
                 // Convert the rest of the dictionary as an IEnumberable<tuple<string, int>>
@@ -381,7 +382,7 @@ namespace ImsInformed.Util
                             string name = (string)els.Elements("Name").First().Value;
                         
                             if (!Double.TryParse(els.Elements("Isotope").First().Element("Mass").Value, out averageMass) ||
-                                !int.TryParse(els.Elements("Isotope").First().Element("IsotopeNumber").Value, out norminalMass))
+                                !Int32.TryParse(els.Elements("Isotope").First().Element("IsotopeNumber").Value, out norminalMass))
                             {
                                 throw new Exception("XML file corrupted");
                             }
@@ -409,7 +410,7 @@ namespace ImsInformed.Util
         /// The chemical formula.
         /// </param>
         /// <returns>
-        /// The <see cref="IDictionary"/>.
+        /// The <see cref="IDictionary{TKey,TValue}"/>.
         /// </returns>
         /// <exception cref="FormatException">
         /// </exception>
@@ -433,7 +434,7 @@ namespace ImsInformed.Util
 
                 int count =
                     match.Groups[2].Value != "" ?
-                    int.Parse(match.Groups[2].Value) :
+                    Int32.Parse(match.Groups[2].Value) :
                     1;
 
                 if (formula.ContainsKey(name))
@@ -447,6 +448,33 @@ namespace ImsInformed.Util
             }
 
             return formula;
+        }
+
+        /// <summary>
+        /// The are compositions equal.
+        /// </summary>
+        /// <param name="A">
+        /// The a.
+        /// </param>
+        /// <param name="B">
+        /// The b.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool AreCompositionsEqual(Composition A, Composition B)
+        {
+            Composition remainder;
+            try
+            {
+                remainder = A - B;
+            }
+            catch (Exception)
+            {
+                remainder = B - A;                
+            }
+
+            return (remainder == null) || (remainder.Mass - 0) < 0.1;
         }
     }
 }

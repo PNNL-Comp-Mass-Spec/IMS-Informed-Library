@@ -12,7 +12,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Windows.Documents;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.PeakDetectors;
@@ -585,7 +584,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 }
                     
                 // Export the fit line into QC oxyplot drawings
-                string outputPath = this.OutputPath + this.DatasetName + "_" + target.Adduct + "_QA.png";
+                string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.png";
                 ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
                 if (detailedVerbose)
                 {

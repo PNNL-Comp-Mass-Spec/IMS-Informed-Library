@@ -14,6 +14,7 @@ namespace ImsInformed.Targets
     using System.Collections.Generic;
 
     using ImsInformed.Domain;
+    using ImsInformed.Interfaces;
 
     /// <summary>
     /// The drift time Target.
@@ -43,6 +44,7 @@ namespace ImsInformed.Targets
             peptide.DriftTimeTargetList.Add(this);    
 
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
+            this.TargetType = TargetType.MoleculeWithKnownDriftTime;
         }
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace ImsInformed.Targets
             : base(empiricalFormula, ionizationMethod, libraryEntryName, adductMultiplier)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
+            this.TargetType = TargetType.MoleculeWithKnownDriftTime;
         }
 
         /// <summary>
@@ -88,6 +91,7 @@ namespace ImsInformed.Targets
             : base(empiricalFormula, adduct, libraryEntryName)
         {
             this.NormalizedDriftTimeInMs = normalizedDriftTimeInMs;
+            this.TargetType = TargetType.MoleculeWithKnownDriftTime; 
         }
 
         /// <summary>
@@ -105,5 +109,36 @@ namespace ImsInformed.Targets
         /// Gets the drift time.
         /// </summary>
         public double NormalizedDriftTimeInMs { get; private set; }
+
+        /// <summary>
+        /// The equals.
+        /// </summary>
+        /// <param name="other">
+        /// The other.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public override bool Equals(IImsTarget other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other.TargetType != TargetType.MoleculeWithKnownDriftTime) return false;
+            return this.Equals(other as DriftTimeTarget);
+        }
+
+        /// <summary>
+        /// The equals.
+        /// </summary>
+        /// <param name="other">
+        /// The other.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public bool Equals(DriftTimeTarget other)
+        {
+            return base.Equals(other) && Math.Abs(this.NormalizedDriftTimeInMs - other.NormalizedDriftTimeInMs) < 0.00001;
+        }
     }
 }

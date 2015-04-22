@@ -103,7 +103,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the Target type.
         /// </summary>
-        public TargetType TargetType { get; private set; }
+        public TargetType TargetType { get; protected set; }
 
         /// <summary>
         /// Gets the empirical formula.
@@ -180,6 +180,50 @@ namespace ImsInformed.Targets
             this.MassWithAdduct = this.CompositionWithAdduct.Mass;
             this.TargetType = TargetType.Molecule;
             this.Adduct = ionization;
+        }
+
+        /// <summary>
+        /// The equals.
+        /// </summary>
+        /// <param name="other">
+        /// The other.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public virtual bool Equals(IImsTarget other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other.TargetType != TargetType.Molecule) return false;
+            return this.Equals(other as MolecularTarget);
+        }
+
+        public bool Equals(MolecularTarget other)
+        {
+            return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) && 
+                this.ChargeState == other.ChargeState &&
+                this.chemicalIdentifier == other.chemicalIdentifier;
+        }
+
+        public override bool Equals(object other) 
+        {
+            return this.Equals(other as IImsTarget);
+        }
+
+        /// <summary>
+        /// The get hash code.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public override int GetHashCode() 
+        {
+            int result = 29;
+            result = result * 13 + this.CompositionWithAdduct.ToPlainString().GetHashCode();
+            result = result * 13 + this.ChargeState;
+            result = result * 13 + this.ChemicalIdentifier.GetHashCode();
+            return result;
         }
     }
 }

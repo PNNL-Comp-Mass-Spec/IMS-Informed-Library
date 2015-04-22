@@ -10,6 +10,8 @@
 
 namespace ImsInformed.Interfaces
 {
+    using System;
+
     using ImsInformed.Domain;
 
     using InformedProteomics.Backend.Data.Composition;
@@ -17,7 +19,7 @@ namespace ImsInformed.Interfaces
     /// <summary>
     /// The IMS Target interface.
     /// </summary>
-    public interface IImsTarget 
+    public interface IImsTarget : IEquatable<IImsTarget>
     {
         /// <summary>
         /// Gets the mass.

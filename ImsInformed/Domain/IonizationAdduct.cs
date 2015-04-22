@@ -124,6 +124,7 @@ namespace ImsInformed.Domain
                 else if (ionizationMethod == IonizationMethod.SodiumPlus) 
                 {
                     this.compositionSurplus += MoleculeUtil.ReadEmpiricalFormula("Na");
+                    this.ChargeState++;
                 }
                 else if (ionizationMethod == IonizationMethod.APCI) 
                 {
@@ -175,7 +176,7 @@ namespace ImsInformed.Domain
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return AreCompositionsEqual(this.compositionDebt, other.compositionDebt) && AreCompositionsEqual(this.compositionDebt, other.compositionDebt) && this.ChargeState == other.ChargeState;
+            return MoleculeUtil.AreCompositionsEqual(this.compositionDebt, other.compositionDebt) && MoleculeUtil.AreCompositionsEqual(this.compositionDebt, other.compositionDebt) && this.ChargeState == other.ChargeState;
         }
 
         public override bool Equals(object other) 
@@ -201,33 +202,6 @@ namespace ImsInformed.Domain
         public override string ToString()
         {
             return this.description;
-        }
-
-        /// <summary>
-        /// The are compositions equal.
-        /// </summary>
-        /// <param name="A">
-        /// The a.
-        /// </param>
-        /// <param name="B">
-        /// The b.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        private static bool AreCompositionsEqual(Composition A, Composition B)
-        {
-            Composition remainder;
-            try
-            {
-                remainder = A - B;
-            }
-            catch (Exception)
-            {
-                remainder = B - A;                
-            }
-
-            return (remainder == null) || (remainder.Mass - 0) < 0.1;
         }
     }
 }

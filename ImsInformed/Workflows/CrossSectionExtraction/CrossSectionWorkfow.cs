@@ -241,11 +241,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     List<Peak> theoreticalIsotopicProfilePeakList = null;
                     if (hasCompositionInfo) 
                     {
-                        string empiricalFormula = target.CompositionWithAdduct.ToPlainString();
-
-                        // Has to use the composition without adduct because again, this function was written for peptides. But the isotopic    profile
-                        // is close regardless.
-                        IsotopicProfile theoreticalIsotopicProfile = this.theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, 1);
+                        int chargeStateAbs = Math.Abs(target.ChargeState);
+                        Composition compensatedComposition = target.CompositionWithAdduct - new Composition(0, chargeStateAbs, 0, 0, 0);
+                        string empiricalFormula = compensatedComposition.ToPlainString();
+                        
+                        // Again this isotopic profile generator auto adds hydrogen for you depending on charge states. So here take it out.
+                        IsotopicProfile theoreticalIsotopicProfile = this.theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeStateAbs);
 
                         theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                     }

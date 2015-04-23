@@ -256,13 +256,16 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // Voltage grouping
                     VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz,    this.Parameters.MassToleranceInPpm);
 
-                    // For each voltage, find 2D XIC features 
+                    // For each voltage, find features that potentially represent an ion presence at the given mz.
                     if (detailedVerbose)
                     {
                         Trace.WriteLine("Feature detection and scoring: ");
                     }
 
                     IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
+                    IDictionary<VoltageGroup, IList<StandardImsPeak>> potentialTargets = new Dictionary<VoltageGroup, IList<StandardImsPeak>>();
+
+                    // Iterate through the features and perform filtering on isotopic affinity, intensity, drift time and peak shape.
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {    
                         double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, this.uimfReader);
@@ -412,14 +415,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         voltageGroup.VoltageGroupScore = VoltageGroupScore.ComputeVoltageGroupStabilityScore(voltageGroup);
                     }
                     
-                    // Remove voltage groups
+                    // Remove voltage groups that were rejected
                     foreach (VoltageGroup voltageGroup in rejectionList)
                     {
                         accumulatedXiCs.Remove(voltageGroup);
-
-                        // Choose the best feature in the voltage group as the best feature (even if non qualified).
                     }
 
+                    // Report analysis as negative
                     if (accumulatedXiCs.Keys.Count < 1)
                     {
                         AnalysisScoresHolder analysisScores;

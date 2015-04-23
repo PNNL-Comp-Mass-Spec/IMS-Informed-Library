@@ -205,7 +205,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
             // Voltage grouping
-            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.MassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs);
+            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.InitialTargetingMassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs);
 
             foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
             {
@@ -220,7 +220,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                     // Find peaks using multidimensional peak finder.
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                     List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
-                    List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
+                    List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.InitialTargetingMassToleranceInPpm)).ToList();
             
                     // Score features
                     IDictionary<StandardImsPeak, FeatureScoreHolder> scoresTable = new Dictionary<StandardImsPeak, FeatureScoreHolder>();
@@ -231,7 +231,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         FeatureScoreHolder currentScoreHolder;
                         currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
                         
-                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
+                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.InitialTargetingMassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
 
                         currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList,voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
             

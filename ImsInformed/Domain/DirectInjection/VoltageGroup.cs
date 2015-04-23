@@ -58,11 +58,6 @@ namespace ImsInformed.Domain.DirectInjection
             this.MeanPressureNondimensionalized = 0;
             this.AverageTofWidthInSeconds = 0;
             this.VariancePressure = 0;
-            this.BestFeature = null;
-            
-            this.BestFeatureScores.IntensityScore = 0;
-            this.BestFeatureScores.IsotopicScore = 0;
-            this.BestFeatureScores.PeakShapeScore = 0;
         }
 
         /// <summary>
@@ -122,25 +117,9 @@ namespace ImsInformed.Domain.DirectInjection
         public double AverageTofWidthInSeconds {get; private set; }
 
         /// <summary>
-        /// Gets or sets the AverageCandidateTargetScores.
-        /// stores ion detection as the following result 
-        /// </summary>
-        public FeatureScoreHolder BestFeatureScores;
-
-        /// <summary>
         /// Gets or sets the confidence score.
         /// </summary>
         public double VoltageGroupScore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the best feature.
-        /// </summary>
-        public StandardImsPeak BestFeature { get; set; }
-
-        /// <summary>
-        /// Gets or sets the fit point.
-        /// </summary>
-        public ContinuousXYPoint FitPoint { get; set; }
 
         /// <summary>
         /// The add voltage.

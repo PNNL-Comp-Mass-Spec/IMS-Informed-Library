@@ -13,11 +13,8 @@ namespace ImsInformed.Stats
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
 
     using DeconTools.Backend.Utilities;
-
-    using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
     /// The fit line.

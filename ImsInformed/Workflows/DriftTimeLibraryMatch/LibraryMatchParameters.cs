@@ -28,7 +28,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <param name="driftTimeToleranceInMs">
         /// The drift time tolerance in ms.
         /// </param>
-        /// <param name="massToleranceInPpm">
+        /// <param name="initialTargetingMassToleranceInPpm">
         /// The mass tolerance in ppm.
         /// </param>
         /// <param name="numPointForSmoothing">
@@ -43,10 +43,10 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <param name="featureFilterLevel">
         /// The feature Filter Level.
         /// </param>
-        public LibraryMatchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double peakShapeThreshold, double isotopicThreshold, double featureFilterLevel)
+        public LibraryMatchParameters(double driftTimeToleranceInMs, double initialTargetingMassToleranceInPpm, int numPointForSmoothing, double peakShapeThreshold, double isotopicThreshold, double featureFilterLevel)
         {
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
-            this.MassToleranceInPpm = massToleranceInPpm;
+            this.InitialTargetingMassToleranceInPpm = initialTargetingMassToleranceInPpm;
             this.NumPointForSmoothing = numPointForSmoothing;
             this.PeakShapeThreshold = peakShapeThreshold;
             this.IsotopicThreshold = isotopicThreshold;
@@ -61,7 +61,12 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <summary>
         /// Gets or sets the mass tolerance in ppm.
         /// </summary>
-        public double MassToleranceInPpm { get; private set; }
+        public double InitialTargetingMassToleranceInPpm { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the mass tolerance in ppm.
+        /// </summary>
+        public double MatchingMassToleranceInPpm { get; private set; }
 
         /// <summary>
         /// Gets or sets the number point for smoothing.

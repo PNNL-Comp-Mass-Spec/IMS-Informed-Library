@@ -13,8 +13,8 @@ namespace ImsInformed.Filters
     using System;
 
     using ImsInformed.Domain;
-
-    using MultiDimensionalPeakFinding.PeakDetection;
+    using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Targets;
 
     /// <summary>
     /// The feature filters.
@@ -79,6 +79,27 @@ namespace ImsInformed.Filters
             return peakShapeScore < peakShapeThreshold;
         }
 
+        /// <summary>
+        /// The filter high mz distance.
+        /// </summary>
+        /// <param name="feature">
+        /// The feature.
+        /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <param name="matchingMassToleranceInPpm">
+        /// The matching mass tolerance in ppm.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool FilterHighMzDistance(StandardImsPeak feature, DriftTimeTarget target, double matchingMassToleranceInPpm)
+        {
+            double massDifferenceInDalton = feature.HighestPeakApex.MzCenterInDalton - target.MassWithAdduct;
+            double massDifferenceInPpm = massDifferenceInDalton / target.MassWithAdduct * 1000000;
+            return Math.Abs(massDifferenceInPpm) > matchingMassToleranceInPpm;
+        }
 
         /// <summary>
         /// The filter bad isotopic profile.

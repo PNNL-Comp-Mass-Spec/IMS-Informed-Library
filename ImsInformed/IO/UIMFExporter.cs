@@ -11,18 +11,11 @@
 namespace ImsInformed.IO
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-
-    using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Stats;
     using ImsInformed.Util;
-
-    using MathNet.Numerics.Integration.Algorithms;
 
     using UIMFLibrary;
 

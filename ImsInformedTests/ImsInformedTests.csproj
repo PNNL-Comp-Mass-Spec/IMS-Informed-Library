@@ -75,8 +75,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MASIC\MagnitudeConcavityPeakFinder.dll</HintPath>
     </Reference>
-    <Reference Include="MathNet.Numerics">
-      <HintPath>..\lib\MathNet.Numerics.dll</HintPath>
+    <Reference Include="MathNet.Numerics, Version=3.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MathNet.Numerics.3.6.0\lib\net40\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="MultiDimensionalPeakFinding, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
@@ -110,6 +111,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\UIMFLibrary\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
     <Reference Include="UIMFLibrary, Version=3.0.5452.22853, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\UIMFLibrary\UIMFLibrary.dll</HintPath>

@@ -18,17 +18,10 @@ namespace ImsInformed.Scoring
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Interfaces;
     using ImsInformed.Stats;
-    using ImsInformed.Targets;
-    using ImsInformed.Util;
-    using ImsInformed.Workflows;
-    using ImsInformed.Workflows.CrossSectionExtraction;
-    using ImsInformed.Workflows.LcImsPeptideExtraction;
 
+    using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
-    using MathNet.Numerics.LinearAlgebra.Generic;
     using MathNet.Numerics.Statistics;
-
-    using MultiDimensionalPeakFinding.PeakDetection;
 
     using UIMFLibrary;
 

@@ -200,14 +200,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             using (this.ResetTraceListenerToTarget(target))
             {
                 bool hasCompositionInfo = target.CompositionWithoutAdduct != null;
-                double viperFriendlyMass = 0;
 
                 CrossSectionWorkflowResult informedResult;
 
                 try
                 {
                     // Get the monoisotopic mass for viper
-                    viperFriendlyMass = target.MassWithAdduct;
+                    double viperFriendlyMass = target.MassWithAdduct;
                     if (target.ChargeState < 0)
                     {
                         viperFriendlyMass = viperFriendlyMass + new Composition(0, target.ChargeState, 0, 0, 0).Mass;
@@ -668,12 +667,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 catch (Exception e)
                 {
                     // Print result
-                    using (this.ResetTraceListenerToTarget(target))
-                    {
-                        Trace.WriteLine(e.Message);
-                        Trace.WriteLine(e.StackTrace);
-                        Trace.Close();
-                    }
+                    Trace.WriteLine(e.Message);
+                    Trace.WriteLine(e.StackTrace);
+                    Trace.Listeners.Clear();
+                    Trace.Close();
 
                     // create the error result
                     AnalysisScoresHolder analysisScores;
@@ -689,8 +686,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         AnalysisStatus.UknownError, 
                         analysisScores, 
                         null);
-
-                    Trace.Listeners.Clear();
                     return informedResult;
                 }
             }
@@ -707,6 +702,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         public FileStream ResetTraceListenerToTarget(IImsTarget target)
         {
+            Trace.Listeners.Clear();
             string targetResultFileName = Path.Combine(this.OutputPath, "TargetSearchResult" + target.TargetDescriptor + ".txt");
             FileStream resultFile = new FileStream(targetResultFileName, FileMode.Create, FileAccess.Write, FileShare.None);
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
@@ -716,7 +712,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
             };
 
-            Trace.Listeners.Clear();
             Trace.Listeners.Add(consoleTraceListener);
             Trace.Listeners.Add(targetResultTraceListener);
             Trace.AutoFlush = true;

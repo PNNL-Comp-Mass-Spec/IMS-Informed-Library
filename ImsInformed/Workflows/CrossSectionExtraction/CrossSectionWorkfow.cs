@@ -231,10 +231,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine("Targeting centerMz: " + target.MassWithAdduct);
                         Trace.WriteLine(string.Empty);
                     } 
-                    else
-                    {
-                        Trace.WriteLine("Target: " + target.TargetDescriptor);
-                    }
 
                     // Generate Theoretical Isotopic Profile
                     List<Peak> theoreticalIsotopicProfilePeakList = null;
@@ -434,10 +430,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             AnalysisStatus.Negative, 
                             analysisScores);
                         
-                        Trace.WriteLine("Analysis result");
-                        Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
                         if (detailedVerbose)
                         {
+                            Trace.WriteLine("Analysis result");
+                            Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
                             Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
                             Trace.WriteLine(string.Format("    Average Best Feature Intensity Score {0:F4}",        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                             
@@ -623,13 +619,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     finalStatus, 
                     analysisScoreHolder, 
                     isomers);
-                    
-                    Trace.WriteLine("Analysis result");
-                    Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
-                    Trace.WriteLine(string.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
 
                     if (detailedVerbose)
                     {
+                        Trace.WriteLine("Analysis result");
+                        Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
+                        Trace.WriteLine(string.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
                         Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
                         Trace.WriteLine(string.Format("    Average Candidate Target Intensity Score {0:F4}",        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
                         
@@ -639,25 +634,25 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         }
                         
                         Trace.WriteLine(string.Format("    Average Candidate Target Peak Shape Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
-                    }
-                    
-                    int isomerIndex = 1;
-                    bool onlyOneIsomer = informedResult.MatchingIsomers.Count() <= 1;
-                    foreach (TargetIsomerReport isomer in informedResult.MatchingIsomers)
-                    {
-                        if (!onlyOneIsomer)
+
+                        int isomerIndex = 1;
+                        bool onlyOneIsomer = informedResult.MatchingIsomers.Count() <= 1;
+                        foreach (TargetIsomerReport isomer in informedResult.MatchingIsomers)
                         {
-                            Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
-                        }
-                    
-                        Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms", isomer.LastVoltageGroupDriftTimeInMs));
-                        Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
-                        Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
-                        isomerIndex++;
-                    
-                        if (!onlyOneIsomer)
-                        {
-                            Trace.WriteLine(string.Empty);
+                            if (!onlyOneIsomer)
+                            {
+                                Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
+                            }
+                        
+                            Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms", isomer.LastVoltageGroupDriftTimeInMs));
+                            Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
+                            Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
+                            isomerIndex++;
+                        
+                            if (!onlyOneIsomer)
+                            {
+                                Trace.WriteLine(string.Empty);
+                            }
                         }
                     }
 

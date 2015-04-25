@@ -46,17 +46,7 @@ namespace ImsInformed.IO
         [STAThread]
         public static void MobilityFitLine2PNG(string outputPath, FitLine line)
         {
-            try
-            {
-                PlotDiagram(outputPath, MobilityFitLinePlot(line));
-            }
-            catch (Exception e)
-            {
-                using (StreamWriter stream = new System.IO.StreamWriter(@"c:\outputlog.txt", true) { AutoFlush = true })
-                {
-                    stream.WriteLine(e.Message);
-                }
-            }
+            PlotDiagram(outputPath, MobilityFitLinePlot(line));
         }
 
         /// <summary>

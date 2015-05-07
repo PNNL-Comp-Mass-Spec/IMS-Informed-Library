@@ -33,7 +33,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double ComputeVoltageGroupStabilityScore(VoltageGroup group)
         {
-            double stability = group.VariancePressure * group.VarianceTemperature * group.VarianceVoltage;
+            double stability = group.VariancePressureNondimensionalized * group.VarianceTemperature * group.VarianceVoltage;
             return ScoreUtil.MapToZeroOne(stability, true, 0.00000000000000001);
         }
 
@@ -47,7 +47,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double AverageVoltageGroupStabilityScore(IEnumerable<VoltageGroup> groups)
+        public static double ComputeAverageVoltageGroupStabilityScore(IEnumerable<VoltageGroup> groups)
         {
             int count = 0;
             double averageStabilityScore;

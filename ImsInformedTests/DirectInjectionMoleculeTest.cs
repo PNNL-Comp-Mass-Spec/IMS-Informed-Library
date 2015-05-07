@@ -500,19 +500,15 @@ namespace ImsInformedTests
                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup, target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
 
                 // feature scorings and Target selection.
-                FeatureScoreHolder mostLikelyPeakScores;
-                mostLikelyPeakScores.IntensityScore = 0;
-                mostLikelyPeakScores.IsotopicScore = 0;
-                mostLikelyPeakScores.PeakShapeScore = 0;
-                double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, uimfReader);
+                double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, uimfReader);
 
                 // Check each XIC Peak found
                 foreach (var peak in standardPeaks)
                 {
                     // Evaluate feature scores.
-                    double intensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
+                    double intensityScore = FeatureScoreUtilities.IntensityScore(peak, globalMaxIntensity);
                     
-                    double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreAngle = FeatureScoreUtilities.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
                         target, 
@@ -522,7 +518,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreDistance = FeatureScoreUtilities.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
                         target, 
@@ -532,7 +528,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
+                    double isotopicScorePerson = FeatureScoreUtilities.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
                         target, 
@@ -542,7 +538,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreBhattacharyya = FeatureScoreUtilities.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
                         target, 
@@ -552,7 +548,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreDistanceAlternative = FeatureScoreUtilities.IsotopicProfileScore(
                         peak, 
                         workflow.uimfReader, 
                         target, 
@@ -562,7 +558,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(peak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
+                    double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(peak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                     
                     // Report all features.
                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
@@ -701,7 +697,7 @@ namespace ImsInformedTests
             
             Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("CompositionWithoutAdduct: " + target.CompositionWithoutAdduct);
-            Console.WriteLine("Monoisotopic MonoisotopicMass: " + target.MonoisotopicMass);
+            Console.WriteLine("Monoisotopic ViperCompatibleMass: " + target.MonoisotopicMass);
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -739,19 +735,15 @@ namespace ImsInformedTests
                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup, target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
 
                 // feature scorings and Target selection.
-                FeatureScoreHolder mostLikelyPeakScores;
-                mostLikelyPeakScores.IntensityScore = 0;
-                mostLikelyPeakScores.IsotopicScore = 0;
-                mostLikelyPeakScores.PeakShapeScore = 0;
-                double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, uimfReader);
+                double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, uimfReader);
 
                 // Check each XIC Peak found
                 foreach (var featurePeak in standardPeaks)
                 {
                     // Evaluate feature scores.
-                   double intensityScore = FeatureScores.IntensityScore(featurePeak, globalMaxIntensity);
+                   double intensityScore = FeatureScoreUtilities.IntensityScore(featurePeak, globalMaxIntensity);
                     
-                   double isotopicScoreAngle = FeatureScores.IsotopicProfileScore(
+                   double isotopicScoreAngle = FeatureScoreUtilities.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
                         target, 
@@ -761,7 +753,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScoreDistance = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreDistance = FeatureScoreUtilities.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
                         target, 
@@ -771,7 +763,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScorePerson = FeatureScores.IsotopicProfileScore(
+                    double isotopicScorePerson = FeatureScoreUtilities.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
                         target, 
@@ -781,7 +773,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScoreBhattacharyya = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreBhattacharyya = FeatureScoreUtilities.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
                         target, 
@@ -791,7 +783,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
 
-                    double isotopicScoreDistanceAlternative = FeatureScores.IsotopicProfileScore(
+                    double isotopicScoreDistanceAlternative = FeatureScoreUtilities.IsotopicProfileScore(
                         featurePeak, 
                         workflow.uimfReader, 
                         target, 
@@ -801,7 +793,7 @@ namespace ImsInformedTests
                         globalMaxIntensity, 
                         workflow.NumberOfScans);
                     
-                    double peakShapeScore = FeatureScores.PeakShapeScore(featurePeak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
+                    double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(featurePeak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                     
                     // Report all features.
                     Console.WriteLine(" feature found at scan number {0}", featurePeak.HighestPeakApex.DriftTimeCenterInScanNumber);

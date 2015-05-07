@@ -12,15 +12,12 @@ namespace ImsInformed.Domain.DirectInjection
 {
     using System;
 
-    using ImsInformed.Scoring;
-    using ImsInformed.Stats;
-
-    using MultiDimensionalPeakFinding.PeakDetection;
+    using ImsInformed.Util;
 
     /// <summary>
     /// Represents a group of adjacent frames whose drift tube voltages are similar.
     /// </summary>
-    public class VoltageGroup : ICloneable
+    public class VoltageGroup : ICloneable, IEquatable<VoltageGroup>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="VoltageGroup"/> class.
@@ -57,7 +54,7 @@ namespace ImsInformed.Domain.DirectInjection
             this.FrameAccumulationCount = 0;
             this.MeanPressureNondimensionalized = 0;
             this.AverageTofWidthInSeconds = 0;
-            this.VariancePressure = 0;
+            this.VariancePressureNondimensionalized = 0;
         }
 
         /// <summary>
@@ -97,6 +94,17 @@ namespace ImsInformed.Domain.DirectInjection
         public double MeanTemperatureNondimensionalized { get; private set; }
 
         /// <summary>
+        /// Gets the mean temperature in kelvin.
+        /// </summary>
+        public double MeanTemperatureInKelvin
+        {
+            get
+            {
+                return UnitConversion.Nondimensionalized2Kelvin(this.MeanTemperatureNondimensionalized);
+            }
+        }
+
+        /// <summary>
         /// Gets the variance temperature.
         /// </summary>
         public double VarianceTemperature { get; private set; }
@@ -107,9 +115,20 @@ namespace ImsInformed.Domain.DirectInjection
         public double MeanPressureNondimensionalized { get; private set; }
 
         /// <summary>
+        /// Gets the mean pressure in torr.
+        /// </summary>
+        public double MeanPressureInTorr
+        {
+            get
+            {
+                return UnitConversion.Nondimensionalized2Torr(this.MeanPressureNondimensionalized);
+            }
+        }
+
+        /// <summary>
         /// Gets the variance pressure.
         /// </summary>
-        public double VariancePressure { get; private set; }
+        public double VariancePressureNondimensionalized { get; private set; }
 
         /// <summary>
         /// Gets the average TOF width.
@@ -159,7 +178,7 @@ namespace ImsInformed.Domain.DirectInjection
 
             // Accumulate pressure
             double newMeanPressure = (this.MeanPressureNondimensionalized * (this.FrameAccumulationCount - 1) + newPressure)/this.FrameAccumulationCount;
-            this.VariancePressure = ((this.FrameAccumulationCount - 1) * this.VariancePressure + (newPressure - newMeanPressure) * (newPressure - this.MeanPressureNondimensionalized)) / this.FrameAccumulationCount;
+            this.VariancePressureNondimensionalized = ((this.FrameAccumulationCount - 1) * this.VariancePressureNondimensionalized + (newPressure - newMeanPressure) * (newPressure - this.MeanPressureNondimensionalized)) / this.FrameAccumulationCount;
             this.MeanPressureNondimensionalized = newMeanPressure;
 
             // Accumulate TOF scans
@@ -224,6 +243,33 @@ namespace ImsInformed.Domain.DirectInjection
         {
             VoltageGroup vg = new VoltageGroup(this.MeanVoltageInVolts, this.VarianceVoltage, this.FrameAccumulationCount);
             return vg;
+        }
+
+        public bool Equals(VoltageGroup other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            
+            return this.FirstFrameNumber == other.FirstFrameNumber && this.LastFrameNumber == other.LastFrameNumber;
+        }
+
+        public override bool Equals(object other) 
+        {
+            return this.Equals(other as StandardImsPeak);
+        }
+
+        /// <summary>
+        /// The get hash code.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public override int GetHashCode() 
+        {
+            int result = 29;
+            result = result * 13 + this.FirstFrameNumber;
+            result = result * 13 + this.LastFrameNumber;
+            return result;
         }
 
         /// <summary>

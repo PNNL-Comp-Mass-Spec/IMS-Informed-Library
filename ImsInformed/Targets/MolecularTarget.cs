@@ -159,6 +159,17 @@ namespace ImsInformed.Targets
         }
 
         /// <summary>
+        /// Gets a value indicating whether has composition info.
+        /// </summary>
+        public bool HasCompositionInfo
+        {
+            get
+            {
+                return this.CompositionWithAdduct == null;
+            }
+        }
+
+        /// <summary>
         /// The setup.
         /// </summary>
         /// <param name="empiricalFormula">

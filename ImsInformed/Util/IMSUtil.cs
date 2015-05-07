@@ -134,7 +134,7 @@ namespace ImsInformed.Util
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double MaxDigitization(VoltageGroup group, DataReader reader)
+        public static double MaxIntensityAfterFrameAccumulation(VoltageGroup group, DataReader reader)
         {
             return 255 * group.FrameAccumulationCount * reader.GetFrameParams(group.FirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
         }
@@ -152,7 +152,7 @@ namespace ImsInformed.Util
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        [Obsolete("This method is really slow. Use MaxDigitization instead")]
+        [Obsolete("This method is really slow. Use MaxIntensityAfterFrameAccumulation instead")]
         public static double MaxGlobalIntensities(VoltageGroup group, DataReader reader)
         {
             GlobalParams global = reader.GetGlobalParams();

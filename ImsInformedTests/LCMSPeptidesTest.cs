@@ -269,7 +269,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            Console.WriteLine(DateTime.Now + ": Reading MonoisotopicMass Tags from MTDB");
+            Console.WriteLine(DateTime.Now + ": Reading ViperCompatibleMass Tags from MTDB");
             List<PeptideTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
 
             Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");
@@ -295,7 +295,7 @@ namespace ImsInformedTests
                 {
                     using (var transaction = connection.BeginTransaction())
                     {
-                        Console.WriteLine(DateTime.Now + ": Writing MonoisotopicMass Tags to database");
+                        Console.WriteLine(DateTime.Now + ": Writing ViperCompatibleMass Tags to database");
 
                         foreach (var target in targetList)
                         {
@@ -465,7 +465,7 @@ namespace ImsInformedTests
             };
 
             List<PeptideTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
-            Console.WriteLine(DateTime.Now + ": Reading MonoisotopicMass Tags from MTDB");
+            Console.WriteLine(DateTime.Now + ": Reading ViperCompatibleMass Tags from MTDB");
 
             Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");
 
@@ -489,7 +489,7 @@ namespace ImsInformedTests
                 {
                     using (var transaction = connection.BeginTransaction())
                     {
-                        Console.WriteLine(DateTime.Now + ": Writing MonoisotopicMass Tags to database");
+                        Console.WriteLine(DateTime.Now + ": Writing ViperCompatibleMass Tags to database");
 
                         //foreach (var Target in targetList)
                         //{
@@ -883,7 +883,7 @@ namespace ImsInformedTests
                 NumPointForSmoothing = 9
             };
 
-            Console.WriteLine(DateTime.Now + ": Reading MonoisotopicMass Tags from MTDB");
+            Console.WriteLine(DateTime.Now + ": Reading ViperCompatibleMass Tags from MTDB");
             List<PeptideTarget> targetList = MassTagImporter.ImportMassTags("elmer", "MT_Human_Sarcopenia_P789");
 
             Console.WriteLine(DateTime.Now + ": Using " + targetList.Count + " targets.");

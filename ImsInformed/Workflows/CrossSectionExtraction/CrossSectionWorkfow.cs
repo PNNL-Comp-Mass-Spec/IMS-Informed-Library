@@ -12,23 +12,26 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Windows.Controls.Primitives;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.PeakDetectors;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DataAssociation;
+    using ImsInformed.Domain.DataAssociation.IonTrackers;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
     using ImsInformed.Interfaces;
-    using ImsInformed.IO;
     using ImsInformed.Scoring;
-    using ImsInformed.Stats;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Composition;
 
     using MagnitudeConcavityPeakFinder;
+
+    using MathNet.Numerics.LinearAlgebra.Generic.Solvers.Status;
 
     using MultiDimensionalPeakFinding;
     using MultiDimensionalPeakFinding.PeakDetection;
@@ -196,18 +199,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         public CrossSectionWorkflowResult RunCrossSectionWorkFlow(IImsTarget target, bool detailedVerbose = true)
         {
-            // Reassign trace listener
+            // Reassign trace listener to print to console as well as the target directory.
             using (this.ResetTraceListenerToTarget(target))
             {
-                bool hasCompositionInfo = target.CompositionWithoutAdduct != null;
-                double viperFriendlyMass = 0;
-
-                CrossSectionWorkflowResult informedResult;
-
                 try
                 {
-                    // Get the monoisotopic mass for viper
-                    viperFriendlyMass = target.MassWithAdduct;
+                    // Get the monoisotopic mass for viper, which is different from anything else.
+                    double viperFriendlyMass = target.MassWithAdduct;
                     if (target.ChargeState < 0)
                     {
                         viperFriendlyMass = viperFriendlyMass + new Composition(0, target.ChargeState, 0, 0, 0).Mass;
@@ -216,30 +214,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     {
                         viperFriendlyMass = viperFriendlyMass - new Composition(0, Math.Abs(target.ChargeState), 0, 0, 0).Mass;
                     }
-                                 
-                    Trace.WriteLine(string.Empty);
-
-                    if (detailedVerbose)
-                    {
-                        Trace.WriteLine("Dataset: " + this.DatasetName);
-                        Trace.WriteLine("Target chemical: " + target.ChemicalIdentifier);
-                        Trace.WriteLine("Target description: " + target.TargetDescriptor);
-                        if (hasCompositionInfo)
-                        {
-                            Trace.WriteLine("Target Empirical Formula: " + target.EmpiricalFormula);
-                        }
-
-                        Trace.WriteLine("Targeting centerMz: " + target.MassWithAdduct);
-                        Trace.WriteLine(string.Empty);
-                    } 
-                    else
-                    {
-                        Trace.WriteLine("Target: " + target.TargetDescriptor);
-                    }
 
                     // Generate Theoretical Isotopic Profile
                     List<Peak> theoreticalIsotopicProfilePeakList = null;
-                    if (hasCompositionInfo) 
+                    if (target.HasCompositionInfo) 
                     {
                         int chargeStateAbs = Math.Abs(target.ChargeState);
                         Composition compensatedComposition = target.CompositionWithAdduct - new Composition(0, chargeStateAbs, 0, 0, 0);
@@ -250,48 +228,36 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                         theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                     }
+
+                    ReportTargetInfo(target, detailedVerbose);
                     
                     double targetMz = Math.Abs(target.MassWithAdduct / target.ChargeState);
 
-                    // Voltage grouping
+                    // Voltage grouping. Note that we only accumulate frames as needed. Accumulate frames globally is too costly. 
+                    // Here we accumulate the XICs around target MZ.
                     VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz,    this.Parameters.MassToleranceInPpm);
 
-                    // For each voltage, find features that potentially represent an ion presence at the given mz.
+                    // Perform feature detection and scoring and the given Mz range on the accumulated XICs to get the base peaks.
                     if (detailedVerbose)
                     {
                         Trace.WriteLine("Feature detection and scoring: ");
                     }
 
-                    IList<VoltageGroup> rejectionList = new List<VoltageGroup>();
-                    IDictionary<VoltageGroup, IList<StandardImsPeak>> potentialTargets = new Dictionary<VoltageGroup, IList<StandardImsPeak>>();
+                    IList<VoltageGroup> rejectedVoltageGroups = new List<VoltageGroup>();
+                    IList<ObservedPeak> filteredObservations = new List<ObservedPeak>();
+                    IList<ObservedPeak> allObservations = new List<ObservedPeak>();
+                    IList<ObservedPeak> rejectedObservations = new List<ObservedPeak>();
 
                     // Iterate through the features and perform filtering on isotopic affinity, intensity, drift time and peak shape.
-                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
+                    foreach (KeyValuePair<VoltageGroup, ExtractedIonChromatogram> item in accumulatedXiCs)
                     {    
-                        double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, this.uimfReader);
+                        VoltageGroup voltageGroup = item.Key;
+                        double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, this.uimfReader);
                     
-                        List<StandardImsPeak> standardPeaks;
-                        if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.WaterShed)
-                        {
-                            // Find peaks using multidimensional peak finder.
-                            List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
-                            List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother,     this.Parameters.FeatureFilterLevel);
-                            standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup,  target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
-                        } 
-                        else if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.MASICPeakFinder)
-                        {
-                            // Find peaks using MASIC peak finder
-                            List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
-                            IList<clsPeak> MASICPeaks = PeakFinding.FindPeakUsingMasic(intensityPoints, this.NumberOfScans);
-                            standardPeaks = MASICPeaks.Select(peak => new StandardImsPeak(peak)).ToList();
-                        }
-                        else
-                        {
-                            throw new NotImplementedException(string.Format("{0} not supported", this.Parameters.PeakDetectorSelection));
-                        }
+                        List<StandardImsPeak> standardPeaks = this.FindPeaksBasedOnXIC(item, target);
                         
                         // Score features
-                        IDictionary<StandardImsPeak, FeatureScoreHolder> scoresTable = new Dictionary<StandardImsPeak, FeatureScoreHolder>();
+                        IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
                         if (detailedVerbose)
                         {
                             Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts,    voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
@@ -299,74 +265,58 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                         foreach (StandardImsPeak peak in standardPeaks)
                         {   
-                            FeatureScoreHolder currentScoreHolder;
-                            currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
-                            
-                            currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader,     this.Parameters.MassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity,   this.NumberOfScans);
+                            FeatureStatistics currentStatistics = FeatureScoreUtilities.ScoreFeature(
+                                peak, 
+                                globalMaxIntensity,
+                                this.uimfReader,
+                                this.Parameters.MassToleranceInPpm,
+                                this.Parameters.DriftTimeToleranceInMs,
+                                voltageGroup,
+                                this.NumberOfScans,
+                                target,
+                                IsotopicScoreMethod.Angle, 
+                                theoreticalIsotopicProfilePeakList);
                     
-                            currentScoreHolder.IsotopicScore = 0;
-                            if (hasCompositionInfo)
-                            {
-                                currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target,
-                                    theoreticalIsotopicProfilePeakList, voltageGroup, IsotopicScoreMethod.Angle, globalMaxIntensity,   this.NumberOfScans);
-                            }
-                    
-                            scoresTable.Add(peak, currentScoreHolder);
+                            scoresTable.Add(peak, currentStatistics);
                         }
                     
                         // 2st round filtering: filter out non Target peaks and noise. 
-                        Predicate<StandardImsPeak> intensityThreshold = blob => FeatureFilters.FilterLowIntensity(blob, scoresTable [blob].IntensityScore, this.Parameters.IntensityThreshold);
+                        Predicate<StandardImsPeak> intensityThreshold = imsPeak => FeatureFilters.FilterLowIntensity(imsPeak, scoresTable[imsPeak].IntensityScore, this.Parameters.IntensityThreshold);
                     
                         // filter out features with Ims scans at 1% left or right.
-                        Predicate<StandardImsPeak> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, this.NumberOfScans);
+                        Predicate<StandardImsPeak> scanPredicate = imsPeak => FeatureFilters.FilterExtremeDriftTime(imsPeak, this.NumberOfScans);
 
                         // filter out features with bad peak shapes.
-                        Predicate<StandardImsPeak> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable [blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
+                        Predicate<StandardImsPeak> shapeThreshold = imsPeak => FeatureFilters.FilterBadPeakShape(imsPeak, scoresTable[imsPeak].PeakShapeScore, this.Parameters.PeakShapeThreshold);
 
                         // filter out features with distant isotopic profile.
-                        Predicate<StandardImsPeak> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable [blob].IsotopicScore, this.Parameters.IsotopicThreshold);
+                        Predicate<StandardImsPeak> isotopeThreshold = imsPeak => FeatureFilters.FilterBadIsotopicProfile(imsPeak, scoresTable[imsPeak].IsotopicScore, this.Parameters.IsotopicThreshold);
                     
-                        // Print out candidate features that pass the intensity threshold.
+                        // Print out candidate features and how they were rejected.
                         foreach (StandardImsPeak peak in standardPeaks)
-                        {  
-                            bool badScanRange = scanPredicate(peak);
-                            bool lowIntenstity = intensityThreshold(peak);
-                            bool badPeakShape = shapeThreshold(peak);
-                            bool lowIsotopicAffinity = hasCompositionInfo ? isotopeThreshold(peak) : false;
-                            FeatureScoreHolder currentScoreHolder = scoresTable[peak];
-                            if (detailedVerbose)
+                        {
+                            FeatureStatistics currentStatistics = scoresTable[peak];
+                            bool pass = ReportFeatureEvaluation(
+                                peak,
+                                currentStatistics,
+                                detailedVerbose, 
+                                target, 
+                                scanPredicate(peak),
+                                intensityThreshold(peak),
+                                shapeThreshold(peak),
+                                intensityThreshold(peak));   
+                         
+                            ObservedPeak analyzedPeak = new ObservedPeak(voltageGroup, peak, currentStatistics);
+                            if (pass)
                             {
-                                Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms    (scan# = {2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
-                                Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", currentScoreHolder.IntensityScore));
-                                if (!lowIntenstity)
-                                {
-                                    Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", currentScoreHolder.PeakShapeScore));
-                                
-                                    if (hasCompositionInfo)
-                                    {
-                                        Trace.WriteLine(string.Format("            isotopicScore:  {0:F4}", currentScoreHolder.IsotopicScore));
-                                    }
-                                }
+                                filteredObservations.Add(analyzedPeak);
                             }
-                    
-                            string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
-                            rejectionReason += lowIntenstity ? "[Low Intensity] " : string.Empty;
-                            rejectionReason += !lowIntenstity && badPeakShape ? "[Bad Peak Shape] " : string.Empty;
-                            rejectionReason += !lowIntenstity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
+                            else
+                            {
+                                rejectedObservations.Add(analyzedPeak);
+                            }
 
-                            if (detailedVerbose)
-                            {
-                                if (badScanRange || lowIntenstity || lowIsotopicAffinity || badPeakShape)
-                                {
-                                    Trace.WriteLine(rejectionReason);
-                                }
-                                else
-                                {
-                                    Trace.WriteLine("        [PASS]");
-                                }
-                    
-                                Trace.WriteLine(string.Empty);
-                            }
+                            allObservations.Add(analyzedPeak);
                         }
                         
                         standardPeaks.RemoveAll(scanPredicate);
@@ -375,24 +325,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     
                         standardPeaks.RemoveAll(shapeThreshold);
                         
-                        if (hasCompositionInfo)
+                        if (target.HasCompositionInfo)
                         {
                             standardPeaks.RemoveAll(isotopeThreshold);
                         }
-                    
-                        ScoreUtil.LikelihoodFunc likelihoodFunc = TargetPresenceLikelihoodFunctions.IntensityDominantLikelihoodFunction;
-                        if (standardPeaks.Count > 0)
-                        {
-                            IDictionary<StandardImsPeak, FeatureScoreHolder> qualifiedFeatures =
-                                standardPeaks.ToDictionary(feature => feature, feature => scoresTable[feature]);
 
-                            // Assign the best feature to voltage group it belongs to, with the feature score as one of the criteria of that    voltage group.
-
-                            // TODO: If there are more than one apexes in the best feature. Treat them as isomers.
-                            voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(qualifiedFeatures, likelihoodFunc);
-                            voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
-                        }
-                        else 
+                        if (standardPeaks.Count == 0)
                         {
                             if (detailedVerbose)
                             {
@@ -401,271 +339,75 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 Trace.WriteLine(string.Empty);
                             }
                     
-                            // Select the one of the better features from the features rejected to represent the voltage group.
-                            voltageGroup.BestFeature = ScoreUtil.SelectMostLikelyFeature(scoresTable, likelihoodFunc);
-                            if (voltageGroup.BestFeature != null)
-                            {
-                                voltageGroup.BestFeatureScores = scoresTable[voltageGroup.BestFeature];
-                            }
-                    
-                            rejectionList.Add(voltageGroup);
+                            rejectedVoltageGroups.Add(voltageGroup);
                         }
                     
-                        // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and    detected the Target ion.
+                        // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the Target ion.
                         voltageGroup.VoltageGroupScore = VoltageGroupScore.ComputeVoltageGroupStabilityScore(voltageGroup);
                     }
                     
                     // Remove voltage groups that were rejected
-                    foreach (VoltageGroup voltageGroup in rejectionList)
+                    foreach (VoltageGroup voltageGroup in rejectedVoltageGroups)
                     {
                         accumulatedXiCs.Remove(voltageGroup);
                     }
 
                     // Report analysis as negative
-                    if (accumulatedXiCs.Keys.Count < 1)
+                    if (accumulatedXiCs.Keys.Count == 0)
                     {
-                        AnalysisScoresHolder analysisScores;
-                        analysisScores.RSquared = 0;
-                        analysisScores.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore(rejectionList);
-                        
-                        // quantize the VG score from VGs in the removal list.
-                        IEnumerable<FeatureScoreHolder> featureScores = rejectionList.Select(x => x.BestFeatureScores);
-                        analysisScores.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
-                        informedResult = new CrossSectionWorkflowResult(
-                            this.DatasetName, 
-                            target,
-                            AnalysisStatus.Negative, 
-                            analysisScores);
-                        
-                        Trace.WriteLine("Analysis result");
-                        Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
-                        if (detailedVerbose)
-                        {
-                            Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                            Trace.WriteLine(string.Format("    Average Best Feature Intensity Score {0:F4}",        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
-                            
-                            if (hasCompositionInfo)
-                            {
-                                Trace.WriteLine(string.Format("    Average Best Feature Isotopic Score {0:F4}",         informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
-                            }
-
-                            Trace.WriteLine(string.Format("    Average Best Feature Peak Shape Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
-                        }
-
+                        var informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, this.DatasetName, target);
+                        ReportAnslysisResultAndMetrics(informedResult, detailedVerbose);
                         return informedResult;
                     }
-                    
-                    // Calculate the fit line from the remaining voltage groups with reliable drift time measurement.
-                    HashSet<ContinuousXYPoint> allFitPoints = new HashSet<ContinuousXYPoint>();
-                    foreach (VoltageGroup group in accumulatedXiCs.Keys)
+                    else
                     {
-                        // convert drift time to SI unit seconds
-                        double x = group.BestFeature.HighestPeakApex.DriftTimeCenterInMs / 1000;
-                    
-                        // P/(T*V) value in pascal per (volts * kelvin)
-                        double y = group.MeanPressureNondimensionalized / group.MeanVoltageInVolts
-                                   / group.MeanTemperatureNondimensionalized;
-                         
-                        ContinuousXYPoint point = new ContinuousXYPoint(x, y);
-                    
-                        allFitPoints.Add(point);
-                    
-                        // Add fit point to voltage group
-                        group.FitPoint = point;
-                    }
-                    
+                        // Perform the data association algorithm.
+                    IIonTracker tracker = new CombinatorialIonTracker();
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    FitLine line = new FitLine(allFitPoints);
-                    
-                    double voltageGroupDriftTimeInMs = -1;
-                    
+                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations);
+
                     // Printout results
                     if (detailedVerbose)
                     {
-                        Trace.WriteLine("Target Identification");
+                        Trace.WriteLine("Target Data Association");
                     }
-
-                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
-                    {
-                        voltageGroupDriftTimeInMs = voltageGroup.FitPoint.X * 1000;
-                    
-                        // Normalize the drift time to be displayed.
-                        voltageGroupDriftTimeInMs = IMSUtil.NormalizeDriftTime(voltageGroupDriftTimeInMs, voltageGroup);
-                        if (detailedVerbose)
-                        {
-                            Trace.WriteLine(
-                                string.Format(
-                                    "    Target presence confirmed at {0:F2} ± {1:F2} V.",
-                                    voltageGroup.MeanVoltageInVolts,
-                                    Math.Sqrt(voltageGroup.VarianceVoltage)));
-                            
-                            Trace.WriteLine(
-                                string.Format(
-                                    "        Frame range: [{0}, {1}]",
-                                    voltageGroup.FirstFrameNumber,
-                                    voltageGroup.LastFrameNumber));
-                            
-                            Trace.WriteLine(
-                                string.Format(
-                                    "        Drift time: {0:F4} ms (Scan# = {1})",
-                                    voltageGroup.FitPoint.X * 1000,
-                                    voltageGroup.BestFeature.HighestPeakApex.DriftTimeCenterInScanNumber));
-
-                            Trace.WriteLine(string.Format("        Cook's distance: {0:F4}", voltageGroup.FitPoint.CooksD));
-                            Trace.WriteLine(string.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
-                            Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", voltageGroup.BestFeatureScores.IntensityScore));
-                            if (hasCompositionInfo)
-                            {
-                                Trace.WriteLine(string.Format("        IsotopicScore: {0:F4}", voltageGroup.BestFeatureScores.IsotopicScore));
-                            }
-                    
-                            Trace.WriteLine(string.Format("        PeakShapeScore: {0:F4}", voltageGroup.BestFeatureScores.PeakShapeScore));
-                            Trace.WriteLine(string.Empty);
-                        }
-                    }
-                    
-                    // If not enough points
-                    int minFitPoints = this.Parameters.MinFitPoints;
-                    bool sufficientPoints = allFitPoints.Count >= minFitPoints;
-                    if (!sufficientPoints)
-                    {
-                        if (detailedVerbose)
-                        {
-                            Trace.WriteLine("Not enough points are qualified to perform linear fit. Abort identification.");
-                        }
-                    
-                        AnalysisScoresHolder scoreHolder;
-                        scoreHolder.RSquared = 0;
-                        scoreHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore (accumulatedXiCs.Keys);
-                        IEnumerable<FeatureScoreHolder> featureScores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
-                        scoreHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(featureScores);
-                        informedResult = new CrossSectionWorkflowResult(
-                            this.DatasetName, 
-                            target,
-                            AnalysisStatus.NotSufficientPoints, 
-                            scoreHolder);
-                        return informedResult;
-                    }
-                    
+                   
                     // Remove outliers with high influence.
-                    line.RemoveOutliersAboveThreshold(3, minFitPoints);
+                    // line.RemoveOutliersAboveThreshold(3, minFitPoints);
                     
                     // Remove outliers until min fit point is reached or good R2 is achieved.
-                    while (AnalysisFilter.FilterLowR2(line.RSquared) && line.FitPointCollection.Count > minFitPoints)
-                    {
-                        line.RemoveOutlierWithHighestCookDistance(minFitPoints);
-                    }
+                    // while (AnalysisFilter.FilterLowR2(line.RSquared) && line.FitPointCollection.Count > minFitPoints)
+                    // {
+                    //     line.RemoveOutlierWithHighestCookDistance(minFitPoints);
+                    // }
                     
                     // Remove the voltage considered outliers
-                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => line.OutlierCollection.Contains(p.FitPoint)).ToList())
-                    {
-                        accumulatedXiCs.Remove(voltageGroup);
-                    }
+                    // foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => line.OutlierCollection.Contains(p.FitPoint)).ToList())
+                    // {
+                    //     accumulatedXiCs.Remove(voltageGroup);
+                    // }
                         
                     // Export the fit line into QC oxyplot drawings
-                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.png";
-                    ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
-                    if (detailedVerbose)
-                    {
-                        Console.WriteLine("Writes QC plot of fitline to " + outputPath);
-                        Trace.WriteLine(string.Empty);
-                    }
-                    
-                    double rSquared = line.RSquared;
-                    
-                    // Compute mobility and cross section area
-                    double mobility = driftTubeLength * driftTubeLength / (1 / line.Slope);
-                    Composition bufferGas = new Composition(0, 0, 2, 0, 0);
-                    double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);
-                    
-                    // Find the average temperature across various non outlier voltage groups.
-                    double globalMeanTemperature = 0;
-                    int frameCount = 0;
-                    foreach (VoltageGroup group in accumulatedXiCs.Keys)
-                    {
-                        double voltageGroupTemperature = UnitConversion.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
-                        globalMeanTemperature += voltageGroupTemperature * group.FrameAccumulationCount;
-                        frameCount += group.FrameAccumulationCount;
-                    }
-                    
-                    globalMeanTemperature /= frameCount;
-                    
-                    double crossSection = MoleculeUtil.ComputeCrossSectionalArea(globalMeanTemperature, mobility, 1, reducedMass); // Charge    State is assumed to be 1 here;
-                    
-                    // Initialize the result struct.
-                    AnalysisScoresHolder analysisScoreHolder;
-                    analysisScoreHolder.RSquared = rSquared;
-                    analysisScoreHolder.AverageVoltageGroupStabilityScore = VoltageGroupScore.AverageVoltageGroupStabilityScore (accumulatedXiCs.Keys);
-                    IEnumerable<FeatureScoreHolder> scores = accumulatedXiCs.Keys.Select(x => x.BestFeatureScores);
-                    analysisScoreHolder.AverageCandidateTargetScores = FeatureScores.AverageFeatureScores(scores);
-                    AnalysisStatus finalStatus = AnalysisFilter.FilterLowR2(rSquared) ? AnalysisStatus.Rejected : AnalysisStatus.Positive;
-                    
-                    // Check if the last voltage group still exists as fit point
-                    if (finalStatus == AnalysisStatus.Rejected)
-                    {
-                        voltageGroupDriftTimeInMs = -1;
-                    }
+                    // string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.png";
+                    // ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
+                    // if (detailedVerbose)
+                    // {
+                    //     Console.WriteLine("Writes QC plot of fitline to " + outputPath);
+                    //     Trace.WriteLine(string.Empty);
+                    // }
+                    CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateResultFromAssociationHypothesis(
+                        this.Parameters, 
+                        this.DatasetName,
+                        optimalAssociationHypothesis, 
+                        target,
+                        accumulatedXiCs.Keys,
+                        allObservations,
+                        viperFriendlyMass);
+                        ReportAnslysisResultAndMetrics(informedResult, detailedVerbose);
 
-                    // Check if the last voltage remaining is the last voltage group in the experiment.
-                    if (!IMSUtil.IsLastVoltageGroup(accumulatedXiCs.Keys.Last(), this.NumberOfFrames))
-                    {
-                        voltageGroupDriftTimeInMs = -2;
-                    }
-                    
-                    IList<TargetIsomerReport> isomers = new List<TargetIsomerReport>();
-                    TargetIsomerReport mostLikelyIsomer;
-                    mostLikelyIsomer.Mobility = mobility;
-                    mostLikelyIsomer.CrossSectionalArea = crossSection;
-                    mostLikelyIsomer.MonoisotopicMass = viperFriendlyMass;
-                    mostLikelyIsomer.LastVoltageGroupDriftTimeInMs = voltageGroupDriftTimeInMs;
-                    isomers.Add(mostLikelyIsomer);
-                    
-                    informedResult = new CrossSectionWorkflowResult(
-                    this.DatasetName, 
-                    target,
-                    finalStatus, 
-                    analysisScoreHolder, 
-                    isomers);
-                    
-                    Trace.WriteLine("Analysis result");
-                    Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
-                    Trace.WriteLine(string.Format("    R Squared {0:F4}", informedResult.AnalysisScoresHolder.RSquared));
-
-                    if (detailedVerbose)
-                    {
-                        Trace.WriteLine(string.Format("    Average Voltage Group Stability Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageVoltageGroupStabilityScore));
-                        Trace.WriteLine(string.Format("    Average Candidate Target Intensity Score {0:F4}",        informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IntensityScore));
-                        
-                        if (hasCompositionInfo)
-                        {
-                            Trace.WriteLine(string.Format("    Average Candidate Target Isotopic Score {0:F4}",         informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.IsotopicScore));
-                        }
-                        
-                        Trace.WriteLine(string.Format("    Average Candidate Target Peak Shape Score {0:F4}",   informedResult.AnalysisScoresHolder.AverageCandidateTargetScores.PeakShapeScore));
-                    }
-                    
-                    int isomerIndex = 1;
-                    bool onlyOneIsomer = informedResult.MatchingIsomers.Count() <= 1;
-                    foreach (TargetIsomerReport isomer in informedResult.MatchingIsomers)
-                    {
-                        if (!onlyOneIsomer)
-                        {
-                            Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
-                        }
-                    
-                        Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms", isomer.LastVoltageGroupDriftTimeInMs));
-                        Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
-                        Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
-                        isomerIndex++;
-                    
-                        if (!onlyOneIsomer)
-                        {
-                            Trace.WriteLine(string.Empty);
-                        }
-                    }
-
-                    Trace.Listeners.Clear();
+                        Trace.Listeners.Clear();
                     return informedResult;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -675,25 +417,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine(e.Message);
                         Trace.WriteLine(e.StackTrace);
                         Trace.Close();
+                        Trace.Listeners.Clear();
                     }
 
                     // create the error result
-                    AnalysisScoresHolder analysisScores;
-                    analysisScores.RSquared = 0;
-                    analysisScores.AverageCandidateTargetScores.IntensityScore = 0;
-                    analysisScores.AverageCandidateTargetScores.IsotopicScore = 0;
-                    analysisScores.AverageCandidateTargetScores.PeakShapeScore = 0;
-                    analysisScores.AverageVoltageGroupStabilityScore = 0;
-
-                    informedResult = new CrossSectionWorkflowResult(
-                        this.DatasetName, 
-                        target, 
-                        AnalysisStatus.UknownError, 
-                        analysisScores, 
-                        null);
-
-                    Trace.Listeners.Clear();
-                    return informedResult;
+                    return CrossSectionWorkflowResult.CreateErrorResult(target, this.DatasetName);
                 }
             }
         }
@@ -707,7 +435,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// The <see cref="FileStream"/>.
         /// </returns>
-        public FileStream ResetTraceListenerToTarget(IImsTarget target)
+        private FileStream ResetTraceListenerToTarget(IImsTarget target)
         {
             string targetResultFileName = Path.Combine(this.OutputPath, "TargetSearchResult" + target.TargetDescriptor + ".txt");
             FileStream resultFile = new FileStream(targetResultFileName, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -761,6 +489,284 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
             // free native resources if there are any.
             Trace.Listeners.Clear();
+        }
+
+        /// <summary>
+        /// The report anslysis result and metrics.
+        /// </summary>
+        /// <param name="informedResult">
+        /// The informed Result.
+        /// </param>
+        /// <param name="detailedVerbose">
+        /// The detailed verbose.
+        /// </param>
+        private static void ReportAnslysisResultAndMetrics(CrossSectionWorkflowResult informedResult, bool detailedVerbose = true)
+        {
+            Trace.WriteLine("Analysis result");
+            Trace.WriteLine(string.Format("    Analysis Conclusion: {0}", informedResult.AnalysisStatus));
+            if (informedResult.AnalysisStatus == AnalysisStatus.Positive)
+            {
+                Trace.WriteLine(string.Format("    P(T|X): {0:F4}", informedResult.AssociationHypothesisInfo.ProbabilityOfDataGivenHypothesis));
+                Trace.WriteLine(string.Format("    P(X|T): {0:F4}", informedResult.AssociationHypothesisInfo.ProbabilityOfDataGivenHypothesis));
+            }
+
+            if (detailedVerbose)
+            {
+                Trace.WriteLine(string.Format("    Average Voltage Group Stability Scor{0:F4}", informedResult.AverageVoltageGroupStability));
+                Trace.WriteLine(string.Format("    Average Candidate Target Intensity Score {0:F4}", informedResult.AverageObservedPeakStatistics.IntensityScore));
+                
+                if (informedResult.Target.HasCompositionInfo)
+                {
+                    Trace.WriteLine(string.Format("    Average Candidate Target Isotopic Score {0:F4}", informedResult.AverageObservedPeakStatistics.IsotopicScore));
+                }
+
+                Trace.WriteLine(
+                    string.Format(
+                        "    Average Candidate Target Peak Shape S{0:F4}", 
+                        informedResult.AverageObservedPeakStatistics.PeakShapeScore));
+
+                if (informedResult.AnalysisStatus == AnalysisStatus.Positive)
+                {
+                    ReportIsomersInfo(informedResult.IdentifiedIsomers);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The report feature evaluation.
+        /// </summary>
+        /// <param name="peak">
+        /// The peak.
+        /// </param>
+        /// <param name="scores">
+        /// The scores.
+        /// </param>
+        /// <param name="verbose">
+        /// The verbose.
+        /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <param name="badScanRange">
+        /// The bad scan range.
+        /// </param>
+        /// <param name="lowIntensity">
+        /// The low intensity.
+        /// </param>
+        /// <param name="badPeakShape">
+        /// The bad peak shape.
+        /// </param>
+        /// <param name="lowIsotopicAffinity">
+        /// The low isotopic affinity.
+        /// </param>
+        /// <returns>
+        /// If the feature pass all the filters <see cref="bool"/>.
+        /// </returns>
+        private static bool ReportFeatureEvaluation(StandardImsPeak peak, FeatureStatistics scores, bool verbose, IImsTarget target, bool badScanRange, bool lowIntensity, bool badPeakShape, bool lowIsotopicAffinity)
+        {
+            Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms    (scan# = {2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+            Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", scores.IntensityScore));
+            
+            if (!lowIntensity)
+            {
+                Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", scores.PeakShapeScore));
+            
+                if (target.HasCompositionInfo)
+                {
+                    Trace.WriteLine(string.Format("            isotopicScore:  {0:F4}", scores.IsotopicScore));
+                }
+            }
+
+            string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
+            rejectionReason += lowIntensity ? "[Low Intensity] " : string.Empty;
+            rejectionReason += !lowIntensity && badPeakShape ? "[Bad Peak Shape] " : string.Empty;
+            rejectionReason += !lowIntensity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
+
+            bool rejected = badScanRange || lowIntensity || lowIsotopicAffinity || badPeakShape;
+
+            if (verbose)
+            {
+                if (rejected)
+                {
+                    Trace.WriteLine(rejectionReason);
+                }
+                else
+                {
+                    Trace.WriteLine("        [PASS]");
+                }
+
+                Trace.WriteLine(string.Empty);
+            }
+
+            return !rejected;
+        }
+
+        /// <summary>
+        /// The report track information.
+        /// </summary>
+        /// <param name="hypothesis">
+        /// The hypothesis.
+        /// </param>
+        /// <param name="hasCompositionInfo">
+        /// The has Composition Info.
+        /// </param>
+        /// <param name="verbose">
+        /// The verbose.
+        /// </param>
+        private static void ReportTrackInformation(AssociationHypothesis hypothesis, bool hasCompositionInfo, bool verbose)
+        {
+            foreach (IsomerTrack track in hypothesis.Tracks)
+            {
+                foreach (var observation in track.ObservedPeaks)
+                {
+                    VoltageGroup voltageGroup = observation.VoltageGroup;
+                    StandardImsPeak peak = observation.Peak;
+                    double driftTimeInMs = peak.HighestPeakApex.DriftTimeCenterInMs;
+                    
+                    // Normalize the drift time to be displayed.
+                    double normalizedDriftTimeInMs = IMSUtil.NormalizeDriftTime(driftTimeInMs, voltageGroup);
+
+                    if (verbose)
+                    {
+                        Trace.WriteLine(
+                            string.Format(
+                                "    Target presence confirmed at {0:F2} ± {1:F2} V.",
+                                voltageGroup.MeanVoltageInVolts,
+                                Math.Sqrt(voltageGroup.VarianceVoltage)));
+                    
+                        Trace.WriteLine(
+                            string.Format(
+                                "        Frame range: [{0}, {1}]",
+                                voltageGroup.FirstFrameNumber,
+                                voltageGroup.LastFrameNumber));
+                    
+                        Trace.WriteLine(
+                            string.Format(
+                                "        Normalized Drift Time: {0:F4} ms (Scan# = {1})",
+                                normalizedDriftTimeInMs,
+                                peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+
+                        Trace.WriteLine(string.Format("        Cook's distance: {0:F4}", observation.CooksDistance));
+                        Trace.WriteLine(string.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
+                        Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", observation.Statistics.IntensityScore));
+                        if (hasCompositionInfo)
+                        {
+                            Trace.WriteLine(string.Format("        IsotopicScore: {0:F4}", observation.Statistics.IsotopicScore));
+                        }
+            
+                        Trace.WriteLine(string.Format("        PeakShapeScore: {0:F4}", observation.Statistics.PeakShapeScore));
+                        Trace.WriteLine(string.Empty);
+
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The find peaks based on xic.
+        /// </summary>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        /// <param name="chromatogram">
+        /// The chromatogram.
+        /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IList"/>.
+        /// </returns>
+        /// <exception cref="NotImplementedException">
+        /// </exception>
+        private List<StandardImsPeak> FindPeaksBasedOnXIC(KeyValuePair<VoltageGroup, ExtractedIonChromatogram> chromatogram, IImsTarget target)
+        {
+            if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.WaterShed)
+            {
+                // Find peaks using multidimensional peak finder.
+                List<IntensityPoint> intensityPoints = chromatogram.Value.IntensityPoints;
+                List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
+
+                // Recapture the 2D peak using the 1D feature blob from multidimensional peak finder.
+                return featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, chromatogram.Key, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
+            } 
+            else if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.MASICPeakFinder)
+            {
+                // Find peaks using MASIC peak finder
+                List<IntensityPoint> intensityPoints = chromatogram.Value.IntensityPoints;
+                IList<clsPeak> masicPeaks = PeakFinding.FindPeakUsingMasic(intensityPoints, this.NumberOfScans);
+                
+                // Recapture the 2D peak using the 1D feature blob from multidimensional peak finder.
+                return masicPeaks.Select(peak => new StandardImsPeak(peak)).ToList();
+            }
+            else
+            {
+                throw new NotImplementedException(string.Format("{0} not supported", this.Parameters.PeakDetectorSelection));
+            }
+        }
+
+        /// <summary>
+        /// The report target info.
+        /// </summary>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        /// <param name="verbose">
+        /// The verbose.
+        /// </param>
+        private static void ReportTargetInfo(IImsTarget target, bool verbose)
+        {
+            Trace.WriteLine(string.Empty);
+
+            if (verbose)
+            {
+                Trace.WriteLine("Target chemical: " + target.ChemicalIdentifier);
+                Trace.WriteLine("Target description: " + target.TargetDescriptor);
+                if (target.HasCompositionInfo)
+                {
+                    Trace.WriteLine("Target Empirical Formula: " + target.EmpiricalFormula);
+                }
+
+                Trace.WriteLine("Targeting centerMz: " + target.MassWithAdduct);
+                Trace.WriteLine(string.Empty);
+            } 
+            else
+            {
+                Trace.WriteLine("Target: " + target.TargetDescriptor);
+            }
+        }
+
+        /// <summary>
+        /// The report isomers info.
+        /// </summary>
+        /// <param name="allIsomers">
+        /// The all isomers.
+        /// </param>
+        private static void ReportIsomersInfo(IEnumerable<IdentifiedIsomerInfo> allIsomers)
+        {
+            int isomerIndex = 1;
+            var isomers = allIsomers.ToArray();
+            bool onlyOneIsomer = isomers.Count() <= 1;
+            foreach (IdentifiedIsomerInfo isomer in isomers)
+            {
+                if (!onlyOneIsomer)
+                {
+                    Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
+                }
+            
+                Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
+                Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
+                ArrivalTimeSnapShot lastDriftTime = isomer.ArrivalTimeSnapShots.Last();
+
+                Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms [V: {1:F2}, T: {2:F2}K, P: {3:F2}]", lastDriftTime.MeasuredArrivalTimeInMs, lastDriftTime.DriftTubeVoltageInVolt, lastDriftTime.TemperatureInKelvin, lastDriftTime.PressureInTorr));
+                
+                isomerIndex++;
+            
+                if (!onlyOneIsomer)
+                {
+                    Trace.WriteLine(string.Empty);
+                }
+            }
         }
     }
 }

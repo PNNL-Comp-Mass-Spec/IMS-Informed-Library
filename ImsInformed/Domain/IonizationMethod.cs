@@ -50,6 +50,15 @@
     /// </summary>
     public static class IonizationMethodUtilities
     {
+        /// <summary>
+        /// The get charge state.
+        /// </summary>
+        /// <param name="ionizationMethod">
+        /// The ionization method.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
         public static int GetChargeState(this IonizationMethod ionizationMethod)
         {
             if (ionizationMethod == IonizationMethod.APCI ||
@@ -65,6 +74,15 @@
             }
         }
 
+        /// <summary>
+        /// The get mass aduct sign.
+        /// </summary>
+        /// <param name="ionizationMethod">
+        /// The ionization method.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
         public static int GetMassAductSign(this IonizationMethod ionizationMethod)
         {
             if (ionizationMethod == IonizationMethod.ProtonMinus)
@@ -77,6 +95,12 @@
             }
         }
 
+        /// <summary>
+        /// The get all.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="IEnumerable"/>.
+        /// </returns>
         public static IEnumerable<IonizationMethod> GetAll()
         {
             return Enum.GetValues(typeof(IonizationMethod)).Cast<IonizationMethod>();
@@ -85,9 +109,6 @@
         /// <summary>
         /// Get the 
         /// </summary>
-        /// <param name="composition">
-        /// The composition.
-        /// </param>
         /// <param name="method">
         /// The method.
         /// </param>

@@ -20,15 +20,15 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        public CrossSectionSearchParameters() : this(0.5, 250, 9, 0.25, 0.00, 0.4, 0.4, 3, false, PeakDetectorEnum.WaterShed)
+        public CrossSectionSearchParameters() : this(0.5, 250, 9, 0.25, 0.00, 0.4, 0.4, 3, false, PeakDetectorEnum.WaterShed, 0.9)
         { 
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        /// <param name="scanWindowWidth">
-        /// The scan window width.
+        /// <param name="driftTimeToleranceInMs">
+        /// The drift Time Tolerance In Ms.
         /// </param>
         /// <param name="massToleranceInPpm">
         /// The mass tolerance in ppm.
@@ -51,7 +51,16 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="minFitPoints">
         /// The min fit points.
         /// </param>
-        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, bool expectIsomer, PeakDetectorEnum peakDetectorSelection)
+        /// <param name="expectIsomer">
+        /// The expect Isomer.
+        /// </param>
+        /// <param name="peakDetectorSelection">
+        /// The peak Detector Selection.
+        /// </param>
+        /// <param name="minR2">
+        /// The min R 2.
+        /// </param>
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, bool expectIsomer, PeakDetectorEnum peakDetectorSelection, double minR2)
         {
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
@@ -63,6 +72,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.MinFitPoints = minFitPoints;
             this.ExpectIsomer = expectIsomer;
             this.PeakDetectorSelection = peakDetectorSelection;
+            this.minR2 = minR2;
         }
 
         /// <summary>
@@ -109,6 +119,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// Gets the peak detector selection.
         /// </summary>
         public PeakDetectorEnum PeakDetectorSelection { get; private set; }
+
+        /// <summary>
+        /// The min r 2.
+        /// </summary>
+        public readonly double minR2;
 
         /// <summary>
         /// If ExpectIsomer is set to true. The algorithm will stop assuming there is one and only one

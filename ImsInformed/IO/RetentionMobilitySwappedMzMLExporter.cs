@@ -85,7 +85,7 @@ namespace ImsInformed.IO
             writer.WriteAttributeString("count", "2");
             writer.WriteStartElement("cv");
             writer.WriteAttributeString("id", "MS");
-            writer.WriteAttributeString("fullName", "Proteomics Standards Initiative MonoisotopicMass Spectrometry Ontology");
+            writer.WriteAttributeString("fullName", "Proteomics Standards Initiative ViperCompatibleMass Spectrometry Ontology");
             writer.WriteAttributeString("version", "3.53.0");
             writer.WriteAttributeString("URI", "http://psidev.cvs.sourceforge.net/*checkout*/psidev/psi/psi-ms/mzML/controlledVocabulary/psi-ms.obo");
             writer.WriteEndElement();

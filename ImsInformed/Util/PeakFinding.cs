@@ -117,7 +117,7 @@ namespace ImsInformed.Util
             // Moving average filter if 0, Savitzky Golay filter if 2, 4, 6, etc.
             peakFinderOptions.SavitzkyGolayFilterOrder = 2;
 
-            // Set the default MonoisotopicMass Spectra noise threshold options
+            // Set the default ViperCompatibleMass Spectra noise threshold options
             peakFinderOptions.MassSpectraNoiseThresholdOptions = NoiseLevelAnalyzer.GetDefaultNoiseThresholdOptions();
 
             // Customize a few values

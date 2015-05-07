@@ -32,7 +32,7 @@ namespace ImsInformed.Scoring
         /// <param name="b">
         /// The b.
         /// </param>
-        public delegate double LikelihoodFunc(FeatureScoreHolder featureScores);
+        public delegate double LikelihoodFunc(FeatureStatistics featureScores);
 
         /// <summary>
         /// The compare feature score.
@@ -49,7 +49,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public static int CompareFeatureScore(FeatureScoreHolder a, FeatureScoreHolder b, LikelihoodFunc likelihoodFunc)
+        public static int CompareFeatureScore(FeatureStatistics a, FeatureStatistics b, LikelihoodFunc likelihoodFunc)
         {
             return likelihoodFunc(a).CompareTo(likelihoodFunc(b));
         }
@@ -69,7 +69,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool MoreLikelyThan(FeatureScoreHolder a, FeatureScoreHolder b, LikelihoodFunc likelihoodFunc)
+        public static bool MoreLikelyThan(FeatureStatistics a, FeatureStatistics b, LikelihoodFunc likelihoodFunc)
         {
             int result = CompareFeatureScore(a, b, likelihoodFunc);
             return result > 0;
@@ -87,24 +87,21 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="FeatureBlob"/>.
         /// </returns>
-        public static StandardImsPeak SelectMostLikelyFeature(IDictionary<StandardImsPeak, FeatureScoreHolder> scores, LikelihoodFunc likelihoodFunc)
+        public static StandardImsPeak SelectMostLikelyFeature(IDictionary<StandardImsPeak, FeatureStatistics> scores, LikelihoodFunc likelihoodFunc)
         {
             // Select the feature with the highest isotopic score
             StandardImsPeak bestFeature = null;
-            FeatureScoreHolder mostLikelyPeakScores;
-            mostLikelyPeakScores.IntensityScore = 0;
-            mostLikelyPeakScores.IsotopicScore = 0;
-            mostLikelyPeakScores.PeakShapeScore = 0;
+            FeatureStatistics mostLikelyPeakScores = new FeatureStatistics(0, 0, 0);
 
             foreach (var featureBlob in scores.Keys)
             {
-                FeatureScoreHolder currentScoreHolder = scores[featureBlob];
+                FeatureStatistics currentStatistics = scores[featureBlob];
             
                 // Evaluate feature scores.
-                if (MoreLikelyThan(currentScoreHolder, mostLikelyPeakScores, likelihoodFunc))
+                if (MoreLikelyThan(currentStatistics, mostLikelyPeakScores, likelihoodFunc))
                 {
                     bestFeature = featureBlob;
-                    mostLikelyPeakScores = currentScoreHolder;
+                    mostLikelyPeakScores = currentStatistics;
                 }
             }
 

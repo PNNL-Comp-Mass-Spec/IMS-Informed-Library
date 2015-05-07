@@ -365,7 +365,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                             continue;
                         }
 
-                        // TODO: MonoisotopicMass Alignment???
+                        // TODO: ViperCompatibleMass Alignment???
                     if (target.TargetType == TargetType.Peptide)
                     {
                         // Filter by NET
@@ -378,7 +378,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
 
                     //Console.WriteLine(Target.PeptideSequence + "\t" + targetMass + "\t" + targetMz + "\t" + scanLcRep);
 
-                    // Get MonoisotopicMass Spectrum Data
+                    // Get ViperCompatibleMass Spectrum Data
                     XYData massSpectrum = this.GetMassSpectrum(scanLcRep, scanImsRep, minMzForSpectrum, maxMzForSpectrum);
                     List<Peak> massSpectrumPeakList = this._peakDetector.FindPeaks(massSpectrum);
                     //WriteXYDataToFile(massSpectrum, targetMz);

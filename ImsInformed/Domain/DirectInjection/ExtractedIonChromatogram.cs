@@ -19,7 +19,7 @@ namespace ImsInformed.Domain.DirectInjection
     using UIMFLibrary;
 
     /// <summary>
-    /// This is the XIC summed over the centerMz but not mobilityScan axis.
+    /// This is the XIC summed over the centerMz but not drift time axis.
     /// </summary>
     public class ExtractedIonChromatogram 
     {

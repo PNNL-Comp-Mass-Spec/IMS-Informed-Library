@@ -26,7 +26,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityOnlyLikelihoodFunction(FeatureScoreHolder featureScores)
+        public static double IntensityOnlyLikelihoodFunction(FeatureStatistics featureScores)
         {
             return featureScores.IntensityScore;
         }
@@ -41,7 +41,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityIndependentLikelihoodFunction(FeatureScoreHolder featureScores)
+        public static double IntensityIndependentLikelihoodFunction(FeatureStatistics featureScores)
         {
             return featureScores.IsotopicScore;
         }
@@ -56,7 +56,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IsotopicScoreDominantLikelihoodFunction(FeatureScoreHolder featureScores)
+        public static double IsotopicScoreDominantLikelihoodFunction(FeatureStatistics featureScores)
         {
             return featureScores.IntensityScore + 2 * featureScores.IsotopicScore;
         }
@@ -70,7 +70,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double NeutralLikelihoodFunction(FeatureScoreHolder featureScores)
+        public static double NeutralLikelihoodFunction(FeatureStatistics featureScores)
         {
             return featureScores.IntensityScore + featureScores.IsotopicScore;
         }
@@ -84,7 +84,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityDominantLikelihoodFunction(FeatureScoreHolder featureScores)
+        public static double IntensityDominantLikelihoodFunction(FeatureStatistics featureScores)
         {
             return featureScores.IntensityScore + 0.5 * featureScores.IsotopicScore;
         }

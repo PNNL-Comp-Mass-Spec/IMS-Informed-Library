@@ -169,6 +169,17 @@ namespace ImsInformed.Targets
         public int ChargeState { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether has composition info.
+        /// </summary>
+        public bool HasCompositionInfo
+        {
+            get
+            {
+                return this.CompositionWithAdduct == null;
+            }
+        }
+
+        /// <summary>
         /// The create SQL mass tag queries.
         /// </summary>
         /// <returns>
@@ -225,7 +236,7 @@ namespace ImsInformed.Targets
             //massTagQuery.Append(",");
             //massTagQuery.Append("'" + this.EmpiricalFormula + "'");
             //massTagQuery.Append(",");
-            //massTagQuery.Append(this.MonoisotopicMass);
+            //massTagQuery.Append(this.ViperCompatibleMass);
             //massTagQuery.Append(",");
             //massTagQuery.Append(this.NormalizedElutionTime);
             //massTagQuery.Append(");");

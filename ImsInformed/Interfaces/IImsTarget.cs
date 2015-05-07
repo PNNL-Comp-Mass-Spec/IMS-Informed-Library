@@ -70,5 +70,10 @@ namespace ImsInformed.Interfaces
         /// Gets the Target m/z.
         /// </summary>
         int ChargeState { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether has composition info.
+        /// </summary>
+        bool HasCompositionInfo{ get; }
     }
 }

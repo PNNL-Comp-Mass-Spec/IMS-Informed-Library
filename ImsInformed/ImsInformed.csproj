@@ -108,6 +108,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\DataAssociation\AssociationHypothesis.cs" />
+    <Compile Include="Domain\DataAssociation\AssociationHypothesisInfo.cs" />
+    <Compile Include="Domain\DataAssociation\IonTrackers\CombinatorialIonTracker.cs" />
+    <Compile Include="Domain\DataAssociation\IonTrackers\MinCostFlowIonTracker.cs" />
+    <Compile Include="Domain\DataAssociation\IsomerTrack.cs" />
+    <Compile Include="Domain\DataAssociation\IonTrackers\RANSACIonTracker.cs" />
+    <Compile Include="Domain\DirectInjection\ObservedPeak.cs" />
     <Compile Include="Domain\IonizationAdduct.cs" />
     <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
     <Compile Include="Domain\DirectInjection\VoltageGroup.cs" />
@@ -123,16 +130,16 @@
     <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="Interfaces\IImsTarget.cs" />
     <Compile Include="Interfaces\IImsResult.cs" />
+    <Compile Include="Interfaces\IIonTracker.cs" />
     <Compile Include="IO\DriftTimeLibraryImporter.cs" />
     <Compile Include="IO\FileFormatEnum.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="IO\RetentionMobilitySwappedMzMLExporter.cs" />
     <Compile Include="IO\UIMFExporter.cs" />
     <Compile Include="Scoring\AnalysisScore.cs" />
-    <Compile Include="Scoring\AnalysisScoresHolder.cs" />
     <Compile Include="Scoring\TargetPresenceLikelihoodFunctions.cs" />
-    <Compile Include="Scoring\FeatureScores.cs" />
-    <Compile Include="Scoring\FeatureScoreHolder.cs" />
+    <Compile Include="Scoring\FeatureScoreUtilities.cs" />
+    <Compile Include="Scoring\FeatureStatistics.cs" />
     <Compile Include="Scoring\IsotopicScoreMethod.cs" />
     <Compile Include="Scoring\ScoreType.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
@@ -161,12 +168,11 @@
     <Compile Include="Util\SaturationDetector.cs" />
     <Compile Include="Stats\ContinuousXYPoint.cs" />
     <Compile Include="Util\UnitConversion.cs" />
+    <Compile Include="Workflows\CrossSectionExtraction\ArrivalTimeSnapShot.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionSearchParameters.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkflowResult.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkfow.cs" />
-    <Compile Include="Workflows\CrossSectionExtraction\IsomerTracesTracker.cs" />
-    <Compile Include="Workflows\CrossSectionExtraction\IsomerTrace.cs" />
-    <Compile Include="Workflows\CrossSectionExtraction\TargetIsomerReport.cs" />
+    <Compile Include="Workflows\CrossSectionExtraction\IdentifiedIsomerInfo.cs" />
     <Compile Include="Workflows\DriftTimeLibraryMatch\DriftTimeFeatureDistance.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\ChargeStateCorrelationResult.cs" />
     <Compile Include="Workflows\LcImsPeptideExtraction\LcImsTargetResult.cs" />

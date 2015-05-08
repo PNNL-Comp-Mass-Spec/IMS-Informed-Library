@@ -1,11 +1,19 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
-using MathNet.Numerics.Interpolation;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AlignmentImporter.cs" company="PNNL">
+//   Written for the Department of Energy (PNNL, Richland, WA)
+//   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
+// </copyright>
+// <summary>
+//   The alignment importer.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace ImsInformed.IO
 {
-    using MathNet.Numerics.Interpolation.Algorithms;
+    using System.Collections.Generic;
+    using System.IO;
+
+    using MathNet.Numerics.Interpolation;
 
     /// <summary>
     /// The alignment importer.
@@ -43,7 +51,7 @@ namespace ImsInformed.IO
                 }
             }
 
-            IInterpolation interpolation = new LinearSplineInterpolation(xValues.ToArray(), yValues.ToArray());
+            IInterpolation interpolation = new StepInterpolation(xValues.ToArray(), yValues.ToArray());
 
             return interpolation;
         }

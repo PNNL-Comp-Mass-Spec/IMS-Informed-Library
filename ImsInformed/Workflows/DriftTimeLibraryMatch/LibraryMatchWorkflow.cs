@@ -205,7 +205,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
             // Voltage grouping
-            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.InitialTargetingMassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs);
+            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.InitialSearchMassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs);
 
             foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
             {
@@ -220,7 +220,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                     // Find peaks using multidimensional peak finder.
                     List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                     List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
-                    List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.InitialTargetingMassToleranceInPpm)).ToList();
+                    List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.InitialSearchMassToleranceInPpm)).ToList();
             
                     // Score features
                     IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
@@ -228,13 +228,17 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   
-                        
-                        double intensityScore = FeatureScoreUtilities.IntensityScore(peak, globalMaxIntensity);
-                        
-                        double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(peak, this.uimfReader, this.Parameters.InitialTargetingMassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
-
-                        double isotopicScore = FeatureScoreUtilities.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList,voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
-                        FeatureStatistics currentStatistics = new FeatureStatistics(intensityScore, isotopicScore, peakShapeScore);
+                        FeatureStatistics currentStatistics = FeatureScoreUtilities.ScoreFeature(
+                            peak,
+                            globalMaxIntensity,
+                            this.uimfReader,
+                            this.Parameters.InitialSearchMassToleranceInPpm,
+                            this.Parameters.DriftTimeToleranceInMs,
+                            voltageGroup,
+                            this.NumberOfScans,
+                            target,
+                            IsotopicScoreMethod.Angle, 
+                            theoreticalIsotopicProfilePeakList);
                         scoresTable.Add(peak, currentStatistics);
                     }
             
@@ -242,15 +246,17 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                     Predicate<StandardImsPeak> scanPredicate = blob => FeatureFilters.FilterExtremeDriftTime(blob, (int)this.NumberOfScans);
                     Predicate<StandardImsPeak> shapeThreshold = blob => FeatureFilters.FilterBadPeakShape(blob, scoresTable[blob].PeakShapeScore, this.Parameters.PeakShapeThreshold);
                     Predicate<StandardImsPeak> isotopeThreshold = blob => FeatureFilters.FilterBadIsotopicProfile(blob, scoresTable[blob].IsotopicScore, this.Parameters.IsotopicThreshold);
+                    Predicate<StandardImsPeak> massDistanceThreshold = blob => FeatureFilters.FilterHighMzDistance(blob, target, this.Parameters.MatchingMassToleranceInPpm);
             
                     // Print out candidate features that pass the intensity threshold.
                     foreach (StandardImsPeak peak in standardPeaks)
                     {  
+                        DriftTimeFeatureDistance distance = new DriftTimeFeatureDistance(target, peak, voltageGroup);
+
                         bool badScanRange = scanPredicate(peak);
                         bool badPeakShape = shapeThreshold(peak);
                         bool lowIsotopicAffinity = isotopeThreshold(peak);
-
-                        DriftTimeFeatureDistance distance = new DriftTimeFeatureDistance(target, peak, voltageGroup);
+                        bool lowMzAffinity = massDistanceThreshold(peak);
 
                         FeatureStatistics currentStatistics = scoresTable[peak];
                         Trace.WriteLine(string.Empty);
@@ -267,6 +273,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                                 peak.HighestPeakApex.DriftTimeCenterInScanNumber));
                         Trace.WriteLine(
                             string.Format("            Mz difference: {0:F2} ppm", distance.MassDifferenceInPpm));
+                        
                         Trace.WriteLine(
                             string.Format("            Drift time difference: {0:F4} ms", distance.DriftTimeDifferenceInMs));
 
@@ -277,6 +284,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             
                         string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
                         rejectionReason += badPeakShape ? "[Bad Peak Shape] " : string.Empty;
+                        rejectionReason += lowMzAffinity ? "[Inaccurate Mass] " : string.Empty;
                         rejectionReason += lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
 
                         if (badScanRange || lowIsotopicAffinity || badPeakShape)
@@ -291,6 +299,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 
                     standardPeaks.RemoveAll(scanPredicate);
             
+                    standardPeaks.RemoveAll(massDistanceThreshold);
+
                     standardPeaks.RemoveAll(shapeThreshold);
 
                     standardPeaks.RemoveAll(isotopeThreshold);
@@ -300,7 +310,6 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         Trace.WriteLine(string.Format("    [No Match]"));
                         Trace.WriteLine(string.Empty);
                         return new LibraryMatchResult(null, AnalysisStatus.Negative, null);
-                        
                     }
 
                     StandardImsPeak closestPeak = standardPeaks.First();

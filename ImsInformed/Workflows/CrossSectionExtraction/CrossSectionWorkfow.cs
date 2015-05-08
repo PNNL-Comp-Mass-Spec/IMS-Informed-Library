@@ -12,7 +12,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Windows.Controls.Primitives;
 
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.PeakDetectors;
@@ -30,8 +29,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using InformedProteomics.Backend.Data.Composition;
 
     using MagnitudeConcavityPeakFinder;
-
-    using MathNet.Numerics.LinearAlgebra.Generic.Solvers.Status;
 
     using MultiDimensionalPeakFinding;
     using MultiDimensionalPeakFinding.PeakDetection;
@@ -412,13 +409,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 catch (Exception e)
                 {
                     // Print result
-                    using (this.ResetTraceListenerToTarget(target))
-                    {
-                        Trace.WriteLine(e.Message);
-                        Trace.WriteLine(e.StackTrace);
-                        Trace.Close();
+                    Trace.WriteLine(e.Message);
+                    Trace.WriteLine(e.StackTrace);
+                    Trace.Listeners.Clear();
+                    Trace.Close();
                         Trace.Listeners.Clear();
-                    }
 
                     // create the error result
                     return CrossSectionWorkflowResult.CreateErrorResult(target, this.DatasetName);
@@ -437,6 +432,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         private FileStream ResetTraceListenerToTarget(IImsTarget target)
         {
+            Trace.Listeners.Clear();
             string targetResultFileName = Path.Combine(this.OutputPath, "TargetSearchResult" + target.TargetDescriptor + ".txt");
             FileStream resultFile = new FileStream(targetResultFileName, FileMode.Create, FileAccess.Write, FileShare.None);
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
@@ -446,7 +442,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime
             };
 
-            Trace.Listeners.Clear();
             Trace.Listeners.Add(consoleTraceListener);
             Trace.Listeners.Add(targetResultTraceListener);
             Trace.AutoFlush = true;

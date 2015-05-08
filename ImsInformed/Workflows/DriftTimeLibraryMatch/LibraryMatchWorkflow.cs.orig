@@ -217,7 +217,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                 // Because we don't record TVP info in the AMT library. we can't verify it yet, so stick with last voltage group.
                 if (IMSUtil.IsLastVoltageGroup(voltageGroup, this.NumberOfFrames))
                 {
-                    double globalMaxIntensity = IMSUtil.MaxDigitization(voltageGroup, this.uimfReader);
+                    double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, this.uimfReader);
 
                     Trace.WriteLine(string.Format("    Temperature/Pressure/Voltage Adjusted Drift time: {0:F4} ms", IMSUtil.DeNormalizeDriftTime(target.NormalizedDriftTimeInMs, voltageGroup)));
             
@@ -231,23 +231,23 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
 >>>>>>> master
             
                     // Score features
-                    IDictionary<StandardImsPeak, FeatureScoreHolder> scoresTable = new Dictionary<StandardImsPeak, FeatureScoreHolder>();
+                    IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
                     Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
 
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   
-                        FeatureScoreHolder currentScoreHolder;
-                        currentScoreHolder.IntensityScore = FeatureScores.IntensityScore(peak, globalMaxIntensity);
                         
 <<<<<<< HEAD
-                        currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.InitialTargetingMassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
+                        double intensityScore = FeatureScoreUtilities.IntensityScore(peak, globalMaxIntensity);
+                        
+                        double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(peak, this.uimfReader, this.Parameters.InitialTargetingMassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
 =======
                         currentScoreHolder.PeakShapeScore = FeatureScores.PeakShapeScore(peak, this.uimfReader, this.Parameters.InitialSearchMassToleranceInPpm, this.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, this.NumberOfScans);
 >>>>>>> master
 
-                        currentScoreHolder.IsotopicScore = FeatureScores.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList,voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
-            
-                        scoresTable.Add(peak, currentScoreHolder);
+                        double isotopicScore = FeatureScoreUtilities.IsotopicProfileScore(peak, this.uimfReader, target, theoreticalIsotopicProfilePeakList,voltageGroup,IsotopicScoreMethod.Angle, globalMaxIntensity, this.NumberOfScans);
+                        FeatureStatistics currentStatistics = new FeatureStatistics(intensityScore, isotopicScore, peakShapeScore);
+                        scoresTable.Add(peak, currentStatistics);
                     }
             
                     // filter out features with Ims scans at 1% left or right.
@@ -266,7 +266,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         bool lowIsotopicAffinity = isotopeThreshold(peak);
                         bool lowMzAffinity = massDistanceThreshold(peak);
 
-                        FeatureScoreHolder currentScoreHolder = scoresTable[peak];
+                        FeatureStatistics currentStatistics = scoresTable[peak];
                         Trace.WriteLine(string.Empty);
                         Trace.WriteLine(string.Format("        Candidate feature found at drift time {0:F2} ms (scan number {1})",
                             peak.HighestPeakApex.DriftTimeCenterInMs,
@@ -285,9 +285,9 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         Trace.WriteLine(
                             string.Format("            Drift time difference: {0:F4} ms", distance.DriftTimeDifferenceInMs));
 
-                        Trace.WriteLine(string.Format("            Intensity Score: {0:F4}", currentScoreHolder.IntensityScore));
-                        Trace.WriteLine(string.Format("            Peak Shape Score: {0:F4}", currentScoreHolder.PeakShapeScore));
-                        Trace.WriteLine(string.Format("            Isotopic Score:  {0:F4}", currentScoreHolder.IsotopicScore));
+                        Trace.WriteLine(string.Format("            Intensity Score: {0:F4}", currentStatistics.IntensityScore));
+                        Trace.WriteLine(string.Format("            Peak Shape Score: {0:F4}", currentStatistics.PeakShapeScore));
+                        Trace.WriteLine(string.Format("            Isotopic Score:  {0:F4}", currentStatistics.IsotopicScore));
                         Trace.WriteLine(string.Format("            AveragedPeakIntensities:  {0:F4}", peak.SummedIntensities));
             
                         string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";

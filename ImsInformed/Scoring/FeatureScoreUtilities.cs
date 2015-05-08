@@ -18,10 +18,9 @@ namespace ImsInformed.Scoring
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Interfaces;
     using ImsInformed.Stats;
-    using ImsInformed.Workflows.CrossSectionExtraction;
 
+    using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
-    using MathNet.Numerics.LinearAlgebra.Generic;
     using MathNet.Numerics.Statistics;
 
     using UIMFLibrary;

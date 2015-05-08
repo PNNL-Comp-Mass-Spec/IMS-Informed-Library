@@ -224,7 +224,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// </returns>
         public bool AddSimilarVoltage(double newVoltage, double newPressure, double newTemperature, double newTOFWidth)
         {
-            bool newVoltageGroupFlag = this.VoltageGroupClassifier(newVoltage);
+            bool newVoltageGroupFlag = this.VoltageClassifier(newVoltage);
             if (newVoltageGroupFlag)
             {
                 this.AddVoltage(newVoltage, newPressure, newTemperature, newTOFWidth);
@@ -255,7 +255,7 @@ namespace ImsInformed.Domain.DirectInjection
 
         public override bool Equals(object other) 
         {
-            return this.Equals(other as StandardImsPeak);
+            return this.Equals(other as VoltageGroup);
         }
 
         /// <summary>
@@ -281,7 +281,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        private bool VoltageGroupClassifier(double newVoltage)
+        private bool VoltageClassifier(double newVoltage)
         {
             // guilty until proven innocent
             bool similarity = false;
@@ -289,7 +289,7 @@ namespace ImsInformed.Domain.DirectInjection
             const double MinDifferentialVoltage = 5;
             
             // if first voltage, declare it as similar.
-            if ((this.FrameAccumulationCount == 0) ||
+            if ((false) ||
 
                 // if the new voltage is within 3 standard deviation, declare it as a similar point.
                 (Math.Abs(newVoltage - this.MeanVoltageInVolts) < 3 * Math.Sqrt(this.VarianceVoltage)) ||

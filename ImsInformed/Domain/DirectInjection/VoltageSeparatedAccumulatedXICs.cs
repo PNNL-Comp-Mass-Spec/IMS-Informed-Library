@@ -49,8 +49,10 @@ namespace ImsInformed.Domain.DirectInjection
         /// </exception>
         public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm, double normalizedTargetDriftTimeInMs, double driftTimeToleranceInMs)
         {
+            bool noVoltageGroupsYet = true;
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
             
+            ExtractedIonChromatogram currentXIC = new ExtractedIonChromatogram();
             VoltageGroup currentVoltageGroup = new VoltageGroup(1);
             for (int i = 1; i <= frameNum; i++)
             {
@@ -86,20 +88,23 @@ namespace ImsInformed.Domain.DirectInjection
                 // And when a new but unsimilar voltage appears 
                 if (!similarVoltage)
                 {
+                    if (!noVoltageGroupsYet)
+                    {
+                        this.Add(currentVoltageGroup, currentXIC);
+                    }
+
                     currentVoltageGroup = new VoltageGroup(i);
                     currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
-                    this.Add(currentVoltageGroup, extractedIonChromatogram);
-                } 
-
-                if (!this.ContainsKey(currentVoltageGroup)) 
+                    currentXIC = extractedIonChromatogram;
+                    noVoltageGroupsYet = false;
+                }
+                else
                 {
-                    this.Add(currentVoltageGroup, extractedIonChromatogram);
-                } 
-                else 
-                {
-                    this[currentVoltageGroup] += extractedIonChromatogram;
+                    currentXIC += extractedIonChromatogram;
                 }
             }
+
+            this.Add(currentVoltageGroup, currentXIC);
 
             // Average all the XICs to have the intensity range of a single frame.
             foreach (var voltageGroup in this.Keys)

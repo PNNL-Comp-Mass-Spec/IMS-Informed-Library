@@ -165,7 +165,7 @@ namespace ImsInformed.Targets
         {
             get
             {
-                return this.CompositionWithAdduct == null;
+                return this.CompositionWithAdduct != null;
             }
         }
 

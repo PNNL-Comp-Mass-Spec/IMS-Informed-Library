@@ -232,7 +232,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     // Voltage grouping. Note that we only accumulate frames as needed. Accumulate frames globally is too costly. 
                     // Here we accumulate the XICs around target MZ.
-                    VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz,    this.Parameters.MassToleranceInPpm);
+                    VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MassToleranceInPpm);
 
                     // Perform feature detection and scoring and the given Mz range on the accumulated XICs to get the base peaks.
                     if (detailedVerbose)
@@ -257,7 +257,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
                         if (detailedVerbose)
                         {
-                            Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts,    voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
+                            Trace.WriteLine(
+                                string.Format(
+                                    "    Voltage Group: {0:F4} V, [{1}-{2}]",
+                                    voltageGroup.MeanVoltageInVolts,
+                                    voltageGroup.FirstFrameNumber, 
+                                voltageGroup.LastFrameNumber));
                         }
 
                         foreach (StandardImsPeak peak in standardPeaks)

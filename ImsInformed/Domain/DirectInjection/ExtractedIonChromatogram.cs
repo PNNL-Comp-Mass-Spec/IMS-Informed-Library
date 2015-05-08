@@ -23,6 +23,10 @@ namespace ImsInformed.Domain.DirectInjection
     /// </summary>
     public class ExtractedIonChromatogram 
     {
+        public ExtractedIonChromatogram()
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
         /// Get the extracted ion chromatogram from the whole drift time scan range.

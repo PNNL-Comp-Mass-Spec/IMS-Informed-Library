@@ -74,6 +74,6 @@ namespace ImsInformed.Interfaces
         /// <summary>
         /// Gets a value indicating whether has composition info.
         /// </summary>
-        bool HasCompositionInfo{ get; }
+        bool HasCompositionInfo { get; }
     }
 }

@@ -72,64 +72,64 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.MinFitPoints = minFitPoints;
             this.ExpectIsomer = expectIsomer;
             this.PeakDetectorSelection = peakDetectorSelection;
-            this.minR2 = minR2;
+            this.MinR2 = minR2;
         }
 
         /// <summary>
         /// Gets or sets the mass tolerance in ppm.
         /// </summary>
-        public double MassToleranceInPpm { get; private set; }
+        public double MassToleranceInPpm { get; set; }
 
         /// <summary>
         /// Gets or sets the feature filter level.
         /// </summary>
-        public double FeatureFilterLevel { get; private set; }
+        public double FeatureFilterLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double IntensityThreshold { get; private set; }
+        public double IntensityThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double PeakShapeThreshold { get; private set; }
+        public double PeakShapeThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double IsotopicThreshold { get; private set; }
+        public double IsotopicThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public int MinFitPoints { get; private set; }
+        public int MinFitPoints { get; set; }
 
         /// <summary>
         /// Gets or sets the number point for smoothing.
         /// </summary>
-        public int NumPointForSmoothing { get; private set; }
+        public int NumPointForSmoothing { get; set; }
 
         /// <summary>
         /// Gets or sets the scan window width.
         /// </summary>
-        public double DriftTimeToleranceInMs { get; private set; }
+        public double DriftTimeToleranceInMs { get; set; }
 
         /// <summary>
         /// Gets the peak detector selection.
         /// </summary>
-        public PeakDetectorEnum PeakDetectorSelection { get; private set; }
+        public PeakDetectorEnum PeakDetectorSelection { get; set; }
 
         /// <summary>
         /// The min r 2.
         /// </summary>
-        public readonly double minR2;
+        public double MinR2 { get; set; }
 
         /// <summary>
         /// If ExpectIsomer is set to true. The algorithm will stop assuming there is one and only one
         /// Target match in the expected centerMz range. Instead if there are isomers the workflow will report 
         /// all isomers with reasonable socres.
         /// </summary>
-        public bool ExpectIsomer{ get; private set; }
+        public bool ExpectIsomer{ get; set; }
     }
 }

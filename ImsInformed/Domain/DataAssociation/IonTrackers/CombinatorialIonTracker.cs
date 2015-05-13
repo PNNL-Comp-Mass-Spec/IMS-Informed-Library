@@ -12,6 +12,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Net.Sockets;
     using System.Windows.Controls.Primitives;
@@ -30,13 +31,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
     /// </summary>
     public class CombinatorialIonTracker : IIonTracker
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CombinatorialIonTracker"/> class.
-        /// </summary>
-        public CombinatorialIonTracker()
-        {
-            
-        }
+        private int trackPointsCounter;
 
         /// <summary>
         /// The find optimum hypothesis.
@@ -74,7 +69,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             }
 
             // Find all the possible combinotorial tracks
-            IEnumerable<IsomerTrack> possibleTracks = this.FindAllReasonableTracks(basePeakMap, driftTubeLength, massTarget, parameters);
+            IList<IsomerTrack> possibleTracks = this.FindAllReasonableTracks(basePeakMap, driftTubeLength, massTarget, parameters).ToList();
 
             IEnumerable<AssociationHypothesis> hypotheses = this.FindAllHypothesis(possibleTracks, observations);
 
@@ -114,7 +109,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             AssociationHypothesis association = new AssociationHypothesis(allPeaks);
 
             bool hasConflicted = false;
-            for (int i = 0; i < totalCombinations; i++)
+            for (int i = 1; i < totalCombinations; i++)
             {
                 long grey = Combinatorics.BinaryToGray(i);
                 if (hasConflicted)
@@ -180,19 +175,21 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// </returns>
         private IEnumerable<IsomerTrack> FindAllReasonableTracks(IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters)
         {
-            IEnumerable<VoltageGroup> sortedVoltageGroup = basePeakMap.Keys.OrderByDescending(vg => vg.MeanVoltageInVolts);
+            this.trackPointsCounter = 0;
 
-            // Create selected peaks with the sorted voltage group.
-            ObservedPeak[] selectedPeaks = sortedVoltageGroup.Select((vg) => new ObservedPeak(vg)).ToArray();
+            VoltageGroup[] sortedVoltageGroup = basePeakMap.Keys.OrderByDescending(vg => vg.MeanVoltageInVolts).ToArray();
+
+            ObservedPeak[] selectedPeaks = new ObservedPeak[sortedVoltageGroup.Length];
 
             bool overflow = false;
             while (!overflow)
             {
-                overflow = this.IncrementCombination(ref selectedPeaks, basePeakMap);
-                ObservedPeak[] realPeaks = selectedPeaks.Where(p => p.Peak != null).ToArray();
+                overflow = this.IncrementCombination(sortedVoltageGroup, ref selectedPeaks, basePeakMap, parameters.MinFitPoints);
+                ObservedPeak[] realPeaks = selectedPeaks.Where(p => p != null).ToArray();
                 IsomerTrack newTrack = new IsomerTrack(realPeaks, driftTubeLength);
                 if (this.IsTrackPossible(newTrack, target, parameters))
                 {
+                    Trace.WriteLine(newTrack.TrackDescriptor);
                     yield return newTrack;
                 }
             }            
@@ -222,7 +219,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                 return false;
             }
 
-            if (Filters.AnalysisFilter.IsLowR2(trackMobilityInfo.RSquared, crossSectionSearchParameters.minR2))
+            if (Filters.AnalysisFilter.IsLowR2(trackMobilityInfo.RSquared, crossSectionSearchParameters.MinR2))
             {
                 return false;
             }
@@ -252,23 +249,42 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <summary>
         /// The increment combination.
         /// </summary>
+        /// <param name="groups">
+        /// The groups.
+        /// </param>
         /// <param name="selectedPeaks">
         /// The selected peaks.
         /// </param>
         /// <param name="basePeakMap">
         /// The base peak map.
         /// </param>
+        /// <param name="minFitPoints">
+        /// The min Fit Points.
+        /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        /// If the increment overflows the "counter"<see cref="bool"/>.
         /// </returns>
-        private bool IncrementCombination(ref ObservedPeak[] selectedPeaks, IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap)
+        private bool IncrementCombination(VoltageGroup[] groups, ref ObservedPeak[] selectedPeaks, IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap, int minFitPoints)
         {
-            return this.IncrementCombination(ref selectedPeaks, 0, basePeakMap);
+            bool overflow = false;
+
+            // So-called do while loop
+            overflow = this.IncrementCombination(groups, ref selectedPeaks, 0, basePeakMap);
+
+            while (!overflow && this.trackPointsCounter < minFitPoints)
+            {
+                overflow = this.IncrementCombination(groups, ref selectedPeaks, 0, basePeakMap);
+            }
+
+            return overflow;
         }
 
         /// <summary>
         /// Binary increment the selected peaks 
         /// </summary>
+        /// <param name="groups">
+        /// The groups.
+        /// </param>
         /// <param name="selectedPeaks">
         /// The selected peaks.
         /// </param>
@@ -278,14 +294,23 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <param name="basePeakMap">
         /// The base peak map.
         /// </param>
+        /// <param name="minFitPoints">
+        /// The min Fit Points.
+        /// </param>
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
         /// If incrementing overflows occurs/ all combinations were gone through.
         /// <exception cref="Exception">
         /// </exception>
-        private bool IncrementCombination(ref ObservedPeak[] selectedPeaks, int onIndex, IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap)
+        private bool IncrementCombination(VoltageGroup[] groups, ref ObservedPeak[] selectedPeaks, int onIndex, IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap)
         {
+            int peakIndex;
+
+            if (groups.Length != selectedPeaks.Length)
+            {
+                throw new ArgumentException("Votlage group does not match selected peaks");
+            }
 
             int length = selectedPeaks.Length;
 
@@ -296,12 +321,11 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             }
             
             ObservedPeak incrementPeak = selectedPeaks[onIndex];
-            int peakIndex;
-
-            IList<ObservedPeak> candidates = basePeakMap[incrementPeak.VoltageGroup];
+            
+            IList<ObservedPeak> candidates = basePeakMap[groups[onIndex]];
 
             // Empty peak
-            if (incrementPeak.Peak == null)
+            if (incrementPeak == null)
             {
                 peakIndex = -1;
             }
@@ -310,16 +334,28 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                 peakIndex = candidates.IndexOf(incrementPeak);
                 if (peakIndex < 0)
                 {
-                    throw new Exception("The combination to be incremented is not in the    base peak map space.");
+                    throw new Exception("The combination to be incremented is not in the base peak map space.");
                 }
             }
             
             if (peakIndex + 1 >= candidates.Count)
             {
-                return this.IncrementCombination(ref selectedPeaks, peakIndex + 1, basePeakMap);
+                if (selectedPeaks[onIndex] != null)
+                {
+                    this.trackPointsCounter--;
+                }
+                selectedPeaks[onIndex] = null;
+                
+
+                return this.IncrementCombination(groups, ref selectedPeaks, onIndex + 1, basePeakMap);
             }
             else
             {
+                if (peakIndex + 1 == 0)
+                {
+                    this.trackPointsCounter++;
+                }
+
                 selectedPeaks[onIndex] = candidates[peakIndex + 1];
                 return false;
             }

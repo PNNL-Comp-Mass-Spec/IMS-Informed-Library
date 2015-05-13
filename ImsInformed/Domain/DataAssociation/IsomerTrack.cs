@@ -60,8 +60,10 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         private readonly double driftTubeLengthInMeters;
 
+        private IImsTarget target;
+
         /// <summary>
-        /// The target.
+        /// The inferedTarget.
         /// </summary>
         private readonly HashSet<VoltageGroup> definedVoltageGroups;
 
@@ -73,7 +75,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The observations has changed.
         /// </summary>
-        private bool observationsHasChanged;
+        private bool fitLineNotComputed;
 
         /// <summary>
         /// The mobility info.
@@ -104,12 +106,12 @@ namespace ImsInformed.Domain.DataAssociation
         /// The drift Tube Length In Meters.
         /// </param>
         /// <param name="target">
-        /// The target.
+        /// The inferedTarget.
         /// </param>
         public IsomerTrack(double driftTubeLengthInMeters)
         {
             this.driftTubeLengthInMeters = driftTubeLengthInMeters;
-            this.observationsHasChanged = true;
+            this.fitLineNotComputed = true;
             this.observedPeaks = new List<ObservedPeak>();
             this.definedVoltageGroups = new HashSet<VoltageGroup>();
             this.mobilityInfo.CollisionCrossSectionArea = 0;
@@ -147,18 +149,37 @@ namespace ImsInformed.Domain.DataAssociation
                 return count;
             }
         }
+    
+        /// <summary>
+        /// Gets the real peak count.
+        /// </summary>
+        public string TrackDescriptor
+        {
+            get
+            {
+                string result = string.Format("R2: {0:F4}: ", this.line.RSquared);
+                foreach (ObservedPeak observation in this.ObservedPeaks)
+                {
+                    result += observation.ObservationDescription;
+                }
+
+                return result;
+            }
+        }
 
         /// <summary>
-        /// Gets the mobility info for target
+        /// Gets the mobility info for inferedTarget
         /// </summary>
-        /// <param name="target">
-        /// The target.
+        /// <param name="inferedTarget">
+        /// The inferedTarget.
         /// </param>
-        public MobilityInfo GetMobilityInfoForTarget(IImsTarget target)
+        public MobilityInfo GetMobilityInfoForTarget(IImsTarget inferedTarget)
         {
-            if (this.observationsHasChanged)
+            this.target = inferedTarget;
+
+            if (this.fitLineNotComputed)
             {
-                return this.ComputeMobilityInfo(target);
+                return this.ComputeMobilityInfo(inferedTarget);
             }
 
             return this.mobilityInfo;
@@ -176,7 +197,7 @@ namespace ImsInformed.Domain.DataAssociation
         public void AddObservation(ObservedPeak peak)
         {
             this.observedPeaks.Add(peak);
-            this.observationsHasChanged = true;
+            this.fitLineNotComputed = true;
             
             if (!this.definedVoltageGroups.Contains(peak.VoltageGroup))
             {
@@ -247,19 +268,32 @@ namespace ImsInformed.Domain.DataAssociation
         }
 
         /// <summary>
+        /// The compute linear fit line.
+        /// </summary>
+        private void ComputeLinearFitLine()
+        {
+            IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoint();
+            this.line = new FitLine(points);
+            this.fitLineNotComputed = false;
+        }
+
+        /// <summary>
         /// The compute mobility info.
         /// </summary>
         /// <param name="target">
-        /// The target.
+        /// The inferred target.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
         private MobilityInfo ComputeMobilityInfo(IImsTarget target)
         {
+            if (this.fitLineNotComputed)
+            {
+                this.ComputeLinearFitLine();
+            }
+
             // Convert the track into a Continuous XY data points.
-            IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoint();
-            this.line = new FitLine(points);
             this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters / (1 / this.line.Slope);
             this.mobilityInfo.RSquared = this.line.RSquared;
             
@@ -271,8 +305,7 @@ namespace ImsInformed.Domain.DataAssociation
                 this.mobilityInfo.Mobility,
                 target.ChargeState, 
                 reducedMass);
-
-            this.observationsHasChanged = false;
+            
             return this.mobilityInfo;
         }
 

@@ -224,6 +224,8 @@ namespace ImsInformedTests
             Console.WriteLine("Dataset: {0}", fileLocation);
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+            parameters.MinFitPoints = 4;
+            parameters.MinR2 = 0.99;
 
             CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             workfow.RunCrossSectionWorkFlow(sample, true);

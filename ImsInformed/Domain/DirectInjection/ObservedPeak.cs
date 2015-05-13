@@ -18,17 +18,6 @@ namespace ImsInformed.Domain.DirectInjection
     public class ObservedPeak
     {
         /// <summary>
-        /// Create a null peak, that is, no peak in the voltage group.
-        /// </summary>
-        /// <param name="group">
-        /// The group.
-        /// </param>
-        public ObservedPeak(VoltageGroup group)
-        {
-            this.VoltageGroup = group;
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ObservedPeak"/> class.
         /// </summary>
         /// <param name="group">
@@ -66,5 +55,20 @@ namespace ImsInformed.Domain.DirectInjection
         /// Gets the peak.
         /// </summary>
         public StandardImsPeak Peak { get; private set; }
+
+        /// <summary>
+        /// Gets the observation description.
+        /// </summary>
+        public string ObservationDescription
+        {
+            get
+            {
+                double voltageGroupDescriptor = this.VoltageGroup.MeanVoltageInVolts;
+                double peakDescriptor = this.Peak.HighestPeakApex.DriftTimeCenterInMs;
+                double intensity = this.Peak.SummedIntensities;
+
+                return string.Format("[{0:F2} V, {1:F2}, {2:F0}]", voltageGroupDescriptor, peakDescriptor, intensity);
+            }
+        }
     }
 }

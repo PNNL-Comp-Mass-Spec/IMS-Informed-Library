@@ -137,7 +137,6 @@
     <Compile Include="IO\ImsInformedPlotter.cs" />
     <Compile Include="IO\RetentionMobilitySwappedMzMLExporter.cs" />
     <Compile Include="IO\UIMFExporter.cs" />
-    <Compile Include="Scoring\AnalysisScore.cs" />
     <Compile Include="Scoring\TargetPresenceLikelihoodFunctions.cs" />
     <Compile Include="Scoring\FeatureScoreUtilities.cs" />
     <Compile Include="Scoring\FeatureStatistics.cs" />
@@ -145,6 +144,7 @@
     <Compile Include="Scoring\ScoreType.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
     <Compile Include="Scoring\VoltageGroupScore.cs" />
+    <Compile Include="Stats\Combinatorics.cs" />
     <Compile Include="Stats\FitLine.cs" />
     <Compile Include="Domain\TargetType.cs" />
     <Compile Include="Stats\NormalityTest.cs" />

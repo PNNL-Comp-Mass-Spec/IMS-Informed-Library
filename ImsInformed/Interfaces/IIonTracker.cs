@@ -10,11 +10,11 @@
 
 namespace ImsInformed.Interfaces
 {
-    using System.Collections;
     using System.Collections.Generic;
 
     using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Workflows.CrossSectionExtraction;
 
     /// <summary>
     /// The IonTracker interface.
@@ -27,9 +27,14 @@ namespace ImsInformed.Interfaces
         /// <param name="observations">
         /// The observations.
         /// </param>
+        /// <param name="driftTubeLength">
+        /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
         /// <returns>
         /// The <see cref="AssociationHypothesis"/>.
         /// </returns>
-        AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations);
+        AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters);
     }
 }

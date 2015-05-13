@@ -34,7 +34,7 @@ namespace ImsInformed.Scoring
         public static double ComputeVoltageGroupStabilityScore(VoltageGroup group)
         {
             double stability = group.VariancePressureNondimensionalized * group.VarianceTemperature * group.VarianceVoltage;
-            return ScoreUtil.MapToZeroOne(stability, true, 0.00000000000000001);
+            return ScoreUtil.MapToZeroOneTrignometry(stability, true, 0.00000000000000001);
         }
 
         /// <summary>

@@ -107,7 +107,7 @@ namespace ImsInformed.Stats
             // Lower p value reject the normal distrubution hypothesis. Higher JB means lower p-value. So higher JB rejects
             // H0, So lower JB means higher score. 
             // return JB;
-            return ScoreUtil.MapToZeroOne(JB, true, 50);
+            return ScoreUtil.MapToZeroOneTrignometry(JB, true, 50);
         }
 
         /// <summary>

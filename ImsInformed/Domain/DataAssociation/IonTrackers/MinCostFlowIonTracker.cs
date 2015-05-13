@@ -15,26 +15,20 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
 
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Interfaces;
+    using ImsInformed.Workflows.CrossSectionExtraction;
 
     /// <summary>
     /// The min cost flow ion tracker.
     /// </summary>
     public class MinCostFlowIonTracker : IIonTracker
     {
-        /// <summary>
-        /// The find optimum hypothesis.
-        /// </summary>
-        /// <param name="observations">
-        /// The observations.
-        /// </param>
-        /// <returns>
-        /// The <see cref="AssociationHypothesis"/>.
-        /// </returns>
-        /// <exception cref="NotImplementedException">
-        /// </exception>
-        public AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations)
+        public AssociationHypothesis FindOptimumHypothesis(
+            IEnumerable<ObservedPeak> observations,
+            double driftTubeLength,
+            IImsTarget target,
+            CrossSectionSearchParameters parameters)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

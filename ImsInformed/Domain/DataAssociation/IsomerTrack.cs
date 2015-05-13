@@ -10,6 +10,7 @@
 
 namespace ImsInformed.Domain.DataAssociation
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -62,11 +63,6 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The target.
         /// </summary>
-        private readonly IImsTarget target;
-
-        /// <summary>
-        /// The target.
-        /// </summary>
         private readonly HashSet<VoltageGroup> definedVoltageGroups;
 
         /// <summary>
@@ -87,15 +83,31 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
         /// </summary>
+        /// <param name="peaks">
+        /// The peaks.
+        /// </param>
+        /// <param name="driftTubeLengthInMeters">
+        /// The drift tube length in meters.
+        /// </param>
+        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters) : this(driftTubeLengthInMeters)
+        {
+            foreach (var peak in peaks)
+            {
+                this.AddObservation(peak);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
+        /// </summary>
         /// <param name="driftTubeLengthInMeters">
         /// The drift Tube Length In Meters.
         /// </param>
         /// <param name="target">
         /// The target.
         /// </param>
-        public IsomerTrack(double driftTubeLengthInMeters, IImsTarget target)
+        public IsomerTrack(double driftTubeLengthInMeters)
         {
-            this.target = target;
             this.driftTubeLengthInMeters = driftTubeLengthInMeters;
             this.observationsHasChanged = true;
             this.observedPeaks = new List<ObservedPeak>();
@@ -117,19 +129,39 @@ namespace ImsInformed.Domain.DataAssociation
         }
 
         /// <summary>
-        /// Gets the mobility info.
+        /// Gets the real peak count.
         /// </summary>
-        public MobilityInfo MobilityInfo
+        public int RealPeakCount
         {
             get
             {
-                if (this.observationsHasChanged)
+                int count = 0;
+                foreach (var peak in this.ObservedPeaks)
                 {
-                    return this.ComputeMobilityInfo();
+                    if (peak.Peak != null)
+                    {
+                        count++;
+                    }
                 }
 
-                return this.mobilityInfo;
+                return count;
             }
+        }
+
+        /// <summary>
+        /// Gets the mobility info for target
+        /// </summary>
+        /// <param name="target">
+        /// The target.
+        /// </param>
+        public MobilityInfo GetMobilityInfoForTarget(IImsTarget target)
+        {
+            if (this.observationsHasChanged)
+            {
+                return this.ComputeMobilityInfo(target);
+            }
+
+            return this.mobilityInfo;
         }
 
         /// <summary>
@@ -149,6 +181,10 @@ namespace ImsInformed.Domain.DataAssociation
             if (!this.definedVoltageGroups.Contains(peak.VoltageGroup))
             {
                 this.definedVoltageGroups.Add(peak.VoltageGroup);
+            }
+            else
+            {
+                throw new ArgumentException("Voltage group is already defined track");
             }
         }
 
@@ -204,7 +240,7 @@ namespace ImsInformed.Domain.DataAssociation
         private AnalysisStatus ConcludeStatus(int minFitPoints, double minR2)
         {
             bool lowFitPoints = AnalysisFilter.FilterLowFitPointNumber(this.ObservedPeaks.Count(), minFitPoints);
-            bool lowR2 = AnalysisFilter.FilterLowR2(this.mobilityInfo.RSquared, minR2);
+            bool lowR2 = AnalysisFilter.IsLowR2(this.mobilityInfo.RSquared, minR2);
 
             return lowFitPoints ? AnalysisStatus.NotSufficientPoints : 
                 lowR2 ? AnalysisStatus.Rejected : AnalysisStatus.Positive;
@@ -213,10 +249,13 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The compute mobility info.
         /// </summary>
+        /// <param name="target">
+        /// The target.
+        /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private MobilityInfo ComputeMobilityInfo()
+        private MobilityInfo ComputeMobilityInfo(IImsTarget target)
         {
             // Convert the track into a Continuous XY data points.
             IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoint();
@@ -225,18 +264,27 @@ namespace ImsInformed.Domain.DataAssociation
             this.mobilityInfo.RSquared = this.line.RSquared;
             
             Composition bufferGas = new Composition(0, 0, 2, 0, 0);
-            double reducedMass = MoleculeUtil.ComputeReducedMass(this.target.MassWithAdduct, bufferGas);
+            double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);
             double meanTemperatureInKelvin = this.ComputeGlobalMeanTemperature();
             this.mobilityInfo.CollisionCrossSectionArea = MoleculeUtil.ComputeCrossSectionalArea(
                 meanTemperatureInKelvin,
                 this.mobilityInfo.Mobility,
-                this.target.ChargeState, 
+                target.ChargeState, 
                 reducedMass);
 
             this.observationsHasChanged = false;
             return this.mobilityInfo;
         }
 
+        /// <summary>
+        /// The extract arrival time snap shot.
+        /// </summary>
+        /// <param name="peak">
+        /// The peak.
+        /// </param>
+        /// <returns>
+        /// The <see cref="ArrivalTimeSnapShot"/>.
+        /// </returns>
         private ArrivalTimeSnapShot ExtractArrivalTimeSnapShot(ObservedPeak peak)
         {
             ArrivalTimeSnapShot snapShot;

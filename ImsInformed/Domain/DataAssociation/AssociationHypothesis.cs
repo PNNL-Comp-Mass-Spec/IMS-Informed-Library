@@ -18,7 +18,7 @@ namespace ImsInformed.Domain.DataAssociation
     /// <summary>
     /// The ion tracking class that track ions across different voltage groups.
     /// </summary>
-    public class AssociationHypothesis : IEquatable<AssociationHypothesis>
+    public class AssociationHypothesis : IEquatable<AssociationHypothesis>, ICloneable
     {
         /// <summary>
         /// The total peaks.
@@ -39,7 +39,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The tracks.
         /// </summary>
-        private HashSet<IsomerTrack> tracks;
+        private IList<IsomerTrack> tracks;
 
         /// <summary>
         /// The on track features.
@@ -57,7 +57,7 @@ namespace ImsInformed.Domain.DataAssociation
         public AssociationHypothesis(IEnumerable<ObservedPeak> totalPeaks)
         {
             this.totalPeaks = totalPeaks;
-            this.tracks = new HashSet<IsomerTrack>();
+            this.tracks = new List<IsomerTrack>();
             this.onTrackFeatures = new Dictionary<ObservedPeak, IsomerTrack>();
         }
 
@@ -79,7 +79,32 @@ namespace ImsInformed.Domain.DataAssociation
         /// </param>
         public void AddIsomerTrack(IsomerTrack newTrack)
         {
+            // Add the track
             this.tracks.Add(newTrack);
+            foreach (var peak in newTrack.ObservedPeaks)
+            {
+                if (!this.onTrackFeatures.Keys.Contains(peak))
+                {
+                    this.onTrackFeatures.Add(peak, newTrack);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove the most Recent isomer track.
+        /// </summary>
+        public void RemoveIsomerTrack(IsomerTrack track)
+        {
+            this.tracks.Remove(track);
+        }
+
+        /// <summary>
+        /// Remove the most Recent isomer track.
+        /// </summary>
+        public void RemoveAllIsomerTracks()
+        {
+            this.tracks = new List<IsomerTrack>();
+            this.onTrackFeatures = new Dictionary<ObservedPeak, IsomerTrack>();
         }
 
         /// <summary>
@@ -96,18 +121,38 @@ namespace ImsInformed.Domain.DataAssociation
             return 1;
         }
 
+        public bool IsConflict(IsomerTrack track)
+        {
+            IList<IsomerTrack> conflictedTracks;
+            return this.IsConflict(track, out conflictedTracks);
+        }
+
         /// <summary>
         /// Return if input track violates the multually exclusive principle.
         /// </summary>
         /// <param name="track">
         /// The track.
         /// </param>
+        /// <param name="conflictedTracks">
+        /// The conflicted Tracks.
+        /// </param>
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool IsConflict(IsomerTrack track)
+        public bool IsConflict(IsomerTrack track, out IList<IsomerTrack> conflictedTracks)
         {
-            return true;
+            bool result = false;
+            conflictedTracks = new List<IsomerTrack>();
+            foreach (ObservedPeak peak in track.ObservedPeaks)
+            {
+                if (this.onTrackFeatures.Keys.Contains(peak))
+                {
+                    conflictedTracks.Add(this.onTrackFeatures[peak]);
+                    result = true;
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -152,6 +197,11 @@ namespace ImsInformed.Domain.DataAssociation
             // Check if the peak is in the totalPeaks
             
             // Check if the peak is on the tracks 
+        }
+
+        public object Clone()
+        {
+            throw new NotImplementedException();
         }
     }
 }

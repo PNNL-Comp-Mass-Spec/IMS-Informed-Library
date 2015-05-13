@@ -15,11 +15,13 @@ namespace ImsInformed.Scoring
     using System.Linq;
 
     using ImsInformed.Domain;
+    using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Interfaces;
 
     using MultiDimensionalPeakFinding.PeakDetection;
 
     /// <summary>
-    /// The score util.
+    /// The input util.
     /// </summary>
     public class ScoreUtil
     {
@@ -35,7 +37,7 @@ namespace ImsInformed.Scoring
         public delegate double LikelihoodFunc(FeatureStatistics featureScores);
 
         /// <summary>
-        /// The compare feature score.
+        /// The compare feature input.
         /// </summary>
         /// <param name="a">
         /// The a.
@@ -49,7 +51,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public static int CompareFeatureScore(FeatureStatistics a, FeatureStatistics b, LikelihoodFunc likelihoodFunc)
+        private static int CompareFeatureScore(FeatureStatistics a, FeatureStatistics b, LikelihoodFunc likelihoodFunc)
         {
             return likelihoodFunc(a).CompareTo(likelihoodFunc(b));
         }
@@ -69,61 +71,59 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool MoreLikelyThan(FeatureStatistics a, FeatureStatistics b, LikelihoodFunc likelihoodFunc)
+        public static bool MoreLikelyThanUntargeted(ObservedPeak a, ObservedPeak b, LikelihoodFunc likelihoodFunc)
         {
-            int result = CompareFeatureScore(a, b, likelihoodFunc);
+            int result = CompareFeatureScore(a.Statistics, b.Statistics, likelihoodFunc);
             return result > 0;
         }
 
         /// <summary>
-        /// The select most likely feature.
+        /// The more likely than targeted.
         /// </summary>
-        /// <param name="scores">
-        /// The scores.
+        /// <param name="a">
+        /// The a.
+        /// </param>
+        /// <param name="b">
+        /// The b.
         /// </param>
         /// <param name="likelihoodFunc">
         /// The likelihood func.
         /// </param>
+        /// <param name="target">
+        /// The target.
+        /// </param>
         /// <returns>
-        /// The <see cref="FeatureBlob"/>.
+        /// The <see cref="bool"/>.
         /// </returns>
-        public static StandardImsPeak SelectMostLikelyFeature(IDictionary<StandardImsPeak, FeatureStatistics> scores, LikelihoodFunc likelihoodFunc)
+        /// <exception cref="NotImplementedException">
+        /// </exception>
+        public static bool MoreLikelyThanTargeted(ObservedPeak a, ObservedPeak b, LikelihoodFunc likelihoodFunc, IImsTarget target)
         {
-            // Select the feature with the highest isotopic score
-            StandardImsPeak bestFeature = null;
-            FeatureStatistics mostLikelyPeakScores = new FeatureStatistics(0, 0, 0);
+            throw new NotImplementedException();
+        }
 
-            foreach (var featureBlob in scores.Keys)
-            {
-                FeatureStatistics currentStatistics = scores[featureBlob];
-            
-                // Evaluate feature scores.
-                if (MoreLikelyThan(currentStatistics, mostLikelyPeakScores, likelihoodFunc))
-                {
-                    bestFeature = featureBlob;
-                    mostLikelyPeakScores = currentStatistics;
-                }
-            }
-
-            return bestFeature;
+        // e^-ax
+        public static double MapToZeroOneExponential(double input, double a)
+        {
+            return Math.Exp(0 - a * input);
         }
 
         /// <summary>
-        /// The map to zero one.
+        /// Map a double from 0 to inifinity to [0,1] Range
         /// </summary>
-        /// <param name="score">
-        /// The score.
+        /// <param name="input">
+        /// The input.
         /// </param>
         /// <param name="inverseMapping">
         /// The inverse mapping.
         /// </param>
         /// <param name="ninetyPercentX">
-        /// The X value to map to 0.9. Used to define a "good" score.
+        /// The X value to map to 0.9. Used to define a "good" input.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double MapToZeroOne(double score, bool inverseMapping, double ninetyPercentX)
+        public static double MapToZeroOneTrignometry(double input, bool inverseMapping, double ninetyPercentX)
         {
             double scale = 0;
             
@@ -140,7 +140,7 @@ namespace ImsInformed.Scoring
                 scale = Math.Tan(0.9 * Math.PI / 2) / ninetyPercentX;
             }
 
-            double normalizedScore = score * scale;
+            double normalizedScore = input * scale;
             if (inverseMapping)
             {
                 normalizedScore = Math.PI / 2 - Math.Atan(normalizedScore);
@@ -149,6 +149,7 @@ namespace ImsInformed.Scoring
             {
                 normalizedScore = Math.Atan(normalizedScore);
             }
+
             normalizedScore /= Math.PI / 2;
             return normalizedScore;
         }

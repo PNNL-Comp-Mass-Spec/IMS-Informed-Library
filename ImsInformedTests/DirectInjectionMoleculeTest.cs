@@ -252,7 +252,7 @@ namespace ImsInformedTests
             // double mz = 161.10787;
             // string uimfFile = NicoFile;
 
-            MolecularTarget target= new MolecularTarget(mz, IonizationMethod.ProtonPlus, "Nicotine");
+            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.ProtonPlus, "Nicotine");
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -318,7 +318,7 @@ namespace ImsInformedTests
             for (int i = 0; i < numberOfMonteCarloTests; i++)
             {
                 var distribution = new Normal(50, 1);
-                distribution.RandomSource = new Random(System.DateTime.Now.Millisecond * i);
+                distribution.RandomSource = new Random(DateTime.Now.Millisecond * i);
                 var normalSamples = distribution.Samples().Take(sampleSize);
                 
 

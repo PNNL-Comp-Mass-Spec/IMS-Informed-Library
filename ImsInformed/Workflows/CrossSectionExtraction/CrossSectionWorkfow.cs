@@ -246,12 +246,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IList<ObservedPeak> rejectedObservations = new List<ObservedPeak>();
 
                     // Iterate through the features and perform filtering on isotopic affinity, intensity, drift time and peak shape.
-                    foreach (KeyValuePair<VoltageGroup, ExtractedIonChromatogram> item in accumulatedXiCs)
+                    foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {    
-                        VoltageGroup voltageGroup = item.Key;
                         double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, this.uimfReader);
                     
-                        List<StandardImsPeak> standardPeaks = this.FindPeaksBasedOnXIC(item, target);
+                        List<StandardImsPeak> standardPeaks = this.FindPeaksBasedOnXIC(voltageGroup, accumulatedXiCs[voltageGroup], target);
                         
                         // Score features
                         IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
@@ -366,7 +365,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         // Perform the data association algorithm.
                     IIonTracker tracker = new CombinatorialIonTracker();
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations);
+                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters);
 
                     // Printout results
                     if (detailedVerbose)
@@ -378,7 +377,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // line.RemoveOutliersAboveThreshold(3, minFitPoints);
                     
                     // Remove outliers until min fit point is reached or good R2 is achieved.
-                    // while (AnalysisFilter.FilterLowR2(line.RSquared) && line.FitPointCollection.Count > minFitPoints)
+                    // while (AnalysisFilter.IsLowR2(line.RSquared) && line.FitPointCollection.Count > minFitPoints)
                     // {
                     //     line.RemoveOutlierWithHighestCookDistance(minFitPoints);
                     // }
@@ -679,21 +678,21 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        private List<StandardImsPeak> FindPeaksBasedOnXIC(KeyValuePair<VoltageGroup, ExtractedIonChromatogram> chromatogram, IImsTarget target)
+        private List<StandardImsPeak> FindPeaksBasedOnXIC(VoltageGroup voltageGroup, ExtractedIonChromatogram chromatogram, IImsTarget target)
         {
             if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.WaterShed)
             {
                 // Find peaks using multidimensional peak finder.
-                List<IntensityPoint> intensityPoints = chromatogram.Value.IntensityPoints;
+                List<IntensityPoint> intensityPoints = chromatogram.IntensityPoints;
                 List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
 
                 // Recapture the 2D peak using the 1D feature blob from multidimensional peak finder.
-                return featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, chromatogram.Key, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
+                return featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
             } 
             else if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.MASICPeakFinder)
             {
                 // Find peaks using MASIC peak finder
-                List<IntensityPoint> intensityPoints = chromatogram.Value.IntensityPoints;
+                List<IntensityPoint> intensityPoints = chromatogram.IntensityPoints;
                 IList<clsPeak> masicPeaks = PeakFinding.FindPeakUsingMasic(intensityPoints, this.NumberOfScans);
                 
                 // Recapture the 2D peak using the 1D feature blob from multidimensional peak finder.

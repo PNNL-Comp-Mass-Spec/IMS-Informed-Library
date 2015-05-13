@@ -121,7 +121,7 @@ namespace ImsInformed.Scoring
             // summedIntensities /= voltageGroup.FrameAccumulationCount;
 
             // normalize the score
-            return ScoreUtil.MapToZeroOne(summedIntensities, false, globalMaxIntensity / 3);
+            return ScoreUtil.MapToZeroOneTrignometry(summedIntensities, false, globalMaxIntensity / 3);
         }
 
         /// <summary>
@@ -383,7 +383,7 @@ namespace ImsInformed.Scoring
             }
 
             // Map the score to [0, 1]
-            return ScoreUtil.MapToZeroOne(Math.Sqrt(isotopicScore), true, 0.03);
+            return ScoreUtil.MapToZeroOneTrignometry(Math.Sqrt(isotopicScore), true, 0.03);
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace ImsInformed.Scoring
             }
 
             // Map the score to [0, 1]
-            return ScoreUtil.MapToZeroOne(Math.Sqrt(isotopicScore), true, 0.03);
+            return ScoreUtil.MapToZeroOneTrignometry(Math.Sqrt(isotopicScore), true, 0.03);
         }
 
         /// <summary>

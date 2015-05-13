@@ -18,6 +18,17 @@ namespace ImsInformed.Domain.DirectInjection
     public class ObservedPeak
     {
         /// <summary>
+        /// Create a null peak, that is, no peak in the voltage group.
+        /// </summary>
+        /// <param name="group">
+        /// The group.
+        /// </param>
+        public ObservedPeak(VoltageGroup group)
+        {
+            this.VoltageGroup = group;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ObservedPeak"/> class.
         /// </summary>
         /// <param name="group">

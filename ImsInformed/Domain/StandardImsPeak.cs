@@ -107,7 +107,7 @@ namespace ImsInformed.Domain
             double targetMzMax = targetMz * (1 + massToleranceInPpm / 1000000);
 
             // Somehow frame is zero indexed instead
-            uimfReader.GetSpectrum(voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
+            uimfReader.GetSpectrum(voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
             
             if (mzArray.Count() != 0)
             {
@@ -227,6 +227,25 @@ namespace ImsInformed.Domain
             result = result * 13 + this.MaxRetentionTimeInFrameNumber;
             return result;
         }
+    }
 
+    /// <summary>
+    /// The standard ims peak util.
+    /// </summary>
+    public static class StandardImsPeakUtil
+    {
+        public static double PeakCenterLocationOnMz(this StandardImsPeak peak)
+        {
+            double frontalPortion = peak.HighestPeakApex.MzCenterInDalton - peak.HighestPeakApex.MzFullWidthHalfMaxLow;
+            double fullPeakWidth = peak.HighestPeakApex.MzFullWidthHalfMaxHigh - peak.HighestPeakApex.MzFullWidthHalfMaxLow;
+            return frontalPortion / fullPeakWidth;
+        }
+
+        public static double PeakCenterLocationOnArrivalTime(this StandardImsPeak peak)
+        {
+            double frontalPortion = peak.HighestPeakApex.DriftTimeCenterInMs - peak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
+            double fullPeakWidth = peak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs - peak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
+            return frontalPortion / fullPeakWidth;
+        }
     }
 }

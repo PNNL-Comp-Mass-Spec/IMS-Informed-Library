@@ -103,9 +103,39 @@ namespace ImsInformed.Scoring
         }
 
         // e^-ax
-        public static double MapToZeroOneExponential(double input, double a)
+        public static double MapToZeroOneExponential(double input, double a, bool inverseMapping = false)
         {
-            return Math.Exp(0 - a * input);
+            double result = 1 - Math.Exp(0 - a * input);
+            return inverseMapping ? 1- result : result;
+        }
+
+        /// <summary>
+        /// The map to zero one using 1- e^-ax
+        /// </summary>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <param name="x0">
+        /// The x 0.
+        /// </param>
+        /// <param name="y0">
+        /// The y 0.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        public static double MapToZeroOneExponential(double input, double x0, double y0, bool inverseMapping = false)
+        {
+            if (y0 >= 1 || y0 <= 0 || input < 0)
+            {
+                throw new ArgumentException();
+            }
+
+            double a = 0 - Math.Log(y0) / x0;
+            double result = 1 - Math.Exp(0 - a * input);
+            return inverseMapping ? 1 - result : result;
         }
 
         /// <summary>

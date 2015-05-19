@@ -12,6 +12,9 @@ namespace ImsInformed.Domain.DataAssociation
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+
+    using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain.DirectInjection;
 
@@ -21,20 +24,9 @@ namespace ImsInformed.Domain.DataAssociation
     public class AssociationHypothesis : IEquatable<AssociationHypothesis>, ICloneable
     {
         /// <summary>
-        /// The total peaks.
+        /// The all observations.
         /// </summary>
-        public IEnumerable<ObservedPeak> TotalPeaks
-        {
-            get
-            {
-                return this.totalPeaks;
-            }
-            
-            private set
-            {
-                this.totalPeaks = value;
-            }
-        }
+        private readonly IEnumerable<ObservedPeak> allObservations;
 
         /// <summary>
         /// The tracks.
@@ -44,32 +36,100 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The on track features.
         /// </summary>
-        private IDictionary<ObservedPeak, IsomerTrack> onTrackFeatures;
-
-        private IEnumerable<ObservedPeak> totalPeaks;
+        private IDictionary<ObservedPeak, IsomerTrack> onTrackObservations;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssociationHypothesis"/> class.
         /// </summary>
-        /// <param name="totalPeaks">
+        /// <param name="allObservations">
         /// The total Peaks.
         /// </param>
-        public AssociationHypothesis(IEnumerable<ObservedPeak> totalPeaks)
+        public AssociationHypothesis(IEnumerable<ObservedPeak> allObservations)
         {
-            this.totalPeaks = totalPeaks;
+            this.allObservations = allObservations;
             this.tracks = new List<IsomerTrack>();
-            this.onTrackFeatures = new Dictionary<ObservedPeak, IsomerTrack>();
+            this.onTrackObservations = new Dictionary<ObservedPeak, IsomerTrack>();
         }
 
         /// <summary>
-        /// The probability of data given hypothesis.
+        /// Initializes a new instance of the <see cref="AssociationHypothesis"/> class.
         /// </summary>
-        public double ProbabilityOfDataGivenHypothesis { get; private set; }
+        /// <param name="associationHypothesis">
+        /// The association hypothesis.
+        /// </param>
+        private AssociationHypothesis(AssociationHypothesis associationHypothesis)
+        {
+            this.allObservations = associationHypothesis.AllObservations; // reference copy the immutable observation collection
+            this.tracks = associationHypothesis.tracks.ToList(); // shallow copy list
+            this.onTrackObservations = new Dictionary<ObservedPeak, IsomerTrack>(associationHypothesis.onTrackObservations);
+        }
 
         /// <summary>
-        /// The probability of hypothesis given data.
+        /// Gets the probability of data given hypothesis.
         /// </summary>
-        public double ProbabilityOfHypothesisGivenData { get; private set; }
+        public double ProbabilityOfDataGivenHypothesis
+        {
+            get
+            {
+                double p = 1;
+                foreach (var observation in this.allObservations)
+                {
+                    p *= this.ComputeAPosterioriProbabilityForObservation(observation);
+                }
+
+                return p;
+            }
+        }
+
+        /// <summary>
+        /// Gets the probability of hypothesis given observations.
+        /// </summary>
+        public double ProbabilityOfHypothesisGivenData
+        {
+            get
+            {
+                double p = 1;
+                foreach (IsomerTrack track in this.tracks)
+                {
+                    p *= track.TrackProbability;
+                }
+
+                return this.ProbabilityOfDataGivenHypothesis * p;
+            }
+        }
+
+        /// <summary>
+        /// Gets the tracks.
+        /// </summary>
+        public IEnumerable<IsomerTrack> Tracks
+        {
+            get
+            {
+                return this.tracks;
+            }
+        }
+
+        /// <summary>
+        /// Gets the on track observations.
+        /// </summary>
+        public IEnumerable<ObservedPeak> OnTrackObservations
+        {
+            get
+            {
+                return this.onTrackObservations.Keys;
+            }
+        }
+
+        /// <summary>
+        /// Gets all the observations in the hypothesis.
+        /// </summary>
+        public IEnumerable<ObservedPeak> AllObservations
+        {
+            get
+            {
+                return this.allObservations;
+            }
+        }
 
         /// <summary>
         /// The add isomer track.
@@ -81,13 +141,7 @@ namespace ImsInformed.Domain.DataAssociation
         {
             // Add the track
             this.tracks.Add(newTrack);
-            foreach (var peak in newTrack.ObservedPeaks)
-            {
-                if (!this.onTrackFeatures.Keys.Contains(peak))
-                {
-                    this.onTrackFeatures.Add(peak, newTrack);
-                }
-            }
+            this.RegisterObservationsOfTrack(newTrack);
         }
 
         /// <summary>
@@ -96,6 +150,11 @@ namespace ImsInformed.Domain.DataAssociation
         public void RemoveIsomerTrack(IsomerTrack track)
         {
             this.tracks.Remove(track);
+            this.onTrackObservations = new Dictionary<ObservedPeak, IsomerTrack>();
+            foreach (var trackLeft in this.tracks)
+            {
+                this.RegisterObservationsOfTrack(trackLeft);
+            }
         }
 
         /// <summary>
@@ -104,11 +163,11 @@ namespace ImsInformed.Domain.DataAssociation
         public void RemoveAllIsomerTracks()
         {
             this.tracks = new List<IsomerTrack>();
-            this.onTrackFeatures = new Dictionary<ObservedPeak, IsomerTrack>();
+            this.onTrackObservations = new Dictionary<ObservedPeak, IsomerTrack>();
         }
 
         /// <summary>
-        /// The compute posteriori probability for observation.
+        /// The compute posteriori probability for observation Pr(xi | T)
         /// </summary>
         /// <param name="observedPeak">
         /// The observed peak.
@@ -118,9 +177,26 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         public double ComputeAPosterioriProbabilityForObservation(ObservedPeak observedPeak)
         {
-            return 1;
+            if (this.IsOnTrack(observedPeak))
+            {
+                IsomerTrack track = this.GetTrack(observedPeak);
+                return 1;
+            }
+            else
+            {
+                return 0.85;
+            }
         }
 
+        /// <summary>
+        /// The is conflict.
+        /// </summary>
+        /// <param name="track">
+        /// The track.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         public bool IsConflict(IsomerTrack track)
         {
             IList<IsomerTrack> conflictedTracks;
@@ -128,7 +204,7 @@ namespace ImsInformed.Domain.DataAssociation
         }
 
         /// <summary>
-        /// Return if input track violates the multually exclusive principle.
+        /// Return if input track violates the mutually exclusive principle.
         /// </summary>
         /// <param name="track">
         /// The track.
@@ -145,9 +221,9 @@ namespace ImsInformed.Domain.DataAssociation
             conflictedTracks = new List<IsomerTrack>();
             foreach (ObservedPeak peak in track.ObservedPeaks)
             {
-                if (this.onTrackFeatures.Keys.Contains(peak))
+                if (this.onTrackObservations.Keys.Contains(peak))
                 {
-                    conflictedTracks.Add(this.onTrackFeatures[peak]);
+                    conflictedTracks.Add(this.onTrackObservations[peak]);
                     result = true;
                 }
             }
@@ -172,17 +248,6 @@ namespace ImsInformed.Domain.DataAssociation
         }
 
         /// <summary>
-        /// Gets or sets the tracks.
-        /// </summary>
-        public IEnumerable<IsomerTrack> Tracks
-        {
-            get
-            {
-                return this.tracks;
-            }
-        }
-
-        /// <summary>
         /// The is on track.
         /// </summary>
         /// <param name="peak">
@@ -193,15 +258,56 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         public bool IsOnTrack(ObservedPeak peak)
         {
-            throw new NotImplementedException();
-            // Check if the peak is in the totalPeaks
-            
-            // Check if the peak is on the tracks 
+            return this.onTrackObservations.ContainsKey(peak);
         }
 
+        /// <summary>
+        /// The get track.
+        /// </summary>
+        /// <param name="peak">
+        /// The peak.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IsomerTrack"/>.
+        /// </returns>
+        public IsomerTrack GetTrack(ObservedPeak peak)
+        {
+            if (!this.IsOnTrack(peak))
+            {
+                return null;
+            }
+            else
+            {
+                return this.onTrackObservations[peak];
+            }
+        }
+
+        /// <summary>
+        /// The clone.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="object"/>.
+        /// </returns>
         public object Clone()
         {
-            throw new NotImplementedException();
+            return new AssociationHypothesis(this);
+        }
+
+        /// <summary>
+        /// The register observations of track.
+        /// </summary>
+        /// <param name="track">
+        /// The track.
+        /// </param>
+        private void RegisterObservationsOfTrack(IsomerTrack track)
+        {
+            foreach (var peak in track.ObservedPeaks)
+            {
+                if (!this.onTrackObservations.Keys.Contains(peak))
+                {
+                    this.onTrackObservations.Add(peak, track);
+                }
+            }
         }
     }
 }

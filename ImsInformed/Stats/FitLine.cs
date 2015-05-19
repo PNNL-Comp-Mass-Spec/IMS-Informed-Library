@@ -4,7 +4,7 @@
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   The fit line.
+//   The fit FitLine.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ namespace ImsInformed.Stats
     using DeconTools.Backend.Utilities;
 
     /// <summary>
-    /// The fit line.
+    /// The fit FitLine.
     /// </summary>
     public class FitLine
     {
@@ -25,7 +25,7 @@ namespace ImsInformed.Stats
         /// Initializes a new instance of the <see cref="FitLine"/> class.
         /// </summary>
         /// <param name="fitPoints">
-        /// The points to calculate the fit line from
+        /// The points to calculate the fit FitLine from
         /// </param>
         /// <param name="outlierThreshold">
         /// The cook's distance threshold for a point to be identified as outliers.
@@ -72,60 +72,17 @@ namespace ImsInformed.Stats
         public double RSquared { get; protected set; }
 
         /// <summary>
-        /// Computes fit line for potential voltage group and writes
+        /// Return the predicted Y at given X
         /// </summary>
-        /// <param name="xyPoints">
-        /// The xy points.
-        /// </param>
-        private void LeastSquaresFitLinear(IEnumerable<ContinuousXYPoint> xyPoints)
-        {
-            int count = 0;
-            double meanX = 0;
-            double meanY = 0;
-            double meanXSquared = 0;
-            double meanXY = 0;
-            foreach (ContinuousXYPoint point in xyPoints)
-            {
-                this.FitPointCollection.Add(point.Clone());
-                count++;
-                meanX += point.X;
-                meanY += point.Y;
-                meanXSquared += point.X * point.X;
-                meanXY += point.X * point.Y;
-            }
-            meanX = meanX / count;
-            meanY = meanY / count;
-            meanXY = meanXY / count;
-            meanXSquared = meanXSquared / count;
-
-            this.Slope = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
-            this.Intercept = meanY - this.Slope * meanX;
-            this.MSE = this.CalculateMSE();
-            this.RSquared = this.CalculateRSquared();
-            this.CalculateCooksDistances();
-        }
-
-        /// <summary>
-        /// The compute residuel.
-        /// </summary>
-        /// <param name="point">
-        /// The point.
+        /// <param name="x">
+        /// The X.
         /// </param>
         /// <returns>
-        /// The <see cref="double"/>.
+        /// the predicted Y at given X <see cref="double"/>.
         /// </returns>
-        /// <exception cref="ArgumentException">
-        /// </exception>
-        private double ComputeResiduel(ContinuousXYPoint point)
+        public double ModelPredictX2Y(double x)
         {
-            if (this.FitPointCollection.Contains(point))
-            {
-                return Math.Abs(this.ModelPredict(point.X) - point.Y);
-            }
-            else
-            {
-                throw new ArgumentException("Point given is not inside Fitline point list");
-            }
+            return (this.Slope * x) + this.Intercept;
         }
 
         /// <summary>
@@ -137,9 +94,9 @@ namespace ImsInformed.Stats
         /// <returns>
         /// the predicted Y at given X <see cref="double"/>.
         /// </returns>
-        public double ModelPredict(double x)
+        public double ModelPredictY2X(double y)
         {
-            return Slope * x + Intercept;    
+            return (y - this.Intercept) / this.Slope;
         }
 
         /// <summary>
@@ -227,11 +184,46 @@ namespace ImsInformed.Stats
         }
 
         /// <summary>
+        /// Computes fit FitLine for potential voltage group and writes
+        /// </summary>
+        /// <param name="xyPoints">
+        /// The xy points.
+        /// </param>
+        private void LeastSquaresFitLinear(IEnumerable<ContinuousXYPoint> xyPoints)
+        {
+            int count = 0;
+            double meanX = 0;
+            double meanY = 0;
+            double meanXSquared = 0;
+            double meanXY = 0;
+            foreach (ContinuousXYPoint point in xyPoints)
+            {
+                this.FitPointCollection.Add(point.Clone());
+                count++;
+                meanX += point.X;
+                meanY += point.Y;
+                meanXSquared += point.X * point.X;
+                meanXY += point.X * point.Y;
+            }
+            meanX = meanX / count;
+            meanY = meanY / count;
+            meanXY = meanXY / count;
+            meanXSquared = meanXSquared / count;
+
+            this.Slope = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
+            this.Intercept = meanY - this.Slope * meanX;
+            this.MSE = this.CalculateMSE();
+            this.RSquared = this.CalculateRSquared();
+            this.CalculateCooksDistances();
+        }
+
+        /// <summary>
         /// Calculate Cook's distance for all points
         /// </summary>
         private void CalculateCooksDistances()
         {
             int pointsCount = this.FitPointCollection.Count;
+
             // calcaulate average X
             double meanX = 0;
             foreach (ContinuousXYPoint point in this.FitPointCollection)
@@ -251,6 +243,29 @@ namespace ImsInformed.Stats
             foreach (ContinuousXYPoint point in this.FitPointCollection)
             {
                 point.CooksD = CooksDistance(point, SSx, meanX, pointsCount);
+            }
+        }
+
+        /// <summary>
+        /// The compute residuel.
+        /// </summary>
+        /// <param name="point">
+        /// The point.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        private double ComputeResiduel(ContinuousXYPoint point)
+        {
+            if (this.FitPointCollection.Contains(point))
+            {
+                return Math.Abs(this.ModelPredictX2Y(point.X) - point.Y);
+            }
+            else
+            {
+                throw new ArgumentException("Point given is not inside Fitline point list");
             }
         }
 

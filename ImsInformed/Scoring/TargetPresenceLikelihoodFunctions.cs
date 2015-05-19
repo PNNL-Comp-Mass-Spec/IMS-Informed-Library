@@ -17,7 +17,7 @@ namespace ImsInformed.Scoring
     /// <summary>
     /// The likelihood function for if the feature is an actual ion instead of random noise.
     /// </summary>
-    public class TargetPresenceLikelihoodFunctions
+    public static class TargetPresenceLikelihoodFunctions
     {
         /// <summary>
         /// The intensity independent likelihood function. Better used if you have strong faith in the isotopic score 100% and/or your sample is really mixed and
@@ -29,7 +29,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityIndependentLikelihoodFunction(ObservedPeak observedPeak)
+        public static double IntensityIndependentLikelihoodFunction(this ObservedPeak observedPeak)
         {
             FeatureStatistics featureScores = observedPeak.Statistics;
             return featureScores.IsotopicScore;
@@ -44,7 +44,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double NeutralLikelihoodFunction(ObservedPeak observedPeak)
+        public static double NeutralLikelihoodFunction(this ObservedPeak observedPeak)
         {
             FeatureStatistics featureScores = observedPeak.Statistics;
             return featureScores.IntensityScore + featureScores.IsotopicScore;
@@ -59,7 +59,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static double IntensityDominantLikelihoodFunction(ObservedPeak observedPeak)
+        public static double IntensityDominantLikelihoodFunction(this ObservedPeak observedPeak)
         {
             FeatureStatistics featureScores = observedPeak.Statistics;
             return featureScores.IntensityScore + 0.5 * featureScores.IsotopicScore;

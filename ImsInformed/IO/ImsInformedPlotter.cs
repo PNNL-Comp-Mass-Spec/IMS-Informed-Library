@@ -13,10 +13,13 @@ namespace ImsInformed.IO
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
 
+    using ImsInformed.Domain.DataAssociation;
+    using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Stats;
 
     using OxyPlot;
@@ -35,33 +38,48 @@ namespace ImsInformed.IO
     public class ImsInformedPlotter
     {
         /// <summary>
-        /// The mobility fit line 2 png.
+        /// The plot association hypothesis.
         /// </summary>
-        /// <param name="outputPath">
-        /// The output path.
+        /// <param name="hypothesis">
+        /// The hypothesis.
         /// </param>
-        /// <param name="line">
-        /// The line.
+        /// <param name="plotLocation">
+        /// The plot location.
         /// </param>
         [STAThread]
-        public static void MobilityFitLine2PNG(string outputPath, FitLine line)
+        public static void PlotAssociationHypothesis(AssociationHypothesis hypothesis, string plotLocation, string datasetName, string targetDescriptor)
         {
-            PlotDiagram(outputPath, MobilityFitLinePlot(line));
+            PlotDiagram(plotLocation, AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor));
+        }
+
+        /// <summary>
+        /// The plot mobility fit.
+        /// </summary>
+        /// <param name="fitline">
+        /// The fitline.
+        /// </param>
+        /// <param name="plotLocation">
+        /// The plot location.
+        /// </param>
+        [STAThread]
+        public static void PlotMobilityFit(FitLine fitline, string plotLocation)
+        {
+            PlotDiagram(plotLocation, MobilityFitLinePlot(fitline));
         }
 
         /// <summary>
         /// The plot diagram.
         /// </summary>
-        /// <param name="PngLocation">
+        /// <param name="pngLocation">
         /// The png location.
         /// </param>
         /// <param name="model">
         /// The model.
         /// </param>
-        private static void PlotDiagram(string PngLocation, PlotModel model)
+        private static void PlotDiagram(string pngLocation, PlotModel model)
         {
             int resolution = 96;
-            int width = 600;  // 1024 pixels final width
+            int width = 800;  // 1024 pixels final width
             int height = 512; // 512 pixels final height
             RenderTargetBitmap image = new RenderTargetBitmap(width * 2, height, resolution, resolution, PixelFormats.Pbgra32);
             DrawingVisual drawVisual = new DrawingVisual();
@@ -76,14 +94,114 @@ namespace ImsInformed.IO
 
             PngBitmapEncoder png = new PngBitmapEncoder();
             png.Frames.Add(BitmapFrame.Create(image));
-            using (Stream stream = File.Create(PngLocation))
+            using (Stream stream = File.Create(pngLocation))
             {
                 png.Save(stream);
             }
         }
 
         /// <summary>
-        /// The mobility fit line plot.
+        /// The association hypothesis plot.
+        /// </summary>
+        /// <param name="hypothesis">
+        /// The hypothesis.
+        /// </param>
+        /// <param name="datasetName">
+        /// The dataset name.
+        /// </param>
+        /// <param name="targetDescriptor">
+        /// The target descriptor.
+        /// </param>
+        /// <returns>
+        /// The <see cref="PlotModel"/>.
+        /// </returns>
+        private static PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, string targetDescriptor)
+        {
+            PlotModel model = new PlotModel();
+            model.TitlePadding = 0;
+            model.Title = "Association Hypothesis Plot";
+            model.Subtitle = datasetName + "_" + targetDescriptor;
+
+            model.Axes.Add(
+                new LinearAxis
+                    {
+                        Title = "IMS scan time (seconds)",
+                        MajorGridlineStyle = LineStyle.Solid,
+                        Position = AxisPosition.Left,
+                    });
+
+            model.Axes.Add(
+                new LinearAxis
+                    {
+                        Title = "Pressure / (Temperature * Voltage) (1 / V))",
+                        Position = AxisPosition.Bottom,
+                        MajorGridlineStyle = LineStyle.Solid,
+                    });
+
+            // Add all the points
+            ObservedPeak[] allPoints = hypothesis.AllObservations.ToArray();
+
+            Func<object, ScatterPoint> fitPointMap = obj =>
+            {
+                ObservedPeak observation = (ObservedPeak)obj;
+                ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
+                double size = 6 * observation.Statistics.IntensityScore;
+                double color = hypothesis.IsOnTrack(observation) ? 0 : 1;
+                ScatterPoint sp = new ScatterPoint(xyPoint.Y, xyPoint.X, size, color);
+                return sp;
+            };
+
+            model.Axes.Add(new LinearColorAxis()
+            {
+                Position = AxisPosition.None,
+                HighColor = OxyColors.Red,
+                LowColor = OxyColors.Blue,
+                Minimum = 0.1,
+                Maximum = 0.9,
+                Key = "outlierAxis",
+                Palette =
+                    new OxyPalette(
+                    OxyColor.FromRgb(255, 0, 0),
+                    OxyColor.FromRgb(153, 255, 54))
+            });
+
+            model.Series.Add(new ScatterSeries
+            {
+                Mapping = fitPointMap,
+                ItemsSource = allPoints,
+                ColorAxisKey = "outlierAxis"
+            });
+
+            var allTracks = hypothesis.Tracks;
+
+            // Add the tracks as linear axes
+            foreach (var track in allTracks)
+            {
+                FitLine fitline = track.FitLine;
+
+                Func<object, DataPoint> lineMap = obj =>
+                {
+                    ObservedPeak observation = (ObservedPeak)obj;
+                    ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
+                    double x = xyPoint.X;
+                    double y = fitline.ModelPredictX2Y(x);
+                    DataPoint sp = new DataPoint(y, x);
+                    return sp;
+                };
+
+                model.Series.Add(new LineSeries()
+                {
+                    Mapping = lineMap,
+                    ItemsSource = track.ObservedPeaks,
+                    Color = OxyColors.Purple
+                });
+            }
+
+            return model;
+        }
+
+        /// <summary>
+        /// The mobility fit FitLine plot.
         /// </summary>
         /// <param name="fitline">
         /// The fitline.
@@ -116,7 +234,7 @@ namespace ImsInformed.IO
 
             PlotModel model = new PlotModel();
             model.TitlePadding = 0;
-            model.Title = "Mobility Fit Line";
+            model.Title = "Mobility Fit FitLine";
 
             LinearColorAxis outlierAxis = new LinearColorAxis()
             {
@@ -146,7 +264,7 @@ namespace ImsInformed.IO
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double x = point.X;
-                double y = fitline.ModelPredict(x);
+                double y = fitline.ModelPredictX2Y(x);
                 DataPoint sp = new DataPoint(y, x);
                 return sp;
             };

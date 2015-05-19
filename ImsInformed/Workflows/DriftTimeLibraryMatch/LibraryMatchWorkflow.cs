@@ -224,7 +224,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             
                     // Score features
                     IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
-                    Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
+                    Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber));
 
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   

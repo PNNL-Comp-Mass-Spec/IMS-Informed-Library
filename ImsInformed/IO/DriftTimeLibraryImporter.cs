@@ -57,7 +57,7 @@ namespace ImsInformed.IO
                         int size = parts.Count();
                         if (size != 6)
                         {
-                            throw new Exception("Cannot parse line: " + line + " into a valid drift time Target");
+                            throw new Exception("Cannot parse FitLine: " + line + " into a valid drift time Target");
                         }
                         else
                         {

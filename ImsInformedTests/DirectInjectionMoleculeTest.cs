@@ -51,6 +51,11 @@ namespace ImsInformedTests
     public class DirectInjectionMoleculeTest
     {
         /// <summary>
+        /// The azy.
+        /// </summary>
+        public const string azyPos = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf";
+
+        /// <summary>
         /// The nicotine UIMF file.
         /// </summary>
         public const string NicoFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-NIC_neg2_28Aug14_Columbia_DI.uimf";
@@ -224,8 +229,27 @@ namespace ImsInformedTests
             Console.WriteLine("Dataset: {0}", fileLocation);
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
-            parameters.MinFitPoints = 4;
-            parameters.MinR2 = 0.99;
+            parameters.MinFitPoints = 3;
+            parameters.MinR2 = 0.95;
+
+            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
+            workfow.RunCrossSectionWorkFlow(sample, true);
+            workfow.Dispose();
+        }
+
+        [Test][STAThread]
+        public void TestTargetDetectionWithIsomers()
+        {
+            // azyPos
+            string formula = "C10H12N3O3PS2";
+            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.SodiumPlus, "AZY");
+            string fileLocation = azyPos;
+
+            Console.WriteLine("Dataset: {0}", fileLocation);
+
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+            parameters.MinFitPoints = 3;
+            parameters.MinR2 = 0.95;
 
             CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             workfow.RunCrossSectionWorkFlow(sample, true);
@@ -730,7 +754,7 @@ namespace ImsInformedTests
             // For each voltage, find 2D XIC features 
             foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
             {
-                Console.WriteLine("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber);
+                Console.WriteLine("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber);
 
                 List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                 List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);

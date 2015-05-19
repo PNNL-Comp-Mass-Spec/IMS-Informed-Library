@@ -23,6 +23,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
     using ImsInformed.Interfaces;
+    using ImsInformed.IO;
     using ImsInformed.Scoring;
     using ImsInformed.Util;
 
@@ -260,7 +261,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 string.Format(
                                     "    Voltage Group: {0:F4} V, [{1}-{2}]",
                                     voltageGroup.MeanVoltageInVolts,
-                                    voltageGroup.FirstFrameNumber, 
+                                    voltageGroup.FirstFirstFrameNumber, 
                                 voltageGroup.LastFrameNumber));
                         }
 
@@ -363,9 +364,18 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     else
                     {
                         // Perform the data association algorithm.
-                    IIonTracker tracker = new CombinatorialIonTracker();
+                    IIonTracker tracker = new CombinatorialIonTracker(100);
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
                     AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters);
+
+                    if (detailedVerbose)
+                    {
+                        Console.WriteLine("Writes QC plot of fitline to " + this.OutputPath);
+                        Trace.WriteLine(string.Empty);
+                    }
+
+                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.png";
+                    ImsInformedPlotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor);
 
                     // Printout results
                     if (detailedVerbose)
@@ -374,28 +384,20 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     }
                    
                     // Remove outliers with high influence.
-                    // line.RemoveOutliersAboveThreshold(3, minFitPoints);
+                    // FitLine.RemoveOutliersAboveThreshold(3, minFitPoints);
                     
                     // Remove outliers until min fit point is reached or good R2 is achieved.
-                    // while (AnalysisFilter.IsLowR2(line.RSquared) && line.FitPointCollection.Count > minFitPoints)
+                    // while (TrackFilter.IsLowR2(FitLine.RSquared) && FitLine.FitPointCollection.Count > minFitPoints)
                     // {
-                    //     line.RemoveOutlierWithHighestCookDistance(minFitPoints);
+                    //     FitLine.RemoveOutlierWithHighestCookDistance(minFitPoints);
                     // }
                     
                     // Remove the voltage considered outliers
-                    // foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => line.OutlierCollection.Contains(p.FitPoint)).ToList())
+                    // foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys.Where(p => FitLine.OutlierCollection.Contains(p.FitPoint)).ToList())
                     // {
                     //     accumulatedXiCs.Remove(voltageGroup);
                     // }
                         
-                    // Export the fit line into QC oxyplot drawings
-                    // string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.png";
-                    // ImsInformedPlotter.MobilityFitLine2PNG(outputPath, line);
-                    // if (detailedVerbose)
-                    // {
-                    //     Console.WriteLine("Writes QC plot of fitline to " + outputPath);
-                    //     Trace.WriteLine(string.Empty);
-                    // }
                     CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateResultFromAssociationHypothesis(
                         this.Parameters, 
                         this.DatasetName,
@@ -636,7 +638,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine(
                             string.Format(
                                 "        Frame range: [{0}, {1}]",
-                                voltageGroup.FirstFrameNumber,
+                                voltageGroup.FirstFirstFrameNumber,
                                 voltageGroup.LastFrameNumber));
                     
                         Trace.WriteLine(
@@ -645,7 +647,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 normalizedDriftTimeInMs,
                                 peak.HighestPeakApex.DriftTimeCenterInScanNumber));
 
-                        Trace.WriteLine(string.Format("        Cook's distance: {0:F4}", observation.CooksDistance));
                         Trace.WriteLine(string.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
                         Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", observation.Statistics.IntensityScore));
                         if (hasCompositionInfo)

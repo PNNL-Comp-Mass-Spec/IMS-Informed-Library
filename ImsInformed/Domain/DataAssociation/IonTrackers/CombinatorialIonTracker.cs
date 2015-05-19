@@ -11,18 +11,20 @@
 namespace ImsInformed.Domain.DataAssociation.IonTrackers
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Net.Sockets;
-    using System.Windows.Controls.Primitives;
 
+    using ImsInformed.Domain.DataAssociation.IonSignatureMatching;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Filters;
     using ImsInformed.Interfaces;
-    using ImsInformed.Stats;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
-    using MathNet.Numerics;
+    using QuickGraph;
+    using QuickGraph.Algorithms;
+    using QuickGraph.Algorithms.RankedShortestPath;
 
     using Combinatorics = ImsInformed.Stats.Combinatorics;
 
@@ -31,6 +33,19 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
     /// </summary>
     public class CombinatorialIonTracker : IIonTracker
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CombinatorialIonTracker"/> class.
+        /// </summary>
+        /// <param name="maxTracks">
+        /// The max tracks.
+        /// </param>
+        public CombinatorialIonTracker(int maxTracks)
+        {
+            this.maxTracks = maxTracks;
+        }
+
+        private int maxTracks;
+
         private int trackPointsCounter;
 
         /// <summary>
@@ -45,6 +60,9 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <param name="massTarget">
         /// The mass Target.
         /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
         /// <returns>
         /// The <see cref="AssociationHypothesis"/>.
         /// </returns>
@@ -52,40 +70,30 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// </exception>
         public AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations, double driftTubeLength, IImsTarget massTarget, CrossSectionSearchParameters parameters)
         {
-            // Create the data structure as the input to the combinatorial algorithm
-            observations = observations.ToArray();
-            IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap = new Dictionary<VoltageGroup, IList<ObservedPeak>>();
-            foreach (ObservedPeak observation in observations)
-            {
-                VoltageGroup voltageGroup = observation.VoltageGroup;
-                if (basePeakMap.ContainsKey(voltageGroup))
-                {
-                    basePeakMap[voltageGroup].Add(observation);
-                }
-                else
-                {
-                    basePeakMap.Add(voltageGroup, new List<ObservedPeak> { observation });
-                }
-            }
+            observations = observations.ToList();
+
+            ObservationTransitionGraph<IonTransition> transitionGraph = new ObservationTransitionGraph<IonTransition>(observations, (a, b) => new IonTransition(a, b));
 
             // Find all the possible combinotorial tracks
-            IList<IsomerTrack> possibleTracks = this.FindAllReasonableTracks(basePeakMap, driftTubeLength, massTarget, parameters).ToList();
+            // IList<IsomerTrack> candidateTracks = this.FindAllReasonableTracks(transitionGraph, driftTubeLength, massTarget, parameters).ToList();
+            
+            // Find the top N tracks using K shorestest path algorithm
+            IEnumerable<IEnumerable<IonTransition>> kShorestPaths = transitionGraph.PeakGraph.RankedShortestPathHoffmanPavley(t => 0 - Math.Log(t.TransitionProbability), transitionGraph.SourceVertex, transitionGraph.SinkVertex, this.maxTracks);
 
-            IEnumerable<AssociationHypothesis> hypotheses = this.FindAllHypothesis(possibleTracks, observations);
+            List<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength).ToList();
+
+            // filter paths
+            TrackFilter filter = new TrackFilter();
+            Predicate<IsomerTrack> trackPredicate = track => filter.IsTrackPossible(track, massTarget, parameters);
+            List<IsomerTrack> filteredTracks = candidateTracks.FindAll(trackPredicate);
+
+            // Select the top N tracks to proceed to next step.
+            var hypotheses = this.FindAllHypothesis(filteredTracks, observations).ToArray();
 
             // Find the combination of tracks that produces the highest posterior probablity.
-            double highestAPosteriorProbabiliy = 0;
-            AssociationHypothesis optimalHypothesis = new AssociationHypothesis(observations);
-            foreach (AssociationHypothesis hypothesis in hypotheses)
-            {
-                if (highestAPosteriorProbabiliy > hypothesis.ProbabilityOfHypothesisGivenData)
-                {
-                    highestAPosteriorProbabiliy = hypothesis.ProbabilityOfHypothesisGivenData;
-                    optimalHypothesis = (AssociationHypothesis)hypothesis.Clone();
-                }
-            }
+            IList<AssociationHypothesis> sortedAssociationHypotheses = hypotheses.OrderByDescending(h => h.ProbabilityOfHypothesisGivenData).ToList();
 
-            return optimalHypothesis;
+            return sortedAssociationHypotheses.First();
         }
 
         /// <summary>
@@ -104,22 +112,29 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             IList<IsomerTrack> tracks = validTracks.ToList();
             int size = tracks.Count;
 
+            if (size >= 64)
+            {
+                throw new ArgumentException("Cannot perform combinatorics for more than 64 tracks");
+            }
+
             int totalCombinations = (int)Math.Pow(2, size);
             
             AssociationHypothesis association = new AssociationHypothesis(allPeaks);
 
             bool hasConflicted = false;
-            for (int i = 1; i < totalCombinations; i++)
+            for (int i = 0; i < totalCombinations - 1; i++)
             {
-                long grey = Combinatorics.BinaryToGray(i);
+                long grey = Combinatorics.BinaryToGray(i + 1);
                 if (hasConflicted)
                 {
                     association = new AssociationHypothesis(allPeaks);
-                    IEnumerable<int> indexOfOnes = Combinatorics.GreyCodeToIndexOfOnes(grey);
+                    hasConflicted = false;
+                    int[] indexOfOnes = Combinatorics.GreyCodeToIndexOfOnes(grey).ToArray();
 
                     foreach (var index in indexOfOnes)
                     {
-                        if (!association.IsConflict(tracks[index]))
+                        hasConflicted = association.IsConflict(tracks[index]);
+                        if (!hasConflicted)
                         {
                             association.AddIsomerTrack(tracks[index]);
                         }
@@ -129,7 +144,10 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                         }
                     }
 
-                    yield return association;
+                    if (!hasConflicted)
+                    {
+                        yield return (AssociationHypothesis)association.Clone();
+                    }
                 }
                 else
                 {
@@ -146,13 +164,13 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                         else
                         {
                             association.AddIsomerTrack(tracks[index]);
-                            yield return association;
+                            yield return (AssociationHypothesis)association.Clone();
                         }
                     }
                     else
                     {
                         association.RemoveIsomerTrack(tracks[index]);
-                        yield return association;
+                        yield return (AssociationHypothesis)association.Clone();
                     }
                 }
             }
@@ -161,8 +179,8 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <summary>
         /// The find all track combinations.
         /// </summary>
-        /// <param name="basePeakMap">
-        /// The base peak map.
+        /// <param name="graph">
+        /// The graph.
         /// </param>
         /// <param name="driftTubeLength">
         /// The drift tube length.
@@ -170,80 +188,28 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <param name="target">
         /// The target.
         /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        private IEnumerable<IsomerTrack> FindAllReasonableTracks(IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters)
+        private IEnumerable<IsomerTrack> FindAllReasonableTracks(ObservationTransitionGraph<IonTransition> graph, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters)
         {
             this.trackPointsCounter = 0;
 
-            VoltageGroup[] sortedVoltageGroup = basePeakMap.Keys.OrderByDescending(vg => vg.MeanVoltageInVolts).ToArray();
+            VoltageGroup[] sortedVoltageGroup = graph.SortedVoltageGroups().ToArray();
 
             ObservedPeak[] selectedPeaks = new ObservedPeak[sortedVoltageGroup.Length];
 
             bool overflow = false;
             while (!overflow)
             {
-                overflow = this.IncrementCombination(sortedVoltageGroup, ref selectedPeaks, basePeakMap, parameters.MinFitPoints);
+                overflow = this.IncrementCombination(sortedVoltageGroup, ref selectedPeaks, graph, parameters.MinFitPoints);
                 ObservedPeak[] realPeaks = selectedPeaks.Where(p => p != null).ToArray();
                 IsomerTrack newTrack = new IsomerTrack(realPeaks, driftTubeLength);
-                if (this.IsTrackPossible(newTrack, target, parameters))
-                {
-                    Trace.WriteLine(newTrack.TrackDescriptor);
-                    yield return newTrack;
-                }
+                yield return newTrack;
             }            
-        }
-
-        /// <summary>
-        /// The is track possible.
-        /// </summary>
-        /// <param name="track">
-        /// The track.
-        /// </param>
-        /// <param name="target"></param>
-        /// <param name="crossSectionSearchParameters"></param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        private bool IsTrackPossible(IsomerTrack track, IImsTarget target, CrossSectionSearchParameters crossSectionSearchParameters)
-        {
-            if (track.RealPeakCount < crossSectionSearchParameters.MinFitPoints)
-            {
-                return false;
-            }
-
-            MobilityInfo trackMobilityInfo = track.GetMobilityInfoForTarget(target);
-            if (!this.IsConsistentWithIonDynamics(trackMobilityInfo))
-            {
-                return false;
-            }
-
-            if (Filters.AnalysisFilter.IsLowR2(trackMobilityInfo.RSquared, crossSectionSearchParameters.MinR2))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// The is consistent with ion dynamics.
-        /// </summary>
-        /// <param name="info">
-        /// The info.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        private bool IsConsistentWithIonDynamics(MobilityInfo info)
-        {
-            if (info.Mobility < 0)
-            {
-                return false;
-            }
-            
-            return true;
         }
 
         /// <summary>
@@ -264,16 +230,16 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <returns>
         /// If the increment overflows the "counter"<see cref="bool"/>.
         /// </returns>
-        private bool IncrementCombination(VoltageGroup[] groups, ref ObservedPeak[] selectedPeaks, IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap, int minFitPoints)
+        private bool IncrementCombination(VoltageGroup[] groups, ref ObservedPeak[] selectedPeaks, ObservationTransitionGraph<IonTransition> graph, int minFitPoints)
         {
             bool overflow = false;
 
             // So-called do while loop
-            overflow = this.IncrementCombination(groups, ref selectedPeaks, 0, basePeakMap);
+            overflow = this.IncrementCombination(groups, ref selectedPeaks, 0, graph);
 
             while (!overflow && this.trackPointsCounter < minFitPoints)
             {
-                overflow = this.IncrementCombination(groups, ref selectedPeaks, 0, basePeakMap);
+                overflow = this.IncrementCombination(groups, ref selectedPeaks, 0, graph);
             }
 
             return overflow;
@@ -291,7 +257,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <param name="onIndex">
         /// The on index.
         /// </param>
-        /// <param name="basePeakMap">
+        /// <param name="graph">
         /// The base peak map.
         /// </param>
         /// <param name="minFitPoints">
@@ -303,7 +269,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// If incrementing overflows occurs/ all combinations were gone through.
         /// <exception cref="Exception">
         /// </exception>
-        private bool IncrementCombination(VoltageGroup[] groups, ref ObservedPeak[] selectedPeaks, int onIndex, IDictionary<VoltageGroup, IList<ObservedPeak>> basePeakMap)
+        private bool IncrementCombination(VoltageGroup[] groups, ref ObservedPeak[] selectedPeaks, int onIndex, ObservationTransitionGraph<IonTransition> graph)
         {
             int peakIndex;
 
@@ -321,8 +287,9 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             }
             
             ObservedPeak incrementPeak = selectedPeaks[onIndex];
-            
-            IList<ObservedPeak> candidates = basePeakMap[groups[onIndex]];
+            VoltageGroup group = groups[onIndex];
+
+            IList<ObservedPeak> candidates = graph.FindPeaksInVoltageGroup(group).ToList();
 
             // Empty peak
             if (incrementPeak == null)
@@ -347,7 +314,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                 selectedPeaks[onIndex] = null;
                 
 
-                return this.IncrementCombination(groups, ref selectedPeaks, onIndex + 1, basePeakMap);
+                return this.IncrementCombination(groups, ref selectedPeaks, onIndex + 1, graph);
             }
             else
             {

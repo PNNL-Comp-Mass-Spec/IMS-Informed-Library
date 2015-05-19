@@ -30,7 +30,7 @@ namespace ImsInformed.Scoring
     /// <summary>
     /// The feature score.
     /// </summary>
-    public class FeatureScoreUtilities
+    public static class FeatureScoreUtilities
     {
         /// <summary>
         /// The score feature.
@@ -68,7 +68,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="FeatureStatistics"/>.
         /// </returns>
-        public static FeatureStatistics ScoreFeature(StandardImsPeak peak, double globalMaxIntensity, DataReader uimfReader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, int voltageGroupScans, IImsTarget target, IsotopicScoreMethod isotopicScoreMethod, List<Peak> theoreticalIsotopicProfile)
+        public static FeatureStatistics ScoreFeature(this StandardImsPeak peak, double globalMaxIntensity, DataReader uimfReader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, int voltageGroupScans, IImsTarget target, IsotopicScoreMethod isotopicScoreMethod, List<Peak> theoreticalIsotopicProfile)
         {
             double intensityScore = IntensityScore(peak, globalMaxIntensity);
 
@@ -103,8 +103,6 @@ namespace ImsInformed.Scoring
         /// </summary>
         /// <param name="featurePeak">
         /// The feature blob.
-        /// </param>
-        /// <param name="voltageGroup">
         /// </param>
         /// <param name="globalMaxIntensity">
         /// The global Max Intensity.
@@ -173,7 +171,7 @@ namespace ImsInformed.Scoring
             }
                                   
             int[][] intensityWindow = reader.GetFramesAndScanIntensitiesForAGivenMz(
-                voltageGroup.FirstFrameNumber,
+                voltageGroup.FirstFirstFrameNumber,
                 voltageGroup.LastFrameNumber,
                 DataReader.FrameType.MS1, 
                 scanNumberMin,
@@ -289,7 +287,7 @@ namespace ImsInformed.Scoring
                 
                 var peakList = reader.GetXic(Mz + mzOffset, 
                     imsPeak.HighestPeakApex.MzWindowToleranceInPpm,
-                    voltageGroup.FirstFrameNumber,
+                    voltageGroup.FirstFirstFrameNumber,
                     voltageGroup.LastFrameNumber,
                     scanNumberMin,
                     scanNumberMax,

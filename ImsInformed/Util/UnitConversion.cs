@@ -127,6 +127,23 @@ namespace ImsInformed.Util
         }
 
         /// <summary>
+        /// The dalton to ppm.
+        /// </summary>
+        /// <param name="massInDalton">
+        /// The mass in dalton.
+        /// </param>
+        /// <param name="baseMassInDalton">
+        /// The base mass in dalton.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public static double DaltonToPpm(double massInDalton, double baseMassInDalton)
+        {
+            return massInDalton / baseMassInDalton * 1000000;
+        }
+
+        /// <summary>
         /// The ims scan number to drift time in ms.
         /// </summary>
         /// <param name="scanNumber">

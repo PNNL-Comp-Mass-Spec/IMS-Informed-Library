@@ -24,7 +24,7 @@ namespace ImsInformed.Domain
         Rejected,
 
         /// <summary>
-        /// No sufficient points for the fit line.
+        /// No sufficient points for the fit FitLine.
         /// </summary>
         NotSufficientPoints, 
 

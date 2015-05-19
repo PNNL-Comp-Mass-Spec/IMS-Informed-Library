@@ -95,6 +95,19 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Data">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Graphviz">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Serialization">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -111,10 +124,14 @@
   <ItemGroup>
     <Compile Include="Domain\DataAssociation\AssociationHypothesis.cs" />
     <Compile Include="Domain\DataAssociation\AssociationHypothesisInfo.cs" />
+    <Compile Include="Domain\DataAssociation\IonSignatureMatching\DiffusionProfileDescriptor.cs" />
+    <Compile Include="Domain\DataAssociation\IonSignatureMatching\DiffusionProfileDifference.cs" />
+    <Compile Include="Domain\DataAssociation\IonSignatureMatching\IonTransition.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\CombinatorialIonTracker.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\MinCostFlowIonTracker.cs" />
     <Compile Include="Domain\DataAssociation\IsomerTrack.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\RANSACIonTracker.cs" />
+    <Compile Include="Domain\DataAssociation\ObservationTransitionGraph.cs" />
     <Compile Include="Domain\DirectInjection\ObservedPeak.cs" />
     <Compile Include="Domain\IonizationAdduct.cs" />
     <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
@@ -126,7 +143,7 @@
     <Compile Include="Domain\IonizationMethod.cs" />
     <Compile Include="Domain\LiquidChromatography\FeatureBlobNet.cs" />
     <Compile Include="Domain\StandardImsPeak.cs" />
-    <Compile Include="Filters\AnalysisFilter.cs" />
+    <Compile Include="Filters\TrackFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
     <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
     <Compile Include="Interfaces\IImsTarget.cs" />

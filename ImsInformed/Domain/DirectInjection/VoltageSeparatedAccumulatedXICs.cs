@@ -51,9 +51,8 @@ namespace ImsInformed.Domain.DirectInjection
         {
             bool noVoltageGroupsYet = true;
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
-            
             ExtractedIonChromatogram currentXIC = new ExtractedIonChromatogram();
-            VoltageGroup currentVoltageGroup = new VoltageGroup(1);
+            VoltageGroup currentVoltageGroup = new VoltageGroup(1, frameNum);
             for (int i = 1; i <= frameNum; i++)
             {
                 FrameParams param = uimfReader.GetFrameParams(i);
@@ -93,7 +92,7 @@ namespace ImsInformed.Domain.DirectInjection
                         this.Add(currentVoltageGroup, currentXIC);
                     }
 
-                    currentVoltageGroup = new VoltageGroup(i);
+                    currentVoltageGroup = new VoltageGroup(i, frameNum);
                     currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
                     currentXIC = extractedIonChromatogram;
                     noVoltageGroupsYet = false;

@@ -14,6 +14,7 @@ namespace ImsInformed.Domain.DataAssociation
     using System.Collections.Generic;
     using System.Linq;
 
+    using ImsInformed.Domain.DataAssociation.IonSignatureMatching;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
     using ImsInformed.Interfaces;
@@ -68,9 +69,20 @@ namespace ImsInformed.Domain.DataAssociation
         private readonly HashSet<VoltageGroup> definedVoltageGroups;
 
         /// <summary>
-        /// The line.
+        /// The FitLine.
         /// </summary>
-        private FitLine line;
+        public FitLine FitLine
+        {
+            get
+            {
+                if (this.fitLineNotComputed)
+                {
+                    this.ComputeLinearFitLine();
+                }
+
+                return this.fitLine;
+            }
+        }
 
         /// <summary>
         /// The observations has changed.
@@ -78,9 +90,19 @@ namespace ImsInformed.Domain.DataAssociation
         private bool fitLineNotComputed;
 
         /// <summary>
+        /// The ion signature matching probability.
+        /// </summary>
+        private double ionSignatureMatchingProbability;
+
+        /// <summary>
         /// The mobility info.
         /// </summary>
         private MobilityInfo mobilityInfo;
+
+        /// <summary>
+        /// The fit line.
+        /// </summary>
+        private FitLine fitLine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
@@ -117,6 +139,7 @@ namespace ImsInformed.Domain.DataAssociation
             this.mobilityInfo.CollisionCrossSectionArea = 0;
             this.mobilityInfo.Mobility = 0;
             this.mobilityInfo.RSquared = 0;
+            this.ionSignatureMatchingProbability = 0;
         }
 
         /// <summary>
@@ -127,6 +150,19 @@ namespace ImsInformed.Domain.DataAssociation
             get
             {
                 return this.observedPeaks;
+            }
+        }
+
+        /// <summary>
+        /// Gets the Pr(Tk)
+        /// </summary>
+        public double TrackProbability
+        {
+            get
+            {
+                double p2 = this.FitLine.RSquared;
+                double p1 = this.ionSignatureMatchingProbability;
+                return p2 * p1;
             }
         }
 
@@ -157,10 +193,10 @@ namespace ImsInformed.Domain.DataAssociation
         {
             get
             {
-                string result = string.Format("R2: {0:F4}: ", this.line.RSquared);
+                string result = string.Format("R2: {0:F4}: ", this.FitLine.RSquared);
                 foreach (ObservedPeak observation in this.ObservedPeaks)
                 {
-                    result += observation.ObservationDescription;
+                    result += observation;
                 }
 
                 return result;
@@ -183,6 +219,18 @@ namespace ImsInformed.Domain.DataAssociation
             }
 
             return this.mobilityInfo;
+        }
+
+        public void AddIonTransition(IonTransition transition)
+        {
+            if (this.ionSignatureMatchingProbability == 0)
+            {
+                this.ionSignatureMatchingProbability = transition.TransitionProbability;
+            }
+            else
+            {
+                this.ionSignatureMatchingProbability *= transition.TransitionProbability;
+            }
         }
 
         /// <summary>
@@ -260,20 +308,21 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         private AnalysisStatus ConcludeStatus(int minFitPoints, double minR2)
         {
-            bool lowFitPoints = AnalysisFilter.FilterLowFitPointNumber(this.ObservedPeaks.Count(), minFitPoints);
-            bool lowR2 = AnalysisFilter.IsLowR2(this.mobilityInfo.RSquared, minR2);
+            TrackFilter filter = new TrackFilter();
+            bool lowFitPoints = filter.FilterLowFitPointNumber(this.ObservedPeaks.Count(), minFitPoints);
+            bool lowR2 = filter.IsLowR2(this.mobilityInfo.RSquared, minR2);
 
             return lowFitPoints ? AnalysisStatus.NotSufficientPoints : 
                 lowR2 ? AnalysisStatus.Rejected : AnalysisStatus.Positive;
         }
 
         /// <summary>
-        /// The compute linear fit line.
+        /// The compute linear fit FitLine.
         /// </summary>
         private void ComputeLinearFitLine()
         {
-            IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoint();
-            this.line = new FitLine(points);
+            IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoints();
+            this.fitLine = new FitLine(points);
             this.fitLineNotComputed = false;
         }
 
@@ -294,8 +343,8 @@ namespace ImsInformed.Domain.DataAssociation
             }
 
             // Convert the track into a Continuous XY data points.
-            this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters / (1 / this.line.Slope);
-            this.mobilityInfo.RSquared = this.line.RSquared;
+            this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters / (1 / this.FitLine.Slope);
+            this.mobilityInfo.RSquared = this.FitLine.RSquared;
             
             Composition bufferGas = new Composition(0, 0, 2, 0, 0);
             double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);
@@ -357,24 +406,13 @@ namespace ImsInformed.Domain.DataAssociation
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        private IEnumerable<ContinuousXYPoint> ToContinuousXyPoint()
+        private IEnumerable<ContinuousXYPoint> ToContinuousXyPoints()
         {
-            // Calculate the fit line from the remaining voltage groups with reliable drift time measurement.
+            // Calculate the fit FitLine from the remaining voltage groups with reliable drift time measurement.
             HashSet<ContinuousXYPoint> allFitPoints = new HashSet<ContinuousXYPoint>();
             foreach (ObservedPeak observation in this.observedPeaks)
             {
-                VoltageGroup voltageGroup = observation.VoltageGroup;
-                StandardImsPeak peak = observation.Peak;
-
-                // convert drift time to SI unit seconds
-                double x = peak.HighestPeakApex.DriftTimeCenterInMs / 1000;
-            
-                // P/(T*V) value in pascal per (volts * kelvin)
-                double y = voltageGroup.MeanPressureNondimensionalized / voltageGroup.MeanVoltageInVolts
-                           / voltageGroup.MeanTemperatureNondimensionalized;
-                 
-                ContinuousXYPoint point = new ContinuousXYPoint(x, y);
-            
+                ContinuousXYPoint point = observation.ToContinuousXyPoint();
                 allFitPoints.Add(point);
             }
 

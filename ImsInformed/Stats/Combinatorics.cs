@@ -58,6 +58,7 @@ namespace ImsInformed.Stats
                     yield return index;
                 }
 
+                index++;
                 greyCode = greyCode >> 1;
             }
         }

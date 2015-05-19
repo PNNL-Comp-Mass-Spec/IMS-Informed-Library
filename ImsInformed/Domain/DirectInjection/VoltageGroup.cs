@@ -31,22 +31,23 @@ namespace ImsInformed.Domain.DirectInjection
         /// <param name="count">
         /// The count.
         /// </param>
-        private VoltageGroup(double meanVoltageInVolts, double varianceVoltage, int count)
+        private VoltageGroup(double meanVoltageInVolts, double varianceVoltage, int count, int totalFramesInData)
         {
             this.MeanVoltageInVolts = meanVoltageInVolts;
             this.VarianceVoltage = varianceVoltage;
             this.FrameAccumulationCount = count;
+            this.TotalNumberOfFramesInData = totalFramesInData;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VoltageGroup"/> class.
         /// </summary>
-        /// <param name="frameNumber">
+        /// <param name="firstFrameNumber">
         /// The frame number.
         /// </param>
-        public VoltageGroup(int frameNumber)
+        public VoltageGroup(int firstFrameNumber, int totalFramesInData)
         {
-            this.FirstFrameNumber = frameNumber;
+            this.FirstFirstFrameNumber = firstFrameNumber;
             this.MeanVoltageInVolts = 0;
             this.VarianceVoltage = 0;
             this.MeanTemperatureNondimensionalized = 0;
@@ -55,12 +56,13 @@ namespace ImsInformed.Domain.DirectInjection
             this.MeanPressureNondimensionalized = 0;
             this.AverageTofWidthInSeconds = 0;
             this.VariancePressureNondimensionalized = 0;
+            this.TotalNumberOfFramesInData = totalFramesInData;
         }
 
         /// <summary>
         /// Gets the first frame number.
         /// </summary>
-        public int FirstFrameNumber { get; private set; }
+        public int FirstFirstFrameNumber { get; private set; }
 
         /// <summary>
         /// Gets the first frame number.
@@ -69,7 +71,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             get
             {
-                return this.FirstFrameNumber + this.FrameAccumulationCount - 1;
+                return this.FirstFirstFrameNumber + this.FrameAccumulationCount - 1;
             }
         }
 
@@ -87,6 +89,11 @@ namespace ImsInformed.Domain.DirectInjection
         /// Gets the accumulation count.
         /// </summary>
         public int FrameAccumulationCount { get; private set; }
+
+        /// <summary>
+        /// Gets the accumulation count.
+        /// </summary>
+        public int TotalNumberOfFramesInData { get; private set; }
 
         /// <summary>
         /// Gets the mean temperature nondimensionalized.
@@ -241,7 +248,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// </returns>
         public object Clone()
         {
-            VoltageGroup vg = new VoltageGroup(this.MeanVoltageInVolts, this.VarianceVoltage, this.FrameAccumulationCount);
+            VoltageGroup vg = new VoltageGroup(this.MeanVoltageInVolts, this.VarianceVoltage, this.FrameAccumulationCount, this.TotalNumberOfFramesInData);
             return vg;
         }
 
@@ -250,7 +257,7 @@ namespace ImsInformed.Domain.DirectInjection
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return this.FirstFrameNumber == other.FirstFrameNumber && this.LastFrameNumber == other.LastFrameNumber;
+            return this.FirstFirstFrameNumber == other.FirstFirstFrameNumber && this.LastFrameNumber == other.LastFrameNumber;
         }
 
         public override bool Equals(object other) 
@@ -267,7 +274,7 @@ namespace ImsInformed.Domain.DirectInjection
         public override int GetHashCode() 
         {
             int result = 29;
-            result = result * 13 + this.FirstFrameNumber;
+            result = result * 13 + this.FirstFirstFrameNumber;
             result = result * 13 + this.LastFrameNumber;
             return result;
         }

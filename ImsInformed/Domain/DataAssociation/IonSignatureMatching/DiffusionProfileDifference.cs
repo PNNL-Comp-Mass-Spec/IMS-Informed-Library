@@ -79,8 +79,8 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
             {
                 double probability = 1;
 
-                // probability *= ScoreUtil.MapToZeroOneExponential(this.ArrivalTimeCenterLocationDifference, 0.2, 0.9, true);
-                // probability *= ScoreUtil.MapToZeroOneExponential(this.ArrivalTimeDiffusionWidthDifferenceInMs, 0.2, 0.9, true);
+                probability *= ScoreUtil.MapToZeroOneExponential(this.ArrivalTimeCenterLocationDifference, 0.2, 0.9, true);
+                probability *= ScoreUtil.MapToZeroOneExponential(this.ArrivalTimeDiffusionWidthDifferenceInMs, 0.2, 0.9, true);
                 probability *= ScoreUtil.MapToZeroOneExponential(this.MzCenterLocationDifference, 0.1, 0.9, true);
                 probability *= ScoreUtil.MapToZeroOneExponential(this.MzDiffusionWidthDifferenceInPpm, 20, 0.9, true);
 

@@ -12,9 +12,12 @@
 
 namespace ImsInformed.Workflows.CrossSectionExtraction
 {
+    using System;
+
     /// <summary>
     /// Snapshot of arrival time.
     /// </summary>
+    [Serializable]
     public struct ArrivalTimeSnapShot
     {
         /// <summary>

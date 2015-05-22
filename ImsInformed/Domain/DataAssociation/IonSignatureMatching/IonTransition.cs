@@ -16,7 +16,10 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
     using ImsInformed.Scoring;
     using ImsInformed.Util;
 
+    using InformedProteomics.Backend.Data.Spectrometry;
+
     using QuickGraph;
+    using QuickGraph.Algorithms.RandomWalks;
 
     /// <summary>
     /// The diffusion profile comparator.
@@ -98,12 +101,25 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
         /// </returns>
         private double ComputeConsecutiveObservationMatchingProbability()
         {
+            // Due to draw backs of feature detector, the diffusion profile matching result is not all that reliable. So reduce weight here.
+            double intensityWeight = 2;
+            double diffusionProfileWeight = 1;
+            double mzMatchWeight = 3;
+
+            double sum = intensityWeight + diffusionProfileWeight + mzMatchWeight;
+            intensityWeight /= sum;
+            diffusionProfileWeight /= sum;
+            mzMatchWeight /= sum;
+
             double intensityMatchProbability = 1 - this.IntensityDifferenceInPercentageOfMax;
             double diffusionProfileMatchProbability = this.DiffusionProfileDifference.ToDiffusionProfileMatchingProbability;
             double mzMatchProbability = ScoreUtil.MapToZeroOneExponential(this.MzDifferenceInPpm, 30, 0.9, true);
-            return intensityMatchProbability * 
-                diffusionProfileMatchProbability *
-                mzMatchProbability;
+
+            double logResult = intensityWeight * Math.Log(intensityMatchProbability) + 
+                diffusionProfileWeight * Math.Log(diffusionProfileMatchProbability) +
+                mzMatchWeight * Math.Log(mzMatchProbability);
+
+            return Math.Exp(logResult);
         }
 
         /// <summary>

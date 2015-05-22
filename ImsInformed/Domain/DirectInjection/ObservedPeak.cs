@@ -87,11 +87,18 @@ namespace ImsInformed.Domain.DirectInjection
         /// </returns>
         public override string ToString()
         {
-            double voltageGroupDescriptor = this.VoltageGroup.MeanVoltageInVolts;
-            double peakDescriptor = this.Peak.HighestPeakApex.DriftTimeCenterInMs;
-            double intensity = this.Peak.SummedIntensities;
+            if (this.ObservationType == ObservationType.Peak)
+            {
+                double voltageGroupDescriptor = this.VoltageGroup.MeanVoltageInVolts;
+                double peakDescriptor = this.Peak.HighestPeakApex.DriftTimeCenterInMs;
+                double intensity = this.Peak.SummedIntensities;
 
-            return string.Format("[{0:F2} V, {1:F2}, {2:F0}]", voltageGroupDescriptor, peakDescriptor, intensity);
+                return string.Format("[{0:F2} V, {1:F2}, {2:F0}]", voltageGroupDescriptor, peakDescriptor, intensity);
+            }
+            else
+            {
+                return "Virtual";
+            }
         }
 
         /// <summary>

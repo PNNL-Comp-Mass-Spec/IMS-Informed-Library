@@ -58,7 +58,9 @@ namespace ImsInformedTests
         /// <summary>
         /// The nicotine UIMF file.
         /// </summary>
-        public const string NicoFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\uimf_files\smallMolecule\EXP-NIC_neg2_28Aug14_Columbia_DI.uimf";
+        public const string NicoFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-NIC_neg2_28Aug14_Columbia_DI.uimf";
+
+        public const string BAD = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf";
 
         /// <summary>
         /// The Acetamiprid file.
@@ -69,6 +71,11 @@ namespace ImsInformedTests
         /// The mix 1.
         /// </summary>
         public const string Mix1 = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
+
+        /// <summary>
+        /// The mix 1.
+        /// </summary>
+        public const string BHC = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BHC_pos2_13Sep14_Columbia_DI.uimf";
 
         /// <summary>
         /// The mix 1.
@@ -240,20 +247,53 @@ namespace ImsInformedTests
         [Test][STAThread]
         public void TestTargetDetectionWithIsomers()
         {
-            // azyPos
-            string formula = "C10H12N3O3PS2";
-            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.SodiumPlus, "AZY");
-            string fileLocation = azyPos;
+            // // azyPos
+            // string formula1 = "C10H12N3O3PS2";
+            // MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "AZY");
+            // string fileLocation1 = azyPos;
+            // 
+            // Console.WriteLine("Dataset: {0}", fileLocation1);
+            // 
+            // CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
+            // parameters1.MinFitPoints = 3;
+            // parameters1.MinR2 = 0.95;
+            // 
+            // CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
+            // CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
+            // Assert.AreEqual(results1.IdentifiedIsomers.Count(), 2);
+            // workfow1.Dispose();
+            // 
+            // // BAD
+            // string formula2 = "C18H12Cl2N2O";
+            // MolecularTarget sample2 = new MolecularTarget(formula2, IonizationMethod.SodiumPlus, "BAD");
+            // string fileLocation2 = BAD;
+            // 
+            // Console.WriteLine("Dataset: {0}", fileLocation2);
+            // 
+            // CrossSectionSearchParameters parameters2 = new CrossSectionSearchParameters();
+            // parameters2.MinFitPoints = 3;
+            // parameters2.MinR2 = 0.95;
+            // 
+            // CrossSectionWorkfow workfow2 = new CrossSectionWorkfow(fileLocation2, "output", parameters2);
+            // CrossSectionWorkflowResult results2 = workfow2.RunCrossSectionWorkFlow(sample2, true);
+            // Assert.AreEqual(results2.IdentifiedIsomers.Count(), 2);
+            // workfow2.Dispose();
 
-            Console.WriteLine("Dataset: {0}", fileLocation);
+            // BHC
+            string formula3 = "C13H18ClNO";
+            MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.ProtonPlus, "BHC");
+            string fileLocation3 = BHC;
 
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
-            parameters.MinFitPoints = 3;
-            parameters.MinR2 = 0.95;
+            Console.WriteLine("Dataset: {0}", fileLocation3);
 
-            CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
-            workfow.RunCrossSectionWorkFlow(sample, true);
-            workfow.Dispose();
+            CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters();
+            parameters3.MinFitPoints = 4;
+            parameters3.MinR2 = 0.95;
+
+            CrossSectionWorkfow workfow3 = new CrossSectionWorkfow(fileLocation3, "output", parameters3);
+            CrossSectionWorkflowResult results3 = workfow3.RunCrossSectionWorkFlow(sample3, true);
+            Assert.AreEqual(2, results3.IdentifiedIsomers.Count());
+            workfow3.Dispose();
         }
 
         /// <summary>

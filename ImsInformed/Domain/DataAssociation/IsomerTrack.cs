@@ -61,8 +61,6 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         private readonly double driftTubeLengthInMeters;
 
-        private IImsTarget target;
-
         /// <summary>
         /// The inferedTarget.
         /// </summary>
@@ -211,14 +209,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// </param>
         public MobilityInfo GetMobilityInfoForTarget(IImsTarget inferedTarget)
         {
-            this.target = inferedTarget;
-
-            if (this.fitLineNotComputed)
-            {
-                return this.ComputeMobilityInfo(inferedTarget);
-            }
-
-            return this.mobilityInfo;
+            return this.ComputeMobilityInfo(inferedTarget);
         }
 
         public void AddIonTransition(IonTransition transition)

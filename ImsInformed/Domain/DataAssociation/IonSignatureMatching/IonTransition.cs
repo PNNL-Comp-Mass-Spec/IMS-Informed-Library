@@ -119,7 +119,8 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
                 diffusionProfileWeight * Math.Log(diffusionProfileMatchProbability) +
                 mzMatchWeight * Math.Log(mzMatchProbability);
 
-            return Math.Exp(logResult);
+            double result = Math.Exp(logResult);
+            return result;
         }
 
         /// <summary>

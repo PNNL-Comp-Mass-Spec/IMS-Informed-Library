@@ -132,6 +132,7 @@
     <Compile Include="Domain\DataAssociation\IsomerTrack.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\RANSACIonTracker.cs" />
     <Compile Include="Domain\DataAssociation\ObservationTransitionGraph.cs" />
+    <Compile Include="Domain\DataAssociation\ObservationTransitionGraphRenderingEngine.cs" />
     <Compile Include="Domain\DirectInjection\ObservedPeak.cs" />
     <Compile Include="Domain\IonizationAdduct.cs" />
     <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />

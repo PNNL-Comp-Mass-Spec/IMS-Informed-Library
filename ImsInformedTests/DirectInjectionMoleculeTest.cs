@@ -263,7 +263,7 @@ namespace ImsInformedTests
             // Assert.AreEqual(results1.IdentifiedIsomers.Count(), 2);
             // workfow1.Dispose();
             // 
-            // // BAD
+            // BAD
             // string formula2 = "C18H12Cl2N2O";
             // MolecularTarget sample2 = new MolecularTarget(formula2, IonizationMethod.SodiumPlus, "BAD");
             // string fileLocation2 = BAD;

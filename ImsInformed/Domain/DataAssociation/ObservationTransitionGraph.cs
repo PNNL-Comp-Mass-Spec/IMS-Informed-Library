@@ -19,7 +19,13 @@ namespace ImsInformed.Domain.DataAssociation
     using ImsInformed.Domain.DirectInjection;
 
     using QuickGraph;
+    using QuickGraph.Graphviz;
 
+    /// <summary>
+    /// The observation transition graph.
+    /// </summary>
+    /// <typeparam name="T">
+    /// </typeparam>
     public class ObservationTransitionGraph<T> where T : Edge<ObservedPeak>
     {
         /// <summary>
@@ -142,6 +148,12 @@ namespace ImsInformed.Domain.DataAssociation
             }
 
             return this.basePeakMap[voltageGroup];
+        }
+
+        public void PlotGraph()
+        {
+            var graphviz = new GraphvizAlgorithm<ObservedPeak, T>(this.PeakGraph);
+            graphviz.Generate(new ObservationTransitionGraphRenderingEngine(), "graphDOT.txt");
         }
     }
 }

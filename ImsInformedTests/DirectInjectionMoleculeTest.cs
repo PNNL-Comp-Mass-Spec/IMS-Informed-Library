@@ -240,56 +240,75 @@ namespace ImsInformedTests
             parameters.MinR2 = 0.95;
 
             CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
-            workfow.RunCrossSectionWorkFlow(sample, true);
+            CrossSectionWorkflowResult result = workfow.RunCrossSectionWorkFlow(sample, true);
+            Assert.AreEqual(result.IdentifiedIsomers.Count(), 1);
+            Assert.LessOrEqual(Math.Abs(result.IdentifiedIsomers.First().CrossSectionalArea - 129.8298), 0.5);
             workfow.Dispose();
         }
 
+        /// <summary>
+        /// The test target detection with isomers.
+        /// </summary>
         [Test][STAThread]
-        public void TestTargetDetectionWithIsomers()
+        public void TestTargetDetectionWithIsomersEasy()
         {
-            // // azyPos
-            // string formula1 = "C10H12N3O3PS2";
-            // MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "AZY");
-            // string fileLocation1 = azyPos;
-            // 
-            // Console.WriteLine("Dataset: {0}", fileLocation1);
-            // 
-            // CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
-            // parameters1.MinFitPoints = 3;
-            // parameters1.MinR2 = 0.95;
-            // 
-            // CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
-            // CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
-            // Assert.AreEqual(results1.IdentifiedIsomers.Count(), 2);
-            // workfow1.Dispose();
-            // 
-            // BAD
-            // string formula2 = "C18H12Cl2N2O";
-            // MolecularTarget sample2 = new MolecularTarget(formula2, IonizationMethod.SodiumPlus, "BAD");
-            // string fileLocation2 = BAD;
-            // 
-            // Console.WriteLine("Dataset: {0}", fileLocation2);
-            // 
-            // CrossSectionSearchParameters parameters2 = new CrossSectionSearchParameters();
-            // parameters2.MinFitPoints = 3;
-            // parameters2.MinR2 = 0.95;
-            // 
-            // CrossSectionWorkfow workfow2 = new CrossSectionWorkfow(fileLocation2, "output", parameters2);
-            // CrossSectionWorkflowResult results2 = workfow2.RunCrossSectionWorkFlow(sample2, true);
-            // Assert.AreEqual(results2.IdentifiedIsomers.Count(), 2);
-            // workfow2.Dispose();
+        // // azyPos
+            string formula1 = "C10H12N3O3PS2";
+            MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "AZY");
+            string fileLocation1 = azyPos;
+            
+            Console.WriteLine("Dataset: {0}", fileLocation1);
+            
+            CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
+            parameters1.MinFitPoints = 3;
+            parameters1.MinR2 = 0.95;
+            
+            CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
+            CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
+            Assert.AreEqual(results1.IdentifiedIsomers.Count(), 2);
+            workfow1.Dispose();
+        }
 
+        /// <summary>
+        /// The test target detection with isomers.
+        /// </summary>
+        [Test][STAThread]
+        public void TestTargetDetectionWithIsomersMedium()
+        {
+            // BAD
+            string formula2 = "C18H12Cl2N2O";
+            MolecularTarget sample2 = new MolecularTarget(formula2, IonizationMethod.SodiumPlus, "BAD");
+            string fileLocation2 = BAD;
+            
+            Console.WriteLine("Dataset: {0}", fileLocation2);
+            
+            CrossSectionSearchParameters parameters2 = new CrossSectionSearchParameters();
+            parameters2.MinFitPoints = 4;
+            parameters2.MinR2 = 0.95;
+            
+            CrossSectionWorkfow workfow2 = new CrossSectionWorkfow(fileLocation2, "output", parameters2);
+            CrossSectionWorkflowResult results2 = workfow2.RunCrossSectionWorkFlow(sample2, true);
+            Assert.AreEqual(results2.IdentifiedIsomers.Count(), 2);
+            workfow2.Dispose();
+        }
+
+        /// <summary>
+        /// The test target detection with isomers.
+        /// </summary>
+        [Test][STAThread]
+        public void TestTargetDetectionWithIsomersHard()
+        {
             // BHC
             string formula3 = "C13H18ClNO";
             MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.ProtonPlus, "BHC");
             string fileLocation3 = BHC;
-
+            
             Console.WriteLine("Dataset: {0}", fileLocation3);
-
+            
             CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters();
             parameters3.MinFitPoints = 4;
             parameters3.MinR2 = 0.95;
-
+            
             CrossSectionWorkfow workfow3 = new CrossSectionWorkfow(fileLocation3, "output", parameters3);
             CrossSectionWorkflowResult results3 = workfow3.RunCrossSectionWorkFlow(sample3, true);
             Assert.AreEqual(2, results3.IdentifiedIsomers.Count());

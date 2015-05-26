@@ -363,8 +363,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     }
                     else
                     {
-                        // Perform the data association algorithm.
-                    IIonTracker tracker = new CombinatorialIonTracker(100);
+                    // Perform the data association algorithm.
+                    IIonTracker tracker = new CombinatorialIonTracker(1000);
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
                     AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters);
 

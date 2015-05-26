@@ -60,12 +60,13 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
 
                 this.DiffusionProfileDifference = new DiffusionProfileDifference(descriptorSource, descriptorTarget);
 
+                double intensityFactor = Math.Sqrt(source.Statistics.IntensityScore * sink.Statistics.IntensityScore);
                 transitionProbability = this.ComputeConsecutiveObservationMatchingProbability();
-                
+                // transitionProbability *= intensityFactor;
             }
             else if (source.ObservationType == ObservationType.Virtual)
             {
-                transitionProbability = sink.IntensityIndependentLikelihoodFunction() * this.EnteringProbability(sink);
+                transitionProbability = sink.NeutralLikelihoodFunction() * this.EnteringProbability(sink);
             }
             else if (sink.ObservationType == ObservationType.Virtual)
             {
@@ -102,9 +103,9 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
         private double ComputeConsecutiveObservationMatchingProbability()
         {
             // Due to draw backs of feature detector, the diffusion profile matching result is not all that reliable. So reduce weight here.
-            double intensityWeight = 2;
-            double diffusionProfileWeight = 1;
-            double mzMatchWeight = 3;
+            double intensityWeight = DataAssociationParameters.IntensityWeight;
+            double diffusionProfileWeight = DataAssociationParameters.DiffusionProfileWeight;
+            double mzMatchWeight = DataAssociationParameters.MzMatchWeight;
 
             double sum = intensityWeight + diffusionProfileWeight + mzMatchWeight;
             intensityWeight /= sum;
@@ -113,7 +114,7 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
 
             double intensityMatchProbability = 1 - this.IntensityDifferenceInPercentageOfMax;
             double diffusionProfileMatchProbability = this.DiffusionProfileDifference.ToDiffusionProfileMatchingProbability;
-            double mzMatchProbability = ScoreUtil.MapToZeroOneExponential(this.MzDifferenceInPpm, 30, 0.9, true);
+            double mzMatchProbability = ScoreUtil.MapToZeroOneExponential(this.MzDifferenceInPpm, DataAssociationParameters.MzDifferenceInPpm09, 0.9, true);
 
             double logResult = intensityWeight * Math.Log(intensityMatchProbability) + 
                 diffusionProfileWeight * Math.Log(diffusionProfileMatchProbability) +
@@ -149,7 +150,9 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
         /// </returns>
         private double EnteringProbability(ObservedPeak peak)
         {
-            return 1 - this.ExitingProbability(peak);
+            VoltageGroup vg = peak.VoltageGroup;
+            double result =  1 - (double)vg.FirstFirstFrameNumber / vg.TotalNumberOfFramesInData;
+            return result;
         }
     }
 }

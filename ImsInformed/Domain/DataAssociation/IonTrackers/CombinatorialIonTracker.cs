@@ -80,18 +80,18 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             // Find the top N tracks using K shorestest path algorithm
             IEnumerable<IEnumerable<IonTransition>> kShorestPaths = transitionGraph.PeakGraph.RankedShortestPathHoffmanPavley(t => 0 - Math.Log(t.TransitionProbability), transitionGraph.SourceVertex, transitionGraph.SinkVertex, this.maxTracks);
 
-            List<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength).ToList();
+            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength);
 
             // filter paths
             TrackFilter filter = new TrackFilter();
             Predicate<IsomerTrack> trackPredicate = track => filter.IsTrackPossible(track, massTarget, parameters);
-            List<IsomerTrack> filteredTracks = candidateTracks.FindAll(trackPredicate);
+            List<IsomerTrack> filteredTracks = candidateTracks.ToList().FindAll(trackPredicate);
 
             // Select the top N tracks to proceed to next step.
             var hypotheses = this.FindAllHypothesis(filteredTracks, observations).ToArray();
 
             // Find the combination of tracks that produces the highest posterior probablity.
-            IList<AssociationHypothesis> sortedAssociationHypotheses = hypotheses.OrderByDescending(h => h.ProbabilityOfHypothesisGivenData).ToList();
+            IOrderedEnumerable<AssociationHypothesis> sortedAssociationHypotheses = hypotheses.OrderByDescending(h => h.ProbabilityOfHypothesisGivenData);
 
             return sortedAssociationHypotheses.First();
         }
@@ -109,15 +109,18 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         private IEnumerable<AssociationHypothesis> FindAllHypothesis(IEnumerable<IsomerTrack> validTracks, IEnumerable<ObservedPeak> allPeaks)
         {
             allPeaks = allPeaks.ToArray();
-            IList<IsomerTrack> tracks = validTracks.ToList();
+            List<IsomerTrack> tracks = validTracks.ToList();
+
+            const int AlgorithmLimit = 25;
             int size = tracks.Count;
 
-            if (size >= 64)
+            if (size >= AlgorithmLimit)
             {
-                throw new ArgumentException("Cannot perform combinatorics for more than 64 tracks");
+                tracks = tracks.GetRange(0, AlgorithmLimit);
+                size = tracks.Count;
             }
 
-            int totalCombinations = (int)Math.Pow(2, size);
+            int totalCombinations = (int)Math.Pow(2, size) - 1;
             
             AssociationHypothesis association = new AssociationHypothesis(allPeaks);
 

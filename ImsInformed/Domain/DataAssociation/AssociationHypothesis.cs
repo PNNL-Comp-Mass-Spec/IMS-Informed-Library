@@ -14,9 +14,11 @@ namespace ImsInformed.Domain.DataAssociation
     using System.Collections.Generic;
     using System.Linq;
 
+    using DeconTools.Backend.Core;
     using DeconTools.Backend.Utilities;
 
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Scoring;
 
     /// <summary>
     /// The ion tracking class that track ions across different voltage groups.
@@ -180,11 +182,15 @@ namespace ImsInformed.Domain.DataAssociation
             if (this.IsOnTrack(observedPeak))
             {
                 IsomerTrack track = this.GetTrack(observedPeak);
-                return 1;
+                double driftTimeErrorInSeconds = track.GetDriftTimeErrorInSecondsForObsevation(observedPeak);
+                double pOn = ScoreUtil.MapToZeroOneExponential(driftTimeErrorInSeconds, DataAssociationParameters.DriftTimeDifferenceInMs09 / 1000, 0.9, true);
+                return pOn;
             }
             else
             {
-                return 0.85;
+                // TODO I honestly don't know how this should be evalued other than evaluating as a constant.
+                double pOff = DataAssociationParameters.PxTOutlier;
+                return pOff;
             }
         }
 

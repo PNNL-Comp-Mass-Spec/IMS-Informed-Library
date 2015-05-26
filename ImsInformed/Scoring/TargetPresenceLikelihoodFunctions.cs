@@ -47,7 +47,7 @@ namespace ImsInformed.Scoring
         public static double NeutralLikelihoodFunction(this ObservedPeak observedPeak)
         {
             FeatureStatistics featureScores = observedPeak.Statistics;
-            return featureScores.IntensityScore + featureScores.IsotopicScore;
+            return Math.Sqrt(featureScores.IntensityScore * featureScores.IsotopicScore);
         }
 
         /// <summary>

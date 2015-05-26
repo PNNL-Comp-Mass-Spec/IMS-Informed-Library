@@ -13,6 +13,7 @@ namespace ImsInformed.Domain.DataAssociation
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
 
     using ImsInformed.Domain.DataAssociation.IonSignatureMatching;
     using ImsInformed.Domain.DirectInjection;
@@ -54,7 +55,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The observed peaks.
         /// </summary>
-        private readonly IList<ObservedPeak> observedPeaks;
+        private readonly HashSet<ObservedPeak> observedPeaks;
 
         /// <summary>
         /// The drift tube length in meters.
@@ -132,7 +133,7 @@ namespace ImsInformed.Domain.DataAssociation
         {
             this.driftTubeLengthInMeters = driftTubeLengthInMeters;
             this.fitLineNotComputed = true;
-            this.observedPeaks = new List<ObservedPeak>();
+            this.observedPeaks = new HashSet<ObservedPeak>();
             this.definedVoltageGroups = new HashSet<VoltageGroup>();
             this.mobilityInfo.CollisionCrossSectionArea = 0;
             this.mobilityInfo.Mobility = 0;
@@ -160,6 +161,7 @@ namespace ImsInformed.Domain.DataAssociation
             {
                 double p2 = this.FitLine.RSquared;
                 double p1 = this.ionSignatureMatchingProbability;
+
                 return p2 * p1;
             }
         }
@@ -246,6 +248,24 @@ namespace ImsInformed.Domain.DataAssociation
             {
                 throw new ArgumentException("Voltage group is already defined track");
             }
+        }
+
+        /// <summary>
+        /// The get drift time error in seconds for obsevation.
+        /// </summary>
+        /// <param name="peak">
+        /// The peak.
+        /// </param>
+        /// <returns>
+        /// The <see cref="double"/>.
+        /// </returns>
+        public double GetDriftTimeErrorInSecondsForObsevation(ObservedPeak peak)
+        {
+            ContinuousXYPoint observationPoint = peak.ToContinuousXyPoint();
+            double actualDriftTimeInSeconds = observationPoint.X;
+            double predictedDriftTimeInSeconds = this.fitLine.ModelPredictY2X(observationPoint.Y);
+            double error = Math.Abs(actualDriftTimeInSeconds - predictedDriftTimeInSeconds);
+            return error;
         }
 
         /// <summary>

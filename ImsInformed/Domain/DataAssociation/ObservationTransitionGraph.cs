@@ -153,7 +153,7 @@ namespace ImsInformed.Domain.DataAssociation
         public void PlotGraph()
         {
             var graphviz = new GraphvizAlgorithm<ObservedPeak, T>(this.PeakGraph);
-            graphviz.Generate(new ObservationTransitionGraphRenderingEngine(), "graphDOT.txt");
+            graphviz.Generate(new ObservationTransitionGraphRenderingEngine(), "graphDOT");
         }
     }
 }

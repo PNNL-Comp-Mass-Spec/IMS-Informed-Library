@@ -73,7 +73,10 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             observations = observations.ToList();
 
             ObservationTransitionGraph<IonTransition> transitionGraph = new ObservationTransitionGraph<IonTransition>(observations, (a, b) => new IonTransition(a, b));
-            transitionGraph.PlotGraph();
+            
+            // Visualize the graph.
+            // transitionGraph.PlotGraph();
+            
             // Find all the possible combinotorial tracks
             // IList<IsomerTrack> candidateTracks = this.FindAllReasonableTracks(transitionGraph, driftTubeLength, massTarget, parameters).ToList();
             

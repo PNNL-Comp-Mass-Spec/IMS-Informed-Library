@@ -347,21 +347,6 @@ namespace ImsInformedTests
         }
 
         /// <summary>
-        /// The bytes.
-        /// </summary>
-        [Test]
-        public void Bytes() 
-        {
-            byte[] array = new byte[4] { 5, 6, 7, 100 };
-            Int32 a = BitConverter.ToInt32(array,0);
-            Int32 b = 0x01;
-            Int32 c =  0x010000000;
-            array = BitConverter.GetBytes(c);
-            Console.WriteLine("{0:x8} vs {1:x8}", b, c);
-            Console.WriteLine(0x01 == 0x010000000);
-        }
-
-        /// <summary>
         /// The test file not found.
         /// </summary>
         [Test]

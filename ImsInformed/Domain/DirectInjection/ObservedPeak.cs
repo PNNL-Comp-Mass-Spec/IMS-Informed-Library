@@ -11,7 +11,7 @@
 namespace ImsInformed.Domain.DirectInjection
 {
     using ImsInformed.Scoring;
-    using ImsInformed.Stats;
+    using ImsInformed.Statistics;
 
     internal enum ObservationType
     {

@@ -19,7 +19,7 @@ namespace ImsInformed.Domain.DataAssociation
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
     using ImsInformed.Scoring;
-    using ImsInformed.Stats;
+    using ImsInformed.Statistics;
     using ImsInformed.Targets;
     using ImsInformed.Util;
     using ImsInformed.Workflows.CrossSectionExtraction;

@@ -20,7 +20,7 @@ namespace ImsInformedTests
     using ImsInformed;
     using ImsInformed.Domain;
     using ImsInformed.IO;
-    using ImsInformed.Stats;
+    using ImsInformed.Statistics;
     using ImsInformed.Targets;
     using ImsInformed.Util;
     using ImsInformed.Workflows.CrossSectionExtraction;

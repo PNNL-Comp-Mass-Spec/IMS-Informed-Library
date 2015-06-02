@@ -8,11 +8,10 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Stats
+namespace ImsInformed.Statistics
 {
     using System;
     using System.Collections.Generic;
-    using System.Security.Cryptography;
 
     internal class Combinatorics
     {
@@ -45,7 +44,7 @@ namespace ImsInformed.Stats
         /// The grey code.
         /// </param>
         /// <returns>
-        /// The <see cref="IEnumerable"/>.
+        /// The <see cref="IEnumerable{T}"/>.
         /// </returns>
         public static IEnumerable<int> GreyCodeToIndexOfOnes(long greyCode)
         {

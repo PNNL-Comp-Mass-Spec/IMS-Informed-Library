@@ -16,7 +16,7 @@ namespace ImsInformed.Scoring
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Stats;
+    using ImsInformed.Statistics;
     using ImsInformed.Targets;
 
     using MathNet.Numerics.LinearAlgebra;

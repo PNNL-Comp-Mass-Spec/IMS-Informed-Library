@@ -12,7 +12,7 @@ namespace ImsInformed.Test
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Scoring;
-    using ImsInformed.Stats;
+    using ImsInformed.Statistics;
     using ImsInformed.Targets;
     using ImsInformed.Util;
     using ImsInformed.Workflows.CrossSectionExtraction;

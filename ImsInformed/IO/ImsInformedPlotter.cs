@@ -20,7 +20,7 @@ namespace ImsInformed.IO
 
     using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Stats;
+    using ImsInformed.Statistics;
 
     using OxyPlot;
     using OxyPlot.Axes;

@@ -160,9 +160,9 @@
     <Compile Include="Scoring\IsotopicScoreMethod.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
     <Compile Include="Scoring\VoltageGroupScoring.cs" />
-    <Compile Include="Stats\Combinatorics.cs" />
-    <Compile Include="Stats\FitLine.cs" />
-    <Compile Include="Stats\NormalityTest.cs" />
+    <Compile Include="Statistics\Combinatorics.cs" />
+    <Compile Include="Statistics\FitLine.cs" />
+    <Compile Include="Statistics\NormalityTest.cs" />
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
     <Compile Include="IO\MassTagImporter.cs" />
@@ -188,7 +188,7 @@
     <Compile Include="Util\PeakFinding.cs" />
     <Compile Include="Util\PeptideUtil.cs" />
     <Compile Include="Util\SaturationDetector.cs" />
-    <Compile Include="Stats\ContinuousXYPoint.cs" />
+    <Compile Include="Statistics\ContinuousXYPoint.cs" />
     <Compile Include="Util\UnitConversion.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\ArrivalTimeSnapShot.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionSearchParameters.cs" />

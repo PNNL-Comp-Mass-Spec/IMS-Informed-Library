@@ -17,10 +17,8 @@ namespace ImsInformedTests
 
     using DeconTools.Backend.Algorithms;
 
-    using ImsInformed.Domain;
     using ImsInformed.IO;
     using ImsInformed.Targets;
-    using ImsInformed.Util;
     using ImsInformed.Workflows.LcImsPeptideExtraction;
 
     using InformedProteomics.Backend.Data.Sequence;
@@ -943,38 +941,6 @@ namespace ImsInformedTests
                 //Random random = new Random();
                 //LcImsPeptideSearchWorkfow.ExtractData(targetList.OrderBy(X => random.Next()).Take(100));
                 //LcImsPeptideSearchWorkfow.ExtractData(targetList);
-            }
-        }
-
-        /// <summary>
-        /// The test saturation.
-        /// </summary>
-        [Test]
-        public void TestSaturation()
-        {
-            const string uimfLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\peptide\DR_40ms_100_23Apr14_0002.UIMF";
-            //const double mz = 432.90; // Angiotensin +3
-            //const double mz = 712.20; // Melittin +4
-            //const double mz = 569.96; // Melittin +5
-            //const double mz = 466.54; // Tetraoctylammonium +1
-            const double ppmTolerance = 50;
-
-            List<double> mzList = new List<double>{432.9, 712.2, 569.96, 466.54};
-            List<string> peptideList = new List<string> { "DRVYIHPFHL", "GIGAVLKVLTTGLPALISWIKRKRQQ", "Tetraoctylammonium", "Tetraoctylammonium Bromide" };
-
-            SaturationDetector saturationDetector = new SaturationDetector(uimfLocation);
-
-            //foreach (var mz in mzList)
-            //{
-            //    Console.WriteLine(mz);
-            //    saturationDetector.GetIntensity(mz, ppmTolerance);	
-            //    Console.WriteLine("*******************************************");
-            //    Console.WriteLine("*******************************************");
-            //}
-
-            foreach (string peptide in peptideList)
-            {
-                saturationDetector.GetIntensity(peptide, ppmTolerance);
             }
         }
 

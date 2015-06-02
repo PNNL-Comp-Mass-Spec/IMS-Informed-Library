@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ImsInformed.Test
+﻿namespace ImsInformed.Testing
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     using DeconTools.Backend.Core;
     using DeconTools.Backend.ProcessingTasks.TheorFeatureGenerator;
 
@@ -29,7 +27,7 @@ namespace ImsInformed.Test
     using UIMFLibrary;
 
     // Test for internal mechanisms like scroing methods or isotopic profile extractors
-    internal class FunctionalTests
+    internal class InternalTests
     {
         /// <summary>
         /// The test molecule util.
@@ -73,6 +71,38 @@ namespace ImsInformed.Test
                     Console.WriteLine(e.Message);
                     Console.WriteLine("\r\n");
                 }
+            }
+        }
+
+        /// <summary>
+        /// The test saturation.
+        /// </summary>
+        [Test]
+        public void TestSaturation()
+        {
+            const string uimfLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\peptide\DR_40ms_100_23Apr14_0002.UIMF";
+            //const double mz = 432.90; // Angiotensin +3
+            //const double mz = 712.20; // Melittin +4
+            //const double mz = 569.96; // Melittin +5
+            //const double mz = 466.54; // Tetraoctylammonium +1
+            const double ppmTolerance = 50;
+
+            List<double> mzList = new List<double>{432.9, 712.2, 569.96, 466.54};
+            List<string> peptideList = new List<string> { "DRVYIHPFHL", "GIGAVLKVLTTGLPALISWIKRKRQQ", "Tetraoctylammonium", "Tetraoctylammonium Bromide" };
+
+            SaturationDetector saturationDetector = new SaturationDetector(uimfLocation);
+
+            //foreach (var mz in mzList)
+            //{
+            //    Console.WriteLine(mz);
+            //    saturationDetector.GetIntensity(mz, ppmTolerance);	
+            //    Console.WriteLine("*******************************************");
+            //    Console.WriteLine("*******************************************");
+            //}
+
+            foreach (string peptide in peptideList)
+            {
+                saturationDetector.GetIntensity(peptide, ppmTolerance);
             }
         }
 

@@ -28,7 +28,7 @@ namespace ImsInformed.Util
 
     using UIMFLibrary;
 
-    public class SaturationDetector
+    internal class SaturationDetector
     {
         private readonly DataReader _uimfReader;
         private readonly SavitzkyGolaySmoother _smoother;

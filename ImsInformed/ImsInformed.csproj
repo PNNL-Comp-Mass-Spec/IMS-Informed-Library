@@ -133,6 +133,7 @@
     <Compile Include="Domain\DataAssociation\IonSignatureMatching\DiffusionProfileDifference.cs" />
     <Compile Include="Domain\DataAssociation\IonSignatureMatching\IonTransition.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\CombinatorialIonTracker.cs" />
+    <Compile Include="Domain\DataAssociation\IonTrackers\IIonTracker.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\MinCostFlowIonTracker.cs" />
     <Compile Include="Domain\DataAssociation\IsomerTrack.cs" />
     <Compile Include="Domain\DataAssociation\IonTrackers\RANSACIonTracker.cs" />
@@ -148,10 +149,6 @@
     <Compile Include="Domain\StandardImsPeak.cs" />
     <Compile Include="Filters\TrackFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
-    <Compile Include="Interfaces\IImsInformedWorkflow.cs" />
-    <Compile Include="Interfaces\IImsTarget.cs" />
-    <Compile Include="Interfaces\IImsResult.cs" />
-    <Compile Include="Interfaces\IIonTracker.cs" />
     <Compile Include="IO\DriftTimeLibraryImporter.cs" />
     <Compile Include="IO\FileFormatEnum.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />
@@ -176,6 +173,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Targets\DriftTimeTarget.cs" />
+    <Compile Include="Targets\IImsTarget.cs" />
     <Compile Include="Targets\InjectionMethod.cs" />
     <Compile Include="Targets\IonizationAdduct.cs" />
     <Compile Include="Targets\IonizationMethod.cs" />

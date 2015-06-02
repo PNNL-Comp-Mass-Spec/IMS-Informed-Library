@@ -15,7 +15,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
 
     using ImsInformed.Domain.DataAssociation.IonSignatureMatching;
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Interfaces;
+    using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
     using QuickGraph;

@@ -22,9 +22,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using ImsInformed.Domain.DataAssociation.IonTrackers;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
-    using ImsInformed.Interfaces;
     using ImsInformed.IO;
     using ImsInformed.Scoring;
+    using ImsInformed.Targets;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Composition;

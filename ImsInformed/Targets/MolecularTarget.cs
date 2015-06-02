@@ -14,7 +14,6 @@ namespace ImsInformed.Targets
     using System.Globalization;
 
     using ImsInformed.Domain;
-    using ImsInformed.Interfaces;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Composition;

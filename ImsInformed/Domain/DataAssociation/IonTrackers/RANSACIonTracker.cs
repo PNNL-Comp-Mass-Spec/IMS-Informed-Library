@@ -14,7 +14,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
     using System.Collections.Generic;
 
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Interfaces;
+    using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
     /// <summary>

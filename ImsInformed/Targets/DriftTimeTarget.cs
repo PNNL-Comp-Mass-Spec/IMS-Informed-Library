@@ -14,7 +14,6 @@ namespace ImsInformed.Targets
     using System.Collections.Generic;
 
     using ImsInformed.Domain;
-    using ImsInformed.Interfaces;
 
     /// <summary>
     /// The drift time Target.

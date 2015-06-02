@@ -11,7 +11,7 @@
 namespace ImsInformed.Filters
 {
     using ImsInformed.Domain.DataAssociation;
-    using ImsInformed.Interfaces;
+    using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
     /// <summary>

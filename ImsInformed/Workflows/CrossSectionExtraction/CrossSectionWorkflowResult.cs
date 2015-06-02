@@ -19,8 +19,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
-    using ImsInformed.Interfaces;
     using ImsInformed.Scoring;
+    using ImsInformed.Targets;
     using ImsInformed.Util;
 
     /// <summary>

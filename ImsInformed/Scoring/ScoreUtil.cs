@@ -16,7 +16,7 @@ namespace ImsInformed.Scoring
 
     using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Interfaces;
+    using ImsInformed.Targets;
 
     using MultiDimensionalPeakFinding.PeakDetection;
 

@@ -17,7 +17,6 @@ namespace ImsInformed.Targets
     using System.Text;
 
     using ImsInformed.Domain;
-    using ImsInformed.Interfaces;
     using ImsInformed.Util;
     using ImsInformed.Workflows.LcImsPeptideExtraction;
 

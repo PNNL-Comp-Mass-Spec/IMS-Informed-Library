@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IIonTracker.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
@@ -8,12 +8,12 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Interfaces
+namespace ImsInformed.Domain.DataAssociation.IonTrackers
 {
     using System.Collections.Generic;
 
-    using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
     /// <summary>

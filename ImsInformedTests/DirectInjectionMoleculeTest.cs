@@ -19,7 +19,6 @@ namespace ImsInformedTests
 
     using ImsInformed;
     using ImsInformed.Domain;
-    using ImsInformed.Interfaces;
     using ImsInformed.IO;
     using ImsInformed.Stats;
     using ImsInformed.Targets;

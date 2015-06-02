@@ -16,32 +16,28 @@ namespace ImsInformed.Util
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
-    using ImsInformed.Domain;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Properties;
-    using ImsInformed.Stats;
 
     using InformedProteomics.Backend.Data.Biology;
     using InformedProteomics.Backend.Data.Composition;
-
-    using MultiDimensionalPeakFinding.PeakDetection;
 
     using UIMFLibrary;
 
     /// <summary>
     /// The molecule utilities.
     /// </summary>
-    public static class MoleculeUtil
+    internal static class MoleculeUtil
     {
         /// <summary>
         /// The open parenthesis symbols
         /// </summary>
-        public static readonly string Open  = "([{<";
+        private static readonly string Open  = "([{<";
 
         /// <summary>
         /// The close parenthesis symbols
         /// </summary>
-        public static readonly string Close = ")]}>";
+        private static readonly string Close = ")]}>";
 
         /// <summary>
         /// The math to compute collision cross sectional area.
@@ -136,7 +132,7 @@ namespace ImsInformed.Util
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool IsBalanced(string input)
+        private static bool IsBalanced(string input)
         {
             return IsBalanced(input, String.Empty);
         }

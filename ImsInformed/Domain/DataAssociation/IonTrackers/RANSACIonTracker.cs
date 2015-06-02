@@ -20,7 +20,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
     /// <summary>
     /// The ransac ion tracker.
     /// </summary>
-    public class RANSACIonTracker : IIonTracker
+    internal class RANSACIonTracker : IIonTracker
     {
         public AssociationHypothesis FindOptimumHypothesis(
             IEnumerable<ObservedPeak> observations,

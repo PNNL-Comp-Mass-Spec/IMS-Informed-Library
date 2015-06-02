@@ -21,7 +21,7 @@ namespace ImsInformed.Domain.DirectInjection
     /// <summary>
     /// This is the XIC summed over the centerMz but not drift time axis.
     /// </summary>
-    public class ExtractedIonChromatogram 
+    internal class ExtractedIonChromatogram 
     {
         public ExtractedIonChromatogram()
         {

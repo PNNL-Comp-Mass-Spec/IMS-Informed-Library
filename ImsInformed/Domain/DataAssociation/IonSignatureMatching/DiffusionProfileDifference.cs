@@ -16,7 +16,7 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
     /// <summary>
     ///     The diffusion profile difference.
     /// </summary>
-    public class DiffusionProfileDifference
+    internal class DiffusionProfileDifference
     {
         #region Constructors and Destructors
 

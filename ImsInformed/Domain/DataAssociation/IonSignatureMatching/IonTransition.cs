@@ -16,15 +16,12 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
     using ImsInformed.Scoring;
     using ImsInformed.Util;
 
-    using InformedProteomics.Backend.Data.Spectrometry;
-
     using QuickGraph;
-    using QuickGraph.Algorithms.RandomWalks;
 
     /// <summary>
     /// The diffusion profile comparator.
     /// </summary>
-    public class IonTransition : Edge<ObservedPeak>
+    internal class IonTransition : Edge<ObservedPeak>
     {
         /// <summary>
         /// The transition probability.

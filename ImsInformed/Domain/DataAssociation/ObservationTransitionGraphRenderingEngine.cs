@@ -11,7 +11,7 @@ namespace ImsInformed.Domain.DataAssociation
     using QuickGraph.Graphviz;
     using QuickGraph.Graphviz.Dot;
 
-    public class ObservationTransitionGraphRenderingEngine : IDotEngine
+    internal class ObservationTransitionGraphRenderingEngine : IDotEngine
     {
         public string Run(GraphvizImageType imageType, string dot, string outputFileName)
         {

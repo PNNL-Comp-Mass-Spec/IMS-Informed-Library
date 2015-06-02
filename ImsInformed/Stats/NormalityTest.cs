@@ -14,18 +14,14 @@ namespace ImsInformed.Stats
     using System.Collections.Generic;
     using System.Linq;
 
-    using DeconTools.Backend.Core;
-
     using ImsInformed.Scoring;
-
-    using InformedProteomics.Backend.Data.Spectrometry;
 
     using MathNet.Numerics.Statistics;
 
     /// <summary>
     /// The normality test.
     /// </summary>
-    public class NormalityTest
+    internal class NormalityTest
     {
         /// <summary>
         /// The normality test.

@@ -26,7 +26,7 @@ namespace ImsInformed.Domain.DataAssociation
     /// </summary>
     /// <typeparam name="T">
     /// </typeparam>
-    public class ObservationTransitionGraph<T> where T : Edge<ObservedPeak>
+    internal class ObservationTransitionGraph<T> where T : Edge<ObservedPeak>
     {
         /// <summary>
         /// The base peak map.

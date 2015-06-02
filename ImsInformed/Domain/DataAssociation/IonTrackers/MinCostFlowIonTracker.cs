@@ -23,7 +23,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
     /// <summary>
     /// The min cost flow ion tracker.
     /// </summary>
-    public class MinCostFlowIonTracker : IIonTracker
+    internal class MinCostFlowIonTracker : IIonTracker
     {
         public AssociationHypothesis FindOptimumHypothesis(
             IEnumerable<ObservedPeak> observations,

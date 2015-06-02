@@ -17,7 +17,7 @@ namespace ImsInformed.Scoring
     /// <summary>
     /// The likelihood function for if the feature is an actual ion instead of random noise.
     /// </summary>
-    public static class TargetPresenceLikelihoodFunctions
+    internal static class TargetPresenceLikelihoodFunctions
     {
         /// <summary>
         /// The intensity independent likelihood function. Better used if you have strong faith in the isotopic score 100% and/or your sample is really mixed and

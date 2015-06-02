@@ -16,7 +16,7 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
     /// <summary>
     /// The diffusion profile descriptor.
     /// </summary>
-    public class DiffusionProfileDescriptor
+    internal class DiffusionProfileDescriptor
     {
         public DiffusionProfileDescriptor(ObservedPeak observation)
         {

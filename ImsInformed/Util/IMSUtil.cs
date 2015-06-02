@@ -10,7 +10,7 @@ namespace ImsInformed.Util
 
     using UIMFLibrary;
 
-    public class IMSUtil
+    internal class IMSUtil
     {
         /// <summary>
         /// The pad zeroes to point list.
@@ -69,7 +69,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static bool IsLastVoltageGroup(VoltageGroup group, int totalFrames)
         {
-            return @group.LastFrameNumber == totalFrames;
+            return group.LastFrameNumber == totalFrames;
         }
 
         /// <summary>

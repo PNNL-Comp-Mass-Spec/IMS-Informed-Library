@@ -13,25 +13,21 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 
     using ImsInformed.Domain.DataAssociation.IonSignatureMatching;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Filters;
     using ImsInformed.Interfaces;
+    using ImsInformed.Stats;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
-    using QuickGraph;
     using QuickGraph.Algorithms;
-    using QuickGraph.Algorithms.RankedShortestPath;
-
-    using Combinatorics = ImsInformed.Stats.Combinatorics;
 
     /// <summary>
     /// Track ions by using combinations of observations and construct hypothesis.
     /// </summary>
-    public class CombinatorialIonTracker : IIonTracker
+    internal class CombinatorialIonTracker : IIonTracker
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CombinatorialIonTracker"/> class.

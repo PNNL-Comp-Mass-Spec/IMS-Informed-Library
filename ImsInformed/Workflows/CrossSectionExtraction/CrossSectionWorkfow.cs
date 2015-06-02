@@ -344,8 +344,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             rejectedVoltageGroups.Add(voltageGroup);
                         }
                     
-                        // Rate the feature's VoltageGroupScore score. VoltageGroupScore score measures how likely the voltage group contains and detected the Target ion.
-                        voltageGroup.VoltageGroupScore = VoltageGroupScore.ComputeVoltageGroupStabilityScore(voltageGroup);
+                        // Rate the feature's VoltageGroupScoring score. VoltageGroupScoring score measures how likely the voltage group contains and detected the Target ion.
+                        voltageGroup.VoltageGroupScore = VoltageGroupScoring.ComputeVoltageGroupStabilityScore(voltageGroup);
                     }
                     
                     // Remove voltage groups that were rejected
@@ -647,7 +647,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 normalizedDriftTimeInMs,
                                 peak.HighestPeakApex.DriftTimeCenterInScanNumber));
 
-                        Trace.WriteLine(string.Format("        VoltageGroupScore: {0:F4}", voltageGroup.VoltageGroupScore));
+                        Trace.WriteLine(string.Format("        VoltageGroupScoring: {0:F4}", voltageGroup.VoltageGroupScore));
                         Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", observation.Statistics.IntensityScore));
                         if (hasCompositionInfo)
                         {

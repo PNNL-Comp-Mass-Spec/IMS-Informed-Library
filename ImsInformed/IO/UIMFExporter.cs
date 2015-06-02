@@ -22,7 +22,7 @@ namespace ImsInformed.IO
     /// <summary>
     /// The uimf exporter.
     /// </summary>
-    public class UimfExporter
+    internal class UimfExporter
     {
         /// <summary>
         /// The export voltage group as single frame UIMF.

@@ -35,7 +35,7 @@ namespace ImsInformed.IO
     /// <summary>
     /// The ims informed plotter.
     /// </summary>
-    public class ImsInformedPlotter
+    internal class ImsInformedPlotter
     {
         /// <summary>
         /// The plot association hypothesis.

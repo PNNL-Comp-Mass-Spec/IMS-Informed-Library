@@ -50,7 +50,7 @@ namespace ImsInformed.Domain.DataAssociation
     /// <summary>
     /// The isomer trace.
     /// </summary>
-    public class IsomerTrack
+    internal class IsomerTrack
     {
         /// <summary>
         /// The observed peaks.
@@ -285,7 +285,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         public IdentifiedIsomerInfo ExportIdentifiedIsomerInfo(double viperCompatibleMass, int minFitPoints, double minR2)
         {
-            double averageVoltageGroupStabilityScore = VoltageGroupScore.ComputeAverageVoltageGroupStabilityScore(this.definedVoltageGroups);
+            double averageVoltageGroupStabilityScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(this.definedVoltageGroups);
 
             IList<ArrivalTimeSnapShot> snapshots = new List<ArrivalTimeSnapShot>();
             foreach (var observation in this.observedPeaks)

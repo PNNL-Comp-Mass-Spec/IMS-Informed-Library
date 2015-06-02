@@ -16,7 +16,7 @@ namespace ImsInformed.Domain.DataAssociation
     /// The ion association tunning class
     /// </summary>
     [Serializable]
-    public class DataAssociationParameters
+    internal class DataAssociationParameters
     {
         /// <summary>
         /// The intensity weight.

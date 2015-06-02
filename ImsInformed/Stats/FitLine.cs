@@ -19,7 +19,7 @@ namespace ImsInformed.Stats
     /// <summary>
     /// The fit FitLine.
     /// </summary>
-    public class FitLine
+    internal class FitLine
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FitLine"/> class.

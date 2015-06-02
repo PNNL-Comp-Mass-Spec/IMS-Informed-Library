@@ -17,7 +17,7 @@ namespace ImsInformed.Filters
     /// <summary>
     /// The track filter.
     /// </summary>
-    public class TrackFilter
+    internal class TrackFilter
     {
                 /// <summary>
         /// The is track possible.

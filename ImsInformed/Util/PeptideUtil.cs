@@ -16,7 +16,7 @@ namespace ImsInformed.Util
     /// <summary>
     /// The peptide utilities.
     /// </summary>
-    public class PeptideUtil
+    internal class PeptideUtil
     {
         /// <summary>
         /// The PPM constant.

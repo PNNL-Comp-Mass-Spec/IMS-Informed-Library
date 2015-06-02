@@ -19,7 +19,7 @@ namespace ImsInformed.Interfaces
     /// <summary>
     /// The IonTracker interface.
     /// </summary>
-    public interface IIonTracker
+    internal interface IIonTracker
     {
         /// <summary>
         /// The find optimum hypothesis.

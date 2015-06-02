@@ -19,7 +19,7 @@ namespace ImsInformed.Filters
     /// <summary>
     /// The feature filters.
     /// </summary>
-    public class FeatureFilters
+    internal class FeatureFilters
     {
         /// <summary>
         /// The filter extreme drift time.

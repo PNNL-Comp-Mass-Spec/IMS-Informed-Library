@@ -13,7 +13,7 @@ namespace ImsInformed.Domain.DirectInjection
     using ImsInformed.Scoring;
     using ImsInformed.Stats;
 
-    public enum ObservationType
+    internal enum ObservationType
     {
         Peak,
         Virtual
@@ -22,7 +22,7 @@ namespace ImsInformed.Domain.DirectInjection
     /// <summary>
     /// The observed peak.
     /// </summary>
-    public class ObservedPeak 
+    internal class ObservedPeak 
     {
         private ContinuousXYPoint mobilityPoint;
 

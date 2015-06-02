@@ -178,10 +178,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// The <see cref="CrossSectionWorkflowResult"/>.
         /// </returns>
-        public static CrossSectionWorkflowResult CreateNegativeResult(IEnumerable<ObservedPeak> rejectedPeaks, IEnumerable<VoltageGroup> rejectedVoltageGroups, string datasetName, IImsTarget target)
+        internal static CrossSectionWorkflowResult CreateNegativeResult(IEnumerable<ObservedPeak> rejectedPeaks, IEnumerable<VoltageGroup> rejectedVoltageGroups, string datasetName, IImsTarget target)
         {
             // No valid feature peaks were identified. No hypothesis.
-            double voltageGroupScore = VoltageGroupScore.ComputeAverageVoltageGroupStabilityScore(rejectedVoltageGroups);
+            double voltageGroupScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(rejectedVoltageGroups);
             
             // quantize the VG score from VGs in the removal list.
             IEnumerable<FeatureStatistics> featureStats = rejectedPeaks.Select(x => x.Statistics);
@@ -197,12 +197,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             return informedResult;
         }
 
-        public static CrossSectionWorkflowResult CreateResultFromAssociationHypothesis(CrossSectionSearchParameters parameters, string datasetName, AssociationHypothesis optimalHypothesis, IImsTarget target, IEnumerable<VoltageGroup> allVoltageGroups, IEnumerable<ObservedPeak> allPeaks, double viperCompatibleMass = 0)
+        internal static CrossSectionWorkflowResult CreateResultFromAssociationHypothesis(CrossSectionSearchParameters parameters, string datasetName, AssociationHypothesis optimalHypothesis, IImsTarget target, IEnumerable<VoltageGroup> allVoltageGroups, IEnumerable<ObservedPeak> allPeaks, double viperCompatibleMass = 0)
         {
             // Initialize the result struct.
             AssociationHypothesisInfo associationHypothesisInfo = new AssociationHypothesisInfo(optimalHypothesis.ProbabilityOfDataGivenHypothesis, optimalHypothesis.ProbabilityOfHypothesisGivenData);
 
-            double averageVoltageGroupScore = VoltageGroupScore.ComputeAverageVoltageGroupStabilityScore(allVoltageGroups);
+            double averageVoltageGroupScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(allVoltageGroups);
             IEnumerable<FeatureStatistics> allFeatureStatistics = allPeaks.Select(x => x.Statistics);
             FeatureStatistics averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
 

@@ -20,7 +20,7 @@ namespace ImsInformed.Domain.DirectInjection
     /// <summary>
     /// VoltageSeparatedAccumulatedXICs, where Accumulated XIC stands for a 3D XIC accumulated over the frame axis.
     /// </summary>
-    public class VoltageSeparatedAccumulatedXiCs : Dictionary<VoltageGroup, ExtractedIonChromatogram>
+    internal class VoltageSeparatedAccumulatedXiCs : Dictionary<VoltageGroup, ExtractedIonChromatogram>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="VoltageSeparatedAccumulatedXiCs"/> class. 

@@ -77,6 +77,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MultiDimensionalPeakFinding\MultiDimensionalPeakFinding.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="OxyPlot, Version=2015.1.889.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\OxyPlot.Core.2015.1.889-alpha\lib\net45\OxyPlot.dll</HintPath>
@@ -162,7 +166,7 @@
     <Compile Include="Scoring\IsotopicScoreMethod.cs" />
     <Compile Include="Scoring\ScoreType.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
-    <Compile Include="Scoring\VoltageGroupScore.cs" />
+    <Compile Include="Scoring\VoltageGroupScoring.cs" />
     <Compile Include="Stats\Combinatorics.cs" />
     <Compile Include="Stats\FitLine.cs" />
     <Compile Include="Domain\TargetType.cs" />
@@ -179,6 +183,7 @@
     <Compile Include="Targets\DriftTimeTarget.cs" />
     <Compile Include="Targets\MolecularTarget.cs" />
     <Compile Include="Targets\PeptideTarget.cs" />
+    <Compile Include="Testing\FunctionalTests.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
     <Compile Include="Util\IMSUtil.cs" />
     <Compile Include="Util\MoleculeUtil.cs" />

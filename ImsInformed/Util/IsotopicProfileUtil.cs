@@ -16,7 +16,7 @@ namespace ImsInformed.Util
     /// <summary>
     /// The isotopic profile util.
     /// </summary>
-    public class IsotopicProfileUtil
+    internal class IsotopicProfileUtil
     {
         public static void AdjustSaturatedIsotopicProfile(IsotopicProfile iso, IsotopicProfile theorIsotopicProfile, int indexOfIsotopeToUse, bool updatePeakMasses = true, bool updatePeakIntensities = true)
         {

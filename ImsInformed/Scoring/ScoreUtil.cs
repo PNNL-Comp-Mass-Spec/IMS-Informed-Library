@@ -23,7 +23,7 @@ namespace ImsInformed.Scoring
     /// <summary>
     /// The input util.
     /// </summary>
-    public class ScoreUtil
+    internal class ScoreUtil
     {
         /// <summary>
         /// The compare features function.

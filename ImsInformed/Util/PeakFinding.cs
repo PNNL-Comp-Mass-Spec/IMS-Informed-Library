@@ -15,9 +15,6 @@ namespace ImsInformed.Util
     using System.Linq;
 
     using ImsInformed.Domain;
-    using ImsInformed.Workflows.CrossSectionExtraction;
-
-    using log4net.Util;
 
     using MagnitudeConcavityPeakFinder;
 
@@ -29,7 +26,7 @@ namespace ImsInformed.Util
     /// <summary>
     /// The peak finding.
     /// </summary>
-    public class PeakFinding
+    internal class PeakFinding
     {
         /// <summary>
         /// The find peak using MASIC.

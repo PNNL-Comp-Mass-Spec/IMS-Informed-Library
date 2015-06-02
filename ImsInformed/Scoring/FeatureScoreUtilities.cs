@@ -30,7 +30,7 @@ namespace ImsInformed.Scoring
     /// <summary>
     /// The feature score.
     /// </summary>
-    public static class FeatureScoreUtilities
+    internal static class FeatureScoreUtilities
     {
         /// <summary>
         /// The score feature.

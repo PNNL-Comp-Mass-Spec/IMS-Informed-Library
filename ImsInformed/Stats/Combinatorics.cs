@@ -14,7 +14,7 @@ namespace ImsInformed.Stats
     using System.Collections.Generic;
     using System.Security.Cryptography;
 
-    public class Combinatorics
+    internal class Combinatorics
     {
         /// <summary>
         /// The next change.

@@ -8,7 +8,7 @@ namespace ImsInformed.Stats
     /// The continuous xy point.
     /// </summary>
     [Serializable]
-    public class ContinuousXYPoint : IEquatable<ContinuousXYPoint>
+    internal class ContinuousXYPoint : IEquatable<ContinuousXYPoint>
     {
         /// <summary>
         /// Gets or sets the X.

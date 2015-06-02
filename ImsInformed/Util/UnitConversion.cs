@@ -15,7 +15,7 @@ namespace ImsInformed.Util
     /// <summary>
     /// The unit conversion.
     /// </summary>
-    public class UnitConversion
+    internal class UnitConversion
     {
         /// <summary>
         /// The absolute zero.

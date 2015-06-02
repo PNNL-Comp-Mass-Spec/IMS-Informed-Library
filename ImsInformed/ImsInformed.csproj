@@ -126,6 +126,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisStatus.cs" />
     <Compile Include="Domain\DataAssociation\AssociationHypothesis.cs" />
     <Compile Include="Domain\DataAssociation\AssociationHypothesisInfo.cs" />
     <Compile Include="Domain\DataAssociation\IonSignatureMatching\DiffusionProfileDescriptor.cs" />
@@ -139,14 +140,10 @@
     <Compile Include="Domain\DataAssociation\ObservationTransitionGraphRenderingEngine.cs" />
     <Compile Include="Domain\DataAssociation\DataAssociationParameters.cs" />
     <Compile Include="Domain\DirectInjection\ObservedPeak.cs" />
-    <Compile Include="Domain\IonizationAdduct.cs" />
     <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
     <Compile Include="Domain\DirectInjection\VoltageGroup.cs" />
     <Compile Include="Domain\DirectInjection\VoltageSeparatedAccumulatedXICs.cs" />
-    <Compile Include="Domain\AnalysisStatus.cs" />
     <Compile Include="Domain\FakeUIMFReader.cs" />
-    <Compile Include="Domain\InjectionMethod.cs" />
-    <Compile Include="Domain\IonizationMethod.cs" />
     <Compile Include="Domain\LiquidChromatography\FeatureBlobNet.cs" />
     <Compile Include="Domain\StandardImsPeak.cs" />
     <Compile Include="Filters\TrackFilter.cs" />
@@ -164,12 +161,10 @@
     <Compile Include="Scoring\FeatureScoreUtilities.cs" />
     <Compile Include="Scoring\FeatureStatistics.cs" />
     <Compile Include="Scoring\IsotopicScoreMethod.cs" />
-    <Compile Include="Scoring\ScoreType.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
     <Compile Include="Scoring\VoltageGroupScoring.cs" />
     <Compile Include="Stats\Combinatorics.cs" />
     <Compile Include="Stats\FitLine.cs" />
-    <Compile Include="Domain\TargetType.cs" />
     <Compile Include="Stats\NormalityTest.cs" />
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />
@@ -181,8 +176,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Targets\DriftTimeTarget.cs" />
+    <Compile Include="Targets\InjectionMethod.cs" />
+    <Compile Include="Targets\IonizationAdduct.cs" />
+    <Compile Include="Targets\IonizationMethod.cs" />
     <Compile Include="Targets\MolecularTarget.cs" />
     <Compile Include="Targets\PeptideTarget.cs" />
+    <Compile Include="Targets\TargetType.cs" />
     <Compile Include="Testing\FunctionalTests.cs" />
     <Compile Include="Util\IsotopicProfileUtil.cs" />
     <Compile Include="Util\IMSUtil.cs" />

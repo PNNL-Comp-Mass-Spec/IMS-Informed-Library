@@ -8,10 +8,11 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ImsInformed.Domain
+namespace ImsInformed.Targets
 {
     using System;
 
+    using ImsInformed.Domain;
     using ImsInformed.Util;
 
     using InformedProteomics.Backend.Data.Composition;

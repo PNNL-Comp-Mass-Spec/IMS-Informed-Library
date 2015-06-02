@@ -13,6 +13,7 @@ namespace ImsInformed.Interfaces
     using System;
 
     using ImsInformed.Domain;
+    using ImsInformed.Targets;
 
     using InformedProteomics.Backend.Data.Composition;
 

@@ -17,6 +17,7 @@ namespace ImsInformedTests
 
     using DeconTools.Backend.Utilities;
 
+    using ImsInformed;
     using ImsInformed.Domain;
     using ImsInformed.Interfaces;
     using ImsInformed.IO;

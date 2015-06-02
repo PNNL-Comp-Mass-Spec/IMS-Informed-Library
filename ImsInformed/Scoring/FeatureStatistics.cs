@@ -12,8 +12,6 @@ namespace ImsInformed.Scoring
 {
     using System;
 
-    using DeconTools.Backend.Core;
-
     /// <summary>
     /// The feature score holder.
     /// </summary>

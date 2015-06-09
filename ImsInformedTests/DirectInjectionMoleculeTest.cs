@@ -179,7 +179,7 @@ namespace ImsInformedTests
 
             CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             CrossSectionWorkflowResult result = workfow.RunCrossSectionWorkFlow(sample, true);
-            Assert.AreEqual(result.IdentifiedIsomers.Count(), 1);
+            Assert.AreEqual(1, result.IdentifiedIsomers.Count());
             Assert.LessOrEqual(Math.Abs(result.IdentifiedIsomers.First().CrossSectionalArea - 129.8298), 0.5);
             workfow.Dispose();
         }
@@ -203,7 +203,7 @@ namespace ImsInformedTests
 
             CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
             CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
-            Assert.AreEqual(results1.IdentifiedIsomers.Count(), 2);
+            Assert.AreEqual(2, results1.IdentifiedIsomers.Count());
             workfow1.Dispose();
         }
 

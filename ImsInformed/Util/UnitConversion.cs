@@ -149,7 +149,8 @@ namespace ImsInformed.Util
         /// <param name="scanNumber">
         /// The scan number.
         /// </param>
-        /// <param name="scanWidthInSeconds">
+        /// <param name="scanWidthInSeconds
+        /// ">
         /// The scan width in seconds.
         /// </param>
         /// <returns>

@@ -365,6 +365,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     {
                     // Perform the data association algorithm.
                     IIonTracker tracker = new CombinatorialIonTracker(1000);
+
+                    // Because for somereason we are not keeping track of drift tube length in UIMF...so we kind of have to go ask the instrument operator..
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
                     AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters);
 

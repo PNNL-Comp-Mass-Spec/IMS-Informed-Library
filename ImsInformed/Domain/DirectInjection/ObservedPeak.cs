@@ -112,10 +112,10 @@ namespace ImsInformed.Domain.DirectInjection
             if (this.mobilityPoint == null)
             {
                 // convert drift time to SI unit seconds
-                double x = this.Peak.HighestPeakApex.DriftTimeCenterInMs / 1000;
+                double y = this.Peak.HighestPeakApex.DriftTimeCenterInMs;
                 
                 // P/(T*V) value in pascal per (volts * kelvin)
-                double y = this.VoltageGroup.MeanPressureNondimensionalized / 
+                double x = this.VoltageGroup.MeanPressureNondimensionalized / 
                     this.VoltageGroup.MeanVoltageInVolts / 
                     this.VoltageGroup.MeanTemperatureNondimensionalized;
                  

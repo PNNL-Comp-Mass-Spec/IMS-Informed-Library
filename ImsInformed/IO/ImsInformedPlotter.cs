@@ -115,7 +115,7 @@ namespace ImsInformed.IO
         /// <returns>
         /// The <see cref="PlotModel"/>.
         /// </returns>
-        private static PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, string targetDescriptor)
+        private static PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, string targetDescriptor, bool plotXAxisFromZero = false)
         {
             PlotModel model = new PlotModel();
             model.TitlePadding = 0;
@@ -147,7 +147,7 @@ namespace ImsInformed.IO
                 ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
                 double size = 6 * observation.Statistics.IntensityScore;
                 double color = hypothesis.IsOnTrack(observation) ? 0 : 1;
-                ScatterPoint sp = new ScatterPoint(xyPoint.Y, xyPoint.X, size, color);
+                ScatterPoint sp = new ScatterPoint(xyPoint.X, xyPoint.Y, size, color);
                 return sp;
             };
 
@@ -185,7 +185,7 @@ namespace ImsInformed.IO
                     ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
                     double x = xyPoint.X;
                     double y = fitline.ModelPredictX2Y(x);
-                    DataPoint sp = new DataPoint(y, x);
+                    DataPoint sp = new DataPoint(x, y);
                     return sp;
                 };
 
@@ -219,7 +219,7 @@ namespace ImsInformed.IO
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double size = 5;
                 double color = 0;
-                ScatterPoint sp = new ScatterPoint(point.Y, point.X, size, color);
+                ScatterPoint sp = new ScatterPoint(point.X, point.Y, size, color);
                 return sp;
             };
 
@@ -228,7 +228,7 @@ namespace ImsInformed.IO
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double size = 5;
                 double color = 1;
-                ScatterPoint sp = new ScatterPoint(point.Y, point.X, size, color);
+                ScatterPoint sp = new ScatterPoint(point.X, point.Y, size, color);
                 return sp;
             };
 
@@ -265,7 +265,7 @@ namespace ImsInformed.IO
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double x = point.X;
                 double y = fitline.ModelPredictX2Y(x);
-                DataPoint sp = new DataPoint(y, x);
+                DataPoint sp = new DataPoint(x, y);
                 return sp;
             };
 
@@ -278,7 +278,7 @@ namespace ImsInformed.IO
 
             var yAxis = new LinearAxis()
             {
-                Title = "IMS scan time (seconds)",
+                Title = "IMS scan time (milliseconds)",
                 MajorGridlineStyle = LineStyle.Solid,
                 Position = AxisPosition.Left,
                 

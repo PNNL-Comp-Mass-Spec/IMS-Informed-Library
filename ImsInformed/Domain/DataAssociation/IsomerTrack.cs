@@ -262,8 +262,8 @@ namespace ImsInformed.Domain.DataAssociation
         public double GetDriftTimeErrorInSecondsForObsevation(ObservedPeak peak)
         {
             ContinuousXYPoint observationPoint = peak.ToContinuousXyPoint();
-            double actualDriftTimeInSeconds = observationPoint.X;
-            double predictedDriftTimeInSeconds = this.fitLine.ModelPredictY2X(observationPoint.Y);
+            double actualDriftTimeInSeconds = observationPoint.Y / 1000;
+            double predictedDriftTimeInSeconds = this.fitLine.ModelPredictX2Y(observationPoint.X) / 1000;
             double error = Math.Abs(actualDriftTimeInSeconds - predictedDriftTimeInSeconds);
             return error;
         }
@@ -354,7 +354,7 @@ namespace ImsInformed.Domain.DataAssociation
             }
 
             // Convert the track into a Continuous XY data points.
-            this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters / (1 / this.FitLine.Slope);
+            this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters * 1000 / (this.FitLine.Slope);
             this.mobilityInfo.RSquared = this.FitLine.RSquared;
             
             Composition bufferGas = new Composition(0, 0, 2, 0, 0);
@@ -419,7 +419,6 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         private IEnumerable<ContinuousXYPoint> ToContinuousXyPoints()
         {
-            // Calculate the fit FitLine from the remaining voltage groups with reliable drift time measurement.
             HashSet<ContinuousXYPoint> allFitPoints = new HashSet<ContinuousXYPoint>();
             foreach (ObservedPeak observation in this.observedPeaks)
             {

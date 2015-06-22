@@ -227,7 +227,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
                     }
 
+                    Trace.WriteLine(string.Format("Dataset: {0}", this.uimfReader.UimfFilePath));
                     ReportTargetInfo(target, detailedVerbose);
+                    
                     
                     double targetMz = Math.Abs(target.MassWithAdduct / target.ChargeState);
 
@@ -386,6 +388,22 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     if (detailedVerbose)
                     {
                         Trace.WriteLine("Target Data Association");
+                        int count = 0;
+                        foreach (IsomerTrack track in optimalAssociationHypothesis.Tracks)
+                        {
+                            Trace.WriteLine(string.Format(" T{0}:   ", count));
+                            foreach (ObservedPeak peak in track.ObservedPeaks)
+                            {
+                                Trace.WriteLine(string.Format("       [td: {0:F2}ms, V: {1:F2}V, T: {2:F2}K, P: {3:F2}Torr]", 
+                                    peak.Peak.HighestPeakApex.DriftTimeCenterInMs,
+                                    peak.VoltageGroup.MeanVoltageInVolts,
+                                    peak.VoltageGroup.MeanTemperatureInKelvin,
+                                    peak.VoltageGroup.MeanPressureInTorr));
+                            }
+                            count++;
+                            Trace.WriteLine("");
+                        }
+                        Trace.WriteLine("");
                     }
                    
                     // Remove outliers with high influence.
@@ -763,7 +781,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
                 ArrivalTimeSnapShot lastDriftTime = isomer.ArrivalTimeSnapShots.Last();
 
-                Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms [V: {1:F2}, T: {2:F2}K, P: {3:F2}]", lastDriftTime.MeasuredArrivalTimeInMs, lastDriftTime.DriftTubeVoltageInVolt, lastDriftTime.TemperatureInKelvin, lastDriftTime.PressureInTorr));
+                Trace.WriteLine(string.Format("    Last VoltageGroup Drift Time: {0:F4} ms [V: {1:F2}V, T: {2:F2}K, P: {3:F2}Torr]", lastDriftTime.MeasuredArrivalTimeInMs, lastDriftTime.DriftTubeVoltageInVolt, lastDriftTime.TemperatureInKelvin, lastDriftTime.PressureInTorr));
                 
                 isomerIndex++;
             

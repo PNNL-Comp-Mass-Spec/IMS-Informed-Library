@@ -173,8 +173,6 @@ namespace ImsInformedTests
             MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus, "BPS");
             string fileLocation = BPSPostive;
 
-            Console.WriteLine("Dataset: {0}", fileLocation);
-
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
             parameters.MinFitPoints = 3;
             parameters.MinR2 = 0.95;
@@ -196,8 +194,6 @@ namespace ImsInformedTests
             MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "AZY");
             string fileLocation1 = azyPos;
             
-            Console.WriteLine("Dataset: {0}", fileLocation1);
-            
             CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
             parameters1.MinFitPoints = 3;
             parameters1.MinR2 = 0.95;
@@ -218,8 +214,6 @@ namespace ImsInformedTests
             MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "FIL");
             string fileLocation1 = FIL;
             
-            Console.WriteLine("Dataset: {0}", fileLocation1);
-            
             CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
 
             CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
@@ -238,8 +232,6 @@ namespace ImsInformedTests
             string formula2 = "C18H12Cl2N2O";
             MolecularTarget sample2 = new MolecularTarget(formula2, IonizationMethod.SodiumPlus, "BAD");
             string fileLocation2 = BAD;
-            
-            Console.WriteLine("Dataset: {0}", fileLocation2);
             
             CrossSectionSearchParameters parameters2 = new CrossSectionSearchParameters();
             parameters2.MinFitPoints = 4;
@@ -261,8 +253,6 @@ namespace ImsInformedTests
             string formula3 = "C13H18ClNO";
             MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.ProtonPlus, "BHC");
             string fileLocation3 = BHC;
-            
-            Console.WriteLine("Dataset: {0}", fileLocation3);
             
             CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters();
             parameters3.MinFitPoints = 4;
@@ -383,7 +373,6 @@ namespace ImsInformedTests
             targetList.Add(new MolecularTarget("C7H15O10P", method, "chemical J"));
             targetList.Add(new MolecularTarget(120.5, method, "Mz specified chemical L"));
             
-            Console.WriteLine("Dataset: {0}", fileLocation);
             Console.WriteLine("TargetList: ");
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 

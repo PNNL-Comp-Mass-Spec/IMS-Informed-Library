@@ -255,7 +255,6 @@
              string fileLocation = Cae;
              MolecularTarget target = new MolecularTarget(formula, IonizationMethod.ProtonPlus, "CAE");
              
-             Console.WriteLine("Dataset: {0}", fileLocation);
              Console.WriteLine("CompositionWithoutAdduct: " + target.CompositionWithoutAdduct);
              Console.WriteLine("Monoisotopic ViperCompatibleMass: " + target.MonoisotopicMass);
          

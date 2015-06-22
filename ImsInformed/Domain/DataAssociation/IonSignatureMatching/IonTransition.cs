@@ -100,9 +100,9 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
         private double ComputeConsecutiveObservationMatchingProbability()
         {
             // Due to draw backs of feature detector, the diffusion profile matching result is not all that reliable. So reduce weight here.
-            double intensityWeight = DataAssociationParameters.IntensityWeight;
-            double diffusionProfileWeight = DataAssociationParameters.DiffusionProfileWeight;
-            double mzMatchWeight = DataAssociationParameters.MzMatchWeight;
+            double intensityWeight = DataAssociationTuningParameters.IntensityWeight;
+            double diffusionProfileWeight = DataAssociationTuningParameters.DiffusionProfileWeight;
+            double mzMatchWeight = DataAssociationTuningParameters.MzMatchWeight;
 
             double sum = intensityWeight + diffusionProfileWeight + mzMatchWeight;
             intensityWeight /= sum;
@@ -111,7 +111,7 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
 
             double intensityMatchProbability = 1 - this.IntensityDifferenceInPercentageOfMax;
             double diffusionProfileMatchProbability = this.DiffusionProfileDifference.ToDiffusionProfileMatchingProbability;
-            double mzMatchProbability = ScoreUtil.MapToZeroOneExponential(this.MzDifferenceInPpm, DataAssociationParameters.MzDifferenceInPpm09, 0.9, true);
+            double mzMatchProbability = ScoreUtil.MapToZeroOneExponential(this.MzDifferenceInPpm, DataAssociationTuningParameters.MzDifferenceInPpm09, 0.9, true);
 
             double logResult = intensityWeight * Math.Log(intensityMatchProbability) + 
                 diffusionProfileWeight * Math.Log(diffusionProfileMatchProbability) +

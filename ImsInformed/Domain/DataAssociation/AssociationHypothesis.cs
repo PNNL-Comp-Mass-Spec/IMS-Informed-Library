@@ -180,13 +180,13 @@ namespace ImsInformed.Domain.DataAssociation
             {
                 IsomerTrack track = this.GetTrack(observedPeak);
                 double driftTimeErrorInSeconds = track.GetDriftTimeErrorInSecondsForObsevation(observedPeak);
-                double pOn = ScoreUtil.MapToZeroOneExponential(driftTimeErrorInSeconds, DataAssociationParameters.DriftTimeDifferenceInMs09 / 1000, 0.9, true);
+                double pOn = ScoreUtil.MapToZeroOneExponential(driftTimeErrorInSeconds, DataAssociationTuningParameters.DriftTimeDifferenceInMs09 / 1000, 0.9, true);
                 return pOn;
             }
             else
             {
                 // TODO I honestly don't know how this should be evalued other than evaluating as a constant.
-                double pOff = DataAssociationParameters.PxTOutlier;
+                double pOff = DataAssociationTuningParameters.PxTOutlier;
                 return pOff;
             }
         }

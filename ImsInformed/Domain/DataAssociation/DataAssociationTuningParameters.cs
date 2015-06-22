@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DataAssociationParameters.cs" company="PNNL">
+// <copyright file="DataAssociationTuningParameters.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   //   Copyright 2015, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
@@ -16,7 +16,7 @@ namespace ImsInformed.Domain.DataAssociation
     /// The ion association tunning class
     /// </summary>
     [Serializable]
-    internal class DataAssociationParameters
+    internal class DataAssociationTuningParameters
     {
         /// <summary>
         /// The intensity weight.
@@ -46,10 +46,10 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// An outlier's Pr(xi | T)
         /// </summary>
-        public const double PxTOutlier = 0.80;
+        public const double PxTOutlier = 0.750;
 
         /// <summary>
-        /// An outlier's Pr(xi | T)
+        /// An inlier's Pr(xi | T)
         /// </summary>
         public const double PxTInlier = 1;
     }

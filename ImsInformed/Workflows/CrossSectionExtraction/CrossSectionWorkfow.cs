@@ -259,10 +259,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         {
                             Trace.WriteLine(
                                 string.Format(
-                                    "    Voltage Group: {0:F4} V, [{1}-{2}]",
+                                    "    Voltage group: {0:F2} V, Frame{1}-{2}, {3:F2}K, {4:F2}Torr",
                                     voltageGroup.MeanVoltageInVolts,
                                     voltageGroup.FirstFirstFrameNumber, 
-                                voltageGroup.LastFrameNumber));
+                                    voltageGroup.LastFrameNumber,
+                                    voltageGroup.MeanTemperatureInKelvin,
+                                    voltageGroup.MeanPressureInTorr));
+
                         }
 
                         foreach (StandardImsPeak peak in standardPeaks)

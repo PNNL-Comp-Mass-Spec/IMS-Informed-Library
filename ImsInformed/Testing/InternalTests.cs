@@ -288,7 +288,12 @@
              // For each voltage, find 2D XIC features 
              foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
              {
-                 Console.WriteLine("Voltage group: {0} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber);
+                 Console.WriteLine("Voltage group: {0} V, Frame {1}-{2}, {3:F2}K, {4:F2}Torr", 
+                     voltageGroup.MeanVoltageInVolts, 
+                     voltageGroup.FirstFirstFrameNumber, 
+                     voltageGroup.LastFrameNumber,
+                     voltageGroup.MeanTemperatureInKelvin,
+                     voltageGroup.MeanPressureInTorr);
          
                  List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                  List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);

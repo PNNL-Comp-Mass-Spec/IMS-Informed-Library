@@ -237,7 +237,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // Here we accumulate the XICs around target MZ.
                     VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MassToleranceInPpm);
 
-                    // Perform feature detection and scoring and the given Mz range on the accumulated XICs to get the base peaks.
+                    // Perform feature detection and scoring and the given MzInDalton range on the accumulated XICs to get the base peaks.
                     if (detailedVerbose)
                     {
                         Trace.WriteLine("Feature detection and scoring: ");
@@ -362,7 +362,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // Report analysis as negative
                     if (accumulatedXiCs.Keys.Count == 0)
                     {
-                        var informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, this.DatasetName, target);
+                        CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, this.DatasetName, target);
                         ReportAnslysisResultAndMetrics(informedResult, detailedVerbose);
                         return informedResult;
                     }
@@ -776,7 +776,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {
                     Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
                 }
-            
+                
+                Trace.WriteLine(string.Format("    M/Z: {0:F4} Dalton", isomer.MzInDalton));
                 Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
                 Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
                 ArrivalTimeSnapShot lastDriftTime = isomer.ArrivalTimeSnapShots.Last();

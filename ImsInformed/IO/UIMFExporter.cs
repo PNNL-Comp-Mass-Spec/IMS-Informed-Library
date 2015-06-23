@@ -110,9 +110,9 @@ namespace ImsInformed.IO
                     newFrameParams.AddUpdateValue(FrameParamKeyType.Accumulations, totalAccumulation);
                 }
 
-                newFrameParams.AddUpdateValue(FrameParamKeyType.AmbientTemperature, UnitConversion.Nondimensionalized2Kelvin(voltageGroup.MeanTemperatureNondimensionalized)); 
+                newFrameParams.AddUpdateValue(FrameParamKeyType.AmbientTemperature, Metrics.Nondimensionalized2Kelvin(voltageGroup.MeanTemperatureNondimensionalized)); 
                 newFrameParams.AddUpdateValue(FrameParamKeyType.FloatVoltage, voltageGroup.MeanVoltageInVolts); 
-                newFrameParams.AddUpdateValue(FrameParamKeyType.PressureBack, UnitConversion.Nondimensionalized2Torr(voltageGroup.MeanPressureNondimensionalized)); 
+                newFrameParams.AddUpdateValue(FrameParamKeyType.PressureBack, Metrics.Nondimensionalized2Torr(voltageGroup.MeanPressureNondimensionalized)); 
 
                 uimfWriter.InsertFrame(1, newFrameParams);
                 

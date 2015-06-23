@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="UnitConversion.cs" company="PNNL">
+// <copyright file="Metrics.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the UnitConversion type.
+//   Defines the Metrics type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ namespace ImsInformed.Util
     /// <summary>
     /// The unit conversion.
     /// </summary>
-    internal class UnitConversion
+    internal class Metrics
     {
         /// <summary>
         /// The absolute zero.
@@ -28,6 +28,18 @@ namespace ImsInformed.Util
         public const double RoomTemperatureInKelvin = 298.15;
 
         /// <summary>
+        /// The room temperature.
+        /// </summary>
+        public const double LoschmidtConstant = 2.6867805e25;
+
+        public const double ElectronVolt = 1.60217646e-19;
+
+        /// <summary>
+        /// The N0.
+        /// </summary>
+        public const double BoltzmannConstant = 1.3806488e-23;
+
+        /// <summary>
         /// The standard ims pressure in TORR.
         /// </summary>
         public const double StandardImsPressureInTorr = 4;
@@ -36,6 +48,11 @@ namespace ImsInformed.Util
         /// The pascal unit TORR.
         /// </summary>
         public const double PascalPerTorr = 133.322368;
+
+        /// <summary>
+        /// The pascal unit TORR.
+        /// </summary>
+        public const double GramPerDalton = 1.66053892e-24;
 
         /// <summary>
         /// The atmospheric pressure.
@@ -54,6 +71,11 @@ namespace ImsInformed.Util
         public static double Torr2Pascal(double pressureInTorr)
         {
             return PascalPerTorr * pressureInTorr;
+        }
+
+        public static double Dalton2Gram(double massInDalton)
+        {
+            return massInDalton * GramPerDalton;
         }
 
         /// <summary>

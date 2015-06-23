@@ -189,7 +189,7 @@
     <Compile Include="Util\PeptideUtil.cs" />
     <Compile Include="Util\SaturationDetector.cs" />
     <Compile Include="Statistics\ContinuousXYPoint.cs" />
-    <Compile Include="Util\UnitConversion.cs" />
+    <Compile Include="Util\Metrics.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\ArrivalTimeSnapShot.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionSearchParameters.cs" />
     <Compile Include="Workflows\CrossSectionExtraction\CrossSectionWorkflowResult.cs" />

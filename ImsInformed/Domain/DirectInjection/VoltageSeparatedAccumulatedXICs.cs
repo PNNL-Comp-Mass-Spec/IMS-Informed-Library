@@ -56,9 +56,9 @@ namespace ImsInformed.Domain.DirectInjection
             for (int i = 1; i <= frameNum; i++)
             {
                 FrameParams param = uimfReader.GetFrameParams(i);
-                double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage);
-                double driftTubeTemperatureNondimensionalized = UnitConversion.DegreeCelsius2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.AmbientTemperature));
-                double driftTubePressureNondimensionalized = UnitConversion.Torr2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.PressureBack));
+                double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage) / 100 * FakeUIMFReader.DriftTubeLengthInCentimeters;
+                double driftTubeTemperatureNondimensionalized = Metrics.DegreeCelsius2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.AmbientTemperature));
+                double driftTubePressureNondimensionalized = Metrics.Torr2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.PressureBack));
                 double tofWidthInSeconds = param.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000000;
                 if (driftTubeVoltageInVolts <= 0)
                 {
@@ -73,8 +73,8 @@ namespace ImsInformed.Domain.DirectInjection
                 {
                     double expectedDriftTime = IMSUtil.DeNormalizeDriftTime(
                         normalizedTargetDriftTimeInMs,
-                        UnitConversion.Nondimensionalized2Torr(driftTubePressureNondimensionalized),
-                        UnitConversion.Nondimensionalized2Kelvin(driftTubeTemperatureNondimensionalized));
+                        Metrics.Nondimensionalized2Torr(driftTubePressureNondimensionalized),
+                        Metrics.Nondimensionalized2Kelvin(driftTubeTemperatureNondimensionalized));
                     extractedIonChromatogram = new ExtractedIonChromatogram(uimfReader, i, targetMz, massToleranceInPpm, expectedDriftTime, driftTimeToleranceInMs);
                 }
                 else

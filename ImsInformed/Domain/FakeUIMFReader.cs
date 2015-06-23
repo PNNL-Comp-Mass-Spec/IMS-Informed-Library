@@ -9,6 +9,6 @@ namespace ImsInformed.Domain
     // in the UIMF file format, this placeholder class shall be refactored out once the new UIMF lib comes out.
     internal class FakeUIMFReader
     {
-        public static readonly double DriftTubeLengthInCentimeters = 100;
+        public static readonly double DriftTubeLengthInCentimeters = 78;
     }
 }

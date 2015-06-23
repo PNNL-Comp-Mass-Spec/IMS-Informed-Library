@@ -51,6 +51,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         public readonly double Mobility;
 
+        public readonly double MzInDalton;
+
+        public readonly double MzInPpm;
+
         /// <summary>
         ///     The points used.
         /// </summary>
@@ -66,7 +70,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         public readonly AnalysisStatus AnalysisStatus;
 
-                /// <summary>
+        /// <summary>
         /// Initializes a new instance of the <see cref="IdentifiedIsomerInfo"/> class.
         /// </summary>
         /// <param name="numberOfFeaturePointsUsed">
@@ -90,13 +94,17 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="viperCompatibleMass">
         /// The viper Compatible Mass.
         /// </param>
+        /// <param name="analysisStatus"></param>
         public IdentifiedIsomerInfo(
             int numberOfFeaturePointsUsed,
+            double mzInDalton,
             double rSquared, 
             double mobility, 
             double crossSectionalArea, 
             double averageVoltageGroupStabilityScore, 
-            IEnumerable<ArrivalTimeSnapShot> arrivalTimeSnapShots, double viperCompatibleMass, AnalysisStatus analysisStatus)
+            IEnumerable<ArrivalTimeSnapShot> arrivalTimeSnapShots, 
+            double viperCompatibleMass, 
+            AnalysisStatus analysisStatus)
         {
             this.NumberOfFeaturePointsUsed = numberOfFeaturePointsUsed;
             this.RSquared = rSquared;
@@ -106,6 +114,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.ArrivalTimeSnapShots = arrivalTimeSnapShots;
             this.ViperCompatibleMass = viperCompatibleMass;
             this.AnalysisStatus = analysisStatus;
+            this.MzInDalton = mzInDalton;
         }
 
         #endregion

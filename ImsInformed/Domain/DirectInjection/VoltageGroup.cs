@@ -107,7 +107,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             get
             {
-                return UnitConversion.Nondimensionalized2Kelvin(this.MeanTemperatureNondimensionalized);
+                return Metrics.Nondimensionalized2Kelvin(this.MeanTemperatureNondimensionalized);
             }
         }
 
@@ -128,7 +128,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             get
             {
-                return UnitConversion.Nondimensionalized2Torr(this.MeanPressureNondimensionalized);
+                return Metrics.Nondimensionalized2Torr(this.MeanPressureNondimensionalized);
             }
         }
 

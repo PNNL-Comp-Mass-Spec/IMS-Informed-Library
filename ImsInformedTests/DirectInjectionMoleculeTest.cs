@@ -174,13 +174,11 @@ namespace ImsInformedTests
             string fileLocation = BPSPostive;
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
-            parameters.MinFitPoints = 3;
-            parameters.MinR2 = 0.95;
 
             CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             CrossSectionWorkflowResult result = workfow.RunCrossSectionWorkFlow(sample, true);
             Assert.AreEqual(1, result.IdentifiedIsomers.Count());
-            Assert.LessOrEqual(Math.Abs(result.IdentifiedIsomers.First().CrossSectionalArea - 129.8298), 0.5);
+            Assert.LessOrEqual(Math.Abs(result.IdentifiedIsomers.First().CrossSectionalArea - 166.3012), 0.5);
             workfow.Dispose();
         }
 
@@ -371,7 +369,7 @@ namespace ImsInformedTests
             targetList.Add(new MolecularTarget("C4H6O4", method, "chemical H"));
             targetList.Add(new MolecularTarget("C3H5O6P", method, "chemical I"));
             targetList.Add(new MolecularTarget("C7H15O10P", method, "chemical J"));
-            targetList.Add(new MolecularTarget(120.5, method, "Mz specified chemical L"));
+            targetList.Add(new MolecularTarget(120.5, method, "MzInDalton specified chemical L"));
             
             Console.WriteLine("TargetList: ");
 

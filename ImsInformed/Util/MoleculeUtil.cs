@@ -59,7 +59,10 @@ namespace ImsInformed.Util
         /// </returns>
         public static double ComputeCrossSectionalArea(double averageTemperatureInKelvin, double mobility, int chargeState, double reducedMass)
         {
-            return 18459 / Math.Sqrt(reducedMass * averageTemperatureInKelvin) * chargeState / mobility;
+            // double constant = 18459;
+            double constant = 3 * Metrics.ElectronVolt * 1e23 / ((Math.Sqrt(Metrics.GramPerDalton * 8 * Metrics.BoltzmannConstant * 1e7 / Math.PI)) * 4 * Metrics.LoschmidtConstant / 1e6);
+            double cs = constant / Math.Sqrt(reducedMass * averageTemperatureInKelvin) * chargeState / mobility;
+            return cs;
         }
 
         /// <summary>

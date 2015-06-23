@@ -94,8 +94,8 @@ namespace ImsInformed.Domain.DirectInjection
 
             double scanWidthInSeconds = param.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000000;
 
-            int scanNumberMin = UnitConversion.DriftTimeInMsToNearestImsScanNumber(driftTimeMin, scanWidthInSeconds, param.Scans);
-            int scanNumberMax = UnitConversion.DriftTimeInMsToNearestImsScanNumber(driftTimeMax, scanWidthInSeconds, param.Scans);
+            int scanNumberMin = Metrics.DriftTimeInMsToNearestImsScanNumber(driftTimeMin, scanWidthInSeconds, param.Scans);
+            int scanNumberMax = Metrics.DriftTimeInMsToNearestImsScanNumber(driftTimeMax, scanWidthInSeconds, param.Scans);
 
             this.IntensityPoints = uimfReader.GetXic(
                     centerMz,

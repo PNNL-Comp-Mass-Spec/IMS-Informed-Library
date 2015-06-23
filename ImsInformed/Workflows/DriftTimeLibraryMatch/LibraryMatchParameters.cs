@@ -68,7 +68,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         public double InitialSearchMassToleranceInPpm { get; private set; }
 
         /// <summary>
-        /// Gets or sets the matching mass tolerance in ppm, that is, how far away the peak center can be away from the target Mz to  be still considered a match 
+        /// Gets or sets the matching mass tolerance in ppm, that is, how far away the peak center can be away from the target MzInDalton to  be still considered a match 
         /// </summary>
         public double MatchingMassToleranceInPpm { get; set; }
 

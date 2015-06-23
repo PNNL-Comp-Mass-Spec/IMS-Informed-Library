@@ -49,7 +49,7 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
 
                 double mzDifference = Math.Abs(source.Peak.HighestPeakApex.MzCenterInDalton - sink.Peak.HighestPeakApex.MzCenterInDalton);
 
-                this.MzDifferenceInPpm = UnitConversion.DaltonToPpm(
+                this.MzDifferenceInPpm = Metrics.DaltonToPpm(
                     mzDifference,
                     (source.Peak.HighestPeakApex.MzCenterInDalton + sink.Peak.HighestPeakApex.MzCenterInDalton) / 2);
 

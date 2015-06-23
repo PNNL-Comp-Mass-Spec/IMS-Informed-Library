@@ -15,13 +15,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Collections.Generic;
     using System.Linq;
 
-    using ImsInformed.Domain;
     using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Domain.DirectInjection;
-    using ImsInformed.Filters;
     using ImsInformed.Scoring;
     using ImsInformed.Targets;
-    using ImsInformed.Util;
 
     /// <summary>
     /// The molecule informed workflow result.

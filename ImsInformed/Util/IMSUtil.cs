@@ -89,15 +89,15 @@ namespace ImsInformed.Util
         /// </returns>
         public static double DeNormalizeDriftTime(double driftTime, double pressureInTorr, double TemperatureInKelvin)
         {
-            double normalizedPressure = pressureInTorr / UnitConversion.StandardImsPressureInTorr;
-            double normalizedTemperature = TemperatureInKelvin / UnitConversion.RoomTemperatureInKelvin;
+            double normalizedPressure = pressureInTorr / Metrics.StandardImsPressureInTorr;
+            double normalizedTemperature = TemperatureInKelvin / Metrics.RoomTemperatureInKelvin;
             return driftTime * normalizedPressure;
         }
 
         public static double DeNormalizeDriftTime(double driftTime, VoltageGroup group)
         {
-            double normalizedPressure = UnitConversion.Nondimensionalized2Torr(group.MeanPressureNondimensionalized) / UnitConversion.StandardImsPressureInTorr;
-            double normalizedTemperature = UnitConversion.Nondimensionalized2Kelvin(group.MeanTemperatureNondimensionalized) / UnitConversion.RoomTemperatureInKelvin;
+            double normalizedPressure = Metrics.Nondimensionalized2Torr(group.MeanPressureNondimensionalized) / Metrics.StandardImsPressureInTorr;
+            double normalizedTemperature = Metrics.Nondimensionalized2Kelvin(group.MeanTemperatureNondimensionalized) / Metrics.RoomTemperatureInKelvin;
             return driftTime * normalizedPressure;
         }
 
@@ -115,8 +115,8 @@ namespace ImsInformed.Util
         /// </returns>
         public static double NormalizeDriftTime(double driftTime, VoltageGroup group)
         {
-            double normalizedPressure = UnitConversion.Nondimensionalized2Torr(group.MeanPressureNondimensionalized) / UnitConversion.StandardImsPressureInTorr;
-            double normalizedTemperature = UnitConversion.Nondimensionalized2Kelvin(group.MeanTemperatureNondimensionalized) / UnitConversion.RoomTemperatureInKelvin;
+            double normalizedPressure = Metrics.Nondimensionalized2Torr(group.MeanPressureNondimensionalized) / Metrics.StandardImsPressureInTorr;
+            double normalizedTemperature = Metrics.Nondimensionalized2Kelvin(group.MeanTemperatureNondimensionalized) / Metrics.RoomTemperatureInKelvin;
             return driftTime / normalizedPressure;
         }
 

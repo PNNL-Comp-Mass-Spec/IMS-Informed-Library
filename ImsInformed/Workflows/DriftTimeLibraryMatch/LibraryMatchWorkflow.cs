@@ -272,7 +272,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                                 peak.HighestPeakApex.DriftTimeCenterInMs,
                                 peak.HighestPeakApex.DriftTimeCenterInScanNumber));
                         Trace.WriteLine(
-                            string.Format("            Mz difference: {0:F2} ppm", distance.MassDifferenceInPpm));
+                            string.Format("            MzInDalton difference: {0:F2} ppm", distance.MassDifferenceInPpm));
                         
                         Trace.WriteLine(
                             string.Format("            Drift time difference: {0:F4} ms", distance.DriftTimeDifferenceInMs));

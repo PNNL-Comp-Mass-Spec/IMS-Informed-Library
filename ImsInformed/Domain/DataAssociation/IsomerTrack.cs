@@ -204,6 +204,24 @@ namespace ImsInformed.Domain.DataAssociation
         }
 
         /// <summary>
+        /// Gets the real peak count.
+        /// </summary>
+        public double AverageMzInDalton
+        {
+            get
+            {
+                double mzAverage = 0;
+                int peakCount = this.RealPeakCount;
+                foreach (var peak in this.ObservedPeaks)
+                {
+                    mzAverage += peak.Peak.HighestPeakApex.MzCenterInDalton;
+                }
+
+                return mzAverage / peakCount;
+            }
+        }
+
+        /// <summary>
         /// Gets the mobility info for inferedTarget
         /// </summary>
         /// <param name="inferedTarget">
@@ -295,6 +313,7 @@ namespace ImsInformed.Domain.DataAssociation
 
             IdentifiedIsomerInfo info = new IdentifiedIsomerInfo(
                 this.observedPeaks.Count,
+                this.AverageMzInDalton,
                 this.mobilityInfo.RSquared,
                 this.mobilityInfo.Mobility,
                 this.mobilityInfo.CollisionCrossSectionArea,
@@ -401,7 +420,7 @@ namespace ImsInformed.Domain.DataAssociation
             int frameCount = 0;
             foreach (VoltageGroup group in this.observedPeaks.Select(peak => peak.VoltageGroup))
             {
-                double voltageGroupTemperature = UnitConversion.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
+                double voltageGroupTemperature = Metrics.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
                 globalMeanTemperature += voltageGroupTemperature * group.FrameAccumulationCount;
                 frameCount += group.FrameAccumulationCount;
             }

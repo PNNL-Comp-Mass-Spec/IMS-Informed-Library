@@ -261,7 +261,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         {
                             Trace.WriteLine(
                                 string.Format(
-                                    "    Voltage group: {0:F2} V, Frame{1}-{2}, {3:F2}K, {4:F2}Torr",
+                                    "    Voltage group: {0:F2} V, Frame {1}-{2}, {3:F2}K, {4:F2}Torr",
                                     voltageGroup.MeanVoltageInVolts,
                                     voltageGroup.FirstFirstFrameNumber, 
                                     voltageGroup.LastFrameNumber,
@@ -546,7 +546,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                 Trace.WriteLine(
                     string.Format(
-                        "    Average Candidate Target Peak Shape S{0:F4}", 
+                        "    Average Candidate Target Peak Shape {0:F4}", 
                         informedResult.AverageObservedPeakStatistics.PeakShapeScore));
 
                 if (informedResult.AnalysisStatus == AnalysisStatus.Positive)
@@ -588,7 +588,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         private static bool ReportFeatureEvaluation(StandardImsPeak peak, FeatureStatistics scores, bool verbose, IImsTarget target, bool badScanRange, bool lowIntensity, bool badPeakShape, bool lowIsotopicAffinity)
         {
-            Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms    (scan# = {2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+            Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms(#{2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", scores.IntensityScore));
             
             if (!lowIntensity)

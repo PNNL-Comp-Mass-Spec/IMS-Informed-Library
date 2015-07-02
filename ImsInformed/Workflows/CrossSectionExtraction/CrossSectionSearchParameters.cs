@@ -17,10 +17,25 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     /// </summary>
     public class CrossSectionSearchParameters
     {
+        public const double DefaultDriftTimeToleranceInMs = 0.5;
+        public const double DefaultMassToleranceInPpm = 250;
+        public const int DefaultNumPointForSmoothing = 9;
+        public const double DefaultFeatureFilterLevel = 0.25;
+        public const double DefaultIntensityThreshold = 0.00; 
+        public const double DefaultPeakShapeThreshold = 0.4;
+        public const double DefaultIsotopicThreshold = 0.4;
+        public const int DefaultMinFitPoints = 3;
+        public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
+        public const double DefaultMinR2 = 0.98;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        public CrossSectionSearchParameters() : this(0.5, 250, 9, 0.25, 0.00, 0.4, 0.4, 3, false, PeakDetectorEnum.WaterShed, 0.9)
+        public CrossSectionSearchParameters() : this(DefaultDriftTimeToleranceInMs, 
+            DefaultMassToleranceInPpm, DefaultNumPointForSmoothing, DefaultFeatureFilterLevel, 
+            DefaultIntensityThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
+            DefaultMinFitPoints, DefaultPeakDetectorSelection, 
+            DefaultMinR2)
         { 
         }
 
@@ -60,7 +75,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="minR2">
         /// The min R 2.
         /// </param>
-        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, bool expectIsomer, PeakDetectorEnum peakDetectorSelection, double minR2)
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, PeakDetectorEnum peakDetectorSelection, double minR2)
         {
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
@@ -70,7 +85,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.PeakShapeThreshold = peakShapeThreshold;
             this.IsotopicThreshold = isotopicThreshold;
             this.MinFitPoints = minFitPoints;
-            this.ExpectIsomer = expectIsomer;
             this.PeakDetectorSelection = peakDetectorSelection;
             this.MinR2 = minR2;
         }
@@ -124,12 +138,5 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The min r 2.
         /// </summary>
         public double MinR2 { get; set; }
-
-        /// <summary>
-        /// If ExpectIsomer is set to true. The algorithm will stop assuming there is one and only one
-        /// Target match in the expected centerMz range. Instead if there are isomers the workflow will report 
-        /// all isomers with reasonable socres.
-        /// </summary>
-        public bool ExpectIsomer{ get; set; }
     }
 }

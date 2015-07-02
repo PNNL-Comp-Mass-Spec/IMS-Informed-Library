@@ -417,7 +417,8 @@ namespace ImsInformed.Scoring
 
             // Return the cosine distance
             double cosine = dot / Math.Sqrt(theoreticalLength * observedLength);
-            return (Math.PI / 2  - Math.Acos(cosine)) / (Math.PI / 2);
+            double score = (Math.PI / 2  - Math.Acos(cosine)) / (Math.PI / 2);
+            return score;
         }
 
         /// <summary>

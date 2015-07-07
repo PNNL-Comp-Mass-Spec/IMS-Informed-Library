@@ -537,17 +537,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             if (detailedVerbose)
             {
                 Trace.WriteLine(string.Format("    Average Voltage Group Stability Scor{0:F4}", informedResult.AverageVoltageGroupStability));
-                Trace.WriteLine(string.Format("    Average Candidate Target Intensity Score {0:F4}", informedResult.AverageObservedPeakStatistics.IntensityScore));
-                
-                if (informedResult.Target.HasCompositionInfo)
-                {
-                    Trace.WriteLine(string.Format("    Average Candidate Target Isotopic Score {0:F4}", informedResult.AverageObservedPeakStatistics.IsotopicScore));
-                }
-
-                Trace.WriteLine(
-                    string.Format(
-                        "    Average Candidate Target Peak Shape {0:F4}", 
-                        informedResult.AverageObservedPeakStatistics.PeakShapeScore));
 
                 if (informedResult.AnalysisStatus == AnalysisStatus.Positive)
                 {
@@ -777,7 +766,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     Trace.WriteLine(string.Format("    Isomer #[{0}]", isomerIndex));
                 }
                 
-                Trace.WriteLine(string.Format("    M/Z: {0:F4} Dalton", isomer.MzInDalton));
+
+                Trace.WriteLine(string.Format("    M/Z: {0:F4} Dalton({1:F4} ppm)", isomer.MzInDalton, isomer.MzInPpm));
+                Trace.WriteLine(string.Format("    Intensity Score: {0:F4}", isomer.FeatureStatistics.IntensityScore));
+                Trace.WriteLine(string.Format("    Peak Shape Score: {0:F4})", isomer.FeatureStatistics.PeakShapeScore));
+                Trace.WriteLine(string.Format("    Isotopic Score: {0:F4}", isomer.FeatureStatistics.IsotopicScore));
                 Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
                 Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
                 ArrivalTimeSnapShot lastDriftTime = isomer.ArrivalTimeSnapShots.Last();

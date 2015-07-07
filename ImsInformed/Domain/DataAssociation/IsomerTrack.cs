@@ -166,6 +166,16 @@ namespace ImsInformed.Domain.DataAssociation
             }
         }
 
+        public FeatureStatistics TrackStatistics
+        {
+            get 
+            {
+                IEnumerable<FeatureStatistics> allFeatureStatistics = this.ObservedPeaks.Select(x => x.Statistics);
+                FeatureStatistics averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
+                return averageObservedPeakStatistics;
+            }
+        }
+
         /// <summary>
         /// Gets the real peak count.
         /// </summary>
@@ -298,10 +308,11 @@ namespace ImsInformed.Domain.DataAssociation
         /// <param name="minR2">
         /// The min r 2.
         /// </param>
+        /// <param name="target"></param>
         /// <returns>
         /// The <see cref="IdentifiedIsomerInfo"/>.
         /// </returns>
-        public IdentifiedIsomerInfo ExportIdentifiedIsomerInfo(double viperCompatibleMass, int minFitPoints, double minR2)
+        public IdentifiedIsomerInfo ExportIdentifiedIsomerInfo(double viperCompatibleMass, int minFitPoints, double minR2, IImsTarget target)
         {
             double averageVoltageGroupStabilityScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(this.definedVoltageGroups);
 
@@ -320,7 +331,10 @@ namespace ImsInformed.Domain.DataAssociation
                 averageVoltageGroupStabilityScore,
                 snapshots,
                 viperCompatibleMass,
-                this.ConcludeStatus(minFitPoints, minR2));
+                this.ConcludeStatus(minFitPoints, minR2),
+                this.TrackStatistics,
+                target
+                );
             return info;
         }
 

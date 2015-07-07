@@ -13,6 +13,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System.Collections.Generic;
 
     using ImsInformed.Domain;
+    using ImsInformed.Scoring;
+    using ImsInformed.Targets;
 
     /// <summary>
     ///     The isomer result.
@@ -71,11 +73,17 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public readonly AnalysisStatus AnalysisStatus;
 
         /// <summary>
+        /// The track status.
+        /// </summary>
+        public readonly FeatureStatistics FeatureStatistics;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="IdentifiedIsomerInfo"/> class.
         /// </summary>
         /// <param name="numberOfFeaturePointsUsed">
         /// The number of feature points used.
         /// </param>
+        /// <param name="mzInDalton"></param>
         /// <param name="rSquared">
         /// The r squred.
         /// </param>
@@ -95,6 +103,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The viper Compatible Mass.
         /// </param>
         /// <param name="analysisStatus"></param>
+        /// <param name="featureStatistics"></param>
+        /// <param name="target"></param>
         public IdentifiedIsomerInfo(
             int numberOfFeaturePointsUsed,
             double mzInDalton,
@@ -104,7 +114,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             double averageVoltageGroupStabilityScore, 
             IEnumerable<ArrivalTimeSnapShot> arrivalTimeSnapShots, 
             double viperCompatibleMass, 
-            AnalysisStatus analysisStatus)
+            AnalysisStatus analysisStatus, 
+            FeatureStatistics featureStatistics,
+            IImsTarget target)
         {
             this.NumberOfFeaturePointsUsed = numberOfFeaturePointsUsed;
             this.RSquared = rSquared;
@@ -114,7 +126,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.ArrivalTimeSnapShots = arrivalTimeSnapShots;
             this.ViperCompatibleMass = viperCompatibleMass;
             this.AnalysisStatus = analysisStatus;
+            this.FeatureStatistics = featureStatistics;
             this.MzInDalton = mzInDalton;
+            this.MzInPpm = Util.Metrics.DaltonToPpm(mzInDalton - target.MassWithAdduct, target.MassWithAdduct);
         }
 
         #endregion

@@ -352,7 +352,7 @@ namespace ImsInformed.Scoring
         /// </summary>
         /// <param name="observedIsotopicPeakList">
         /// </param>
-        /// <param name="actualIsotopicPeakList">
+        /// <param name="expectedIsotopicPeakList">
         /// The isotopic peak list.
         /// </param>
         /// <param name="voltageGroup">
@@ -363,7 +363,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        private static double IsotopicProfileScoreEuclidean(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        private static double IsotopicProfileScoreEuclidean(List<double> observedIsotopicPeakList, List<Peak> expectedIsotopicPeakList)
         {
             // get the first isotope and use it to normalize the list
             double firstMz = observedIsotopicPeakList[0];
@@ -374,9 +374,9 @@ namespace ImsInformed.Scoring
 
             // calculate the euclidean distance between theoretical distribution and observed pattern
             double isotopicScore = 0;
-            for (int i = 1; i < actualIsotopicPeakList.Count; i++)
+            for (int i = 1; i < expectedIsotopicPeakList.Count; i++)
             {
-                double diff = observedIsotopicPeakList[i] - actualIsotopicPeakList[i].Height;
+                double diff = observedIsotopicPeakList[i] - expectedIsotopicPeakList[i].Height;
                 isotopicScore += diff * diff;
             }
 
@@ -390,28 +390,35 @@ namespace ImsInformed.Scoring
         /// <param name="observedIsotopicPeakList">
         /// The observed isotopic peak list.
         /// </param>
-        /// <param name="actualIsotopicPeakList">
+        /// <param name="expectedIsotopicPeakList">
         /// The actual isotopic peak list.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private static double IsotopicProfileScoreAngle(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        private static double IsotopicProfileScoreAngle(List<double> observedIsotopicPeakList, List<Peak> expectedIsotopicPeakList)
         {
-            // calculate the cubic of observed isotopic peak list.
+            // get the first isotope and use it to normalize the list
+            double firstMz = observedIsotopicPeakList[0];
             for (int i = 0; i < observedIsotopicPeakList.Count; i++)
             {
-                observedIsotopicPeakList[i] = observedIsotopicPeakList[i] * observedIsotopicPeakList[i] * observedIsotopicPeakList[i];
+                observedIsotopicPeakList[i] /= firstMz;
             }
+
+            // calculate the cubic of observed isotopic peak list.
+            // for (int i = 0; i < observedIsotopicPeakList.Count; i++)
+            // {
+            //     observedIsotopicPeakList[i] = observedIsotopicPeakList[i] * observedIsotopicPeakList[i] * observedIsotopicPeakList[i];
+            // }
 
             // calculate angle between two isotopic vectors in the isotopic space
             double dot = 0;
             double theoreticalLength = 0;
             double observedLength = 0;
-            for (int i = 0; i < actualIsotopicPeakList.Count; i++)
+            for (int i = 0; i < expectedIsotopicPeakList.Count; i++)
             {
-                dot += observedIsotopicPeakList[i] * actualIsotopicPeakList[i].Height;
-                theoreticalLength += actualIsotopicPeakList[i].Height * actualIsotopicPeakList[i].Height;
+                dot += observedIsotopicPeakList[i] * expectedIsotopicPeakList[i].Height;
+                theoreticalLength += expectedIsotopicPeakList[i].Height * expectedIsotopicPeakList[i].Height;
                 observedLength += observedIsotopicPeakList[i] * observedIsotopicPeakList[i];
             }
 
@@ -427,16 +434,16 @@ namespace ImsInformed.Scoring
         /// <param name="observedIsotopicPeakList">
         /// The observed isotopic peak list.
         /// </param>
-        /// <param name="actualIsotopicPeakList">
+        /// <param name="expectedIsotopicPeakList">
         /// The actual isotopic peak list.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private static double PearsonCorrelation(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        private static double PearsonCorrelation(List<double> observedIsotopicPeakList, List<Peak> expectedIsotopicPeakList)
         {
             // calculate angle between two isotopic vectors in the isotopic space
-            IEnumerable<double> actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height);
+            IEnumerable<double> actualIsotopicPeakListArray = expectedIsotopicPeakList.Select(x => (double)x.Height);
             return Correlation.Pearson(actualIsotopicPeakListArray, observedIsotopicPeakList);
         }
         
@@ -446,24 +453,24 @@ namespace ImsInformed.Scoring
         /// <param name="observedIsotopicPeakList">
         /// The observed isotopic peak list.
         /// </param>
-        /// <param name="actualIsotopicPeakList">
+        /// <param name="expectedIsotopicPeakList">
         /// The actual isotopic peak list.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private static double EuclideanAlternative(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        private static double EuclideanAlternative(List<double> observedIsotopicPeakList, List<Peak> expectedIsotopicPeakList)
         {
             // calculate angle between two isotopic vectors in the isotopic space
-            double[] actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height).ToArray();
+            double[] expectedIsotopicPeakIntensityArray = expectedIsotopicPeakList.Select(x => (double)x.Height).ToArray();
             Vector<double> A = new DenseVector(observedIsotopicPeakList.ToArray());
-            Vector<double> B = new DenseVector(actualIsotopicPeakListArray);
+            Vector<double> B = new DenseVector(expectedIsotopicPeakIntensityArray);
             A = A.Normalize(2);
             B = B.Normalize(2);
 
             // calculate the euclidean distance between theoretical distribution and observed pattern
             double isotopicScore = 0;
-            for (int i = 1; i < actualIsotopicPeakList.Count; i++)
+            for (int i = 1; i < expectedIsotopicPeakList.Count; i++)
             {
                 double diff = A[i] - B[i];
                 isotopicScore += diff * diff;
@@ -479,16 +486,16 @@ namespace ImsInformed.Scoring
         /// <param name="observedIsotopicPeakList">
         /// The observed isotopic peak list.
         /// </param>
-        /// <param name="actualIsotopicPeakList">
+        /// <param name="expectedIsotopicPeakList">
         /// The actual isotopic peak list.
         /// </param>
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private static double BhattacharyyaDistance(List<double> observedIsotopicPeakList, List<Peak> actualIsotopicPeakList)
+        private static double BhattacharyyaDistance(List<double> observedIsotopicPeakList, List<Peak> expectedIsotopicPeakList)
         {
             // calculate angle between two isotopic vectors in the isotopic space
-            double[] actualIsotopicPeakListArray = actualIsotopicPeakList.Select(x => (double)x.Height).ToArray();
+            double[] actualIsotopicPeakListArray = expectedIsotopicPeakList.Select(x => (double)x.Height).ToArray();
             Vector<double> A = new DenseVector(observedIsotopicPeakList.ToArray());
             Vector<double> B = new DenseVector(actualIsotopicPeakListArray);
             A = A.Normalize(2);

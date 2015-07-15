@@ -311,7 +311,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 scanPredicate(peak),
                                 intensityThreshold(peak),
                                 shapeThreshold(peak),
-                                intensityThreshold(peak));   
+                                isotopeThreshold(peak));   
                          
                             ObservedPeak analyzedPeak = new ObservedPeak(voltageGroup, peak, currentStatistics);
                             if (pass)
@@ -403,6 +403,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             count++;
                             Trace.WriteLine("");
                         }
+
                         Trace.WriteLine("");
                     }
                    

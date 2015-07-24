@@ -31,6 +31,7 @@ namespace ImsInformed.IO
     using LinearColorAxis = OxyPlot.Axes.LinearColorAxis;
     using LineSeries = OxyPlot.Series.LineSeries;
     using ScatterSeries = OxyPlot.Series.ScatterSeries;
+    using SvgExporter = OxyPlot.Wpf.SvgExporter;
 
     /// <summary>
     /// The ims informed plotter.
@@ -49,7 +50,9 @@ namespace ImsInformed.IO
         [STAThread]
         public static void PlotAssociationHypothesis(AssociationHypothesis hypothesis, string plotLocation, string datasetName, string targetDescriptor)
         {
-            PlotDiagram(plotLocation, AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor));
+            int width = 900;
+            int height = 512;
+            PlotDiagram(plotLocation, AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor), width, height);
         }
 
         /// <summary>
@@ -61,42 +64,64 @@ namespace ImsInformed.IO
         /// <param name="plotLocation">
         /// The plot location.
         /// </param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         [STAThread]
-        public static void PlotMobilityFit(FitLine fitline, string plotLocation)
+        public static void PlotMobilityFit(FitLine fitline, string plotLocation, int width, int height)
         {
-            PlotDiagram(plotLocation, MobilityFitLinePlot(fitline));
+            PlotDiagram(plotLocation, MobilityFitLinePlot(fitline), width, height);
         }
 
         /// <summary>
         /// The plot diagram.
         /// </summary>
-        /// <param name="pngLocation">
+        /// <param name="fileLocation">
         /// The png location.
         /// </param>
         /// <param name="model">
         /// The model.
         /// </param>
-        private static void PlotDiagram(string pngLocation, PlotModel model)
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        private static void PlotDiagram(string fileLocation, PlotModel model, int width, int height)
         {
-            int resolution = 96;
-            int width = 800;  // 1024 pixels final width
-            int height = 512; // 512 pixels final height
-            RenderTargetBitmap image = new RenderTargetBitmap(width * 2, height, resolution, resolution, PixelFormats.Pbgra32);
-            DrawingVisual drawVisual = new DrawingVisual();
-            DrawingContext drawContext = drawVisual.RenderOpen();
-            
-            // Output the graph models to a context
-            var oe = PngExporter.ExportToBitmap(model, width, height, OxyColors.White);
-            drawContext.DrawImage(oe, new Rect(0, 0, width, height));
-
-            drawContext.Close();
-            image.Render(drawVisual);
-
-            PngBitmapEncoder png = new PngBitmapEncoder();
-            png.Frames.Add(BitmapFrame.Create(image));
-            using (Stream stream = File.Create(pngLocation))
+            string extension = Path.GetExtension(fileLocation);
+            if (extension == null)
             {
-                png.Save(stream);
+                throw new FileFormatException("Please specify file extension of the result picture file.");
+            }
+            else if (extension.ToLower() == ".png")
+            {
+                int resolution = 300;
+                RenderTargetBitmap image = new RenderTargetBitmap(width, height, resolution, resolution, PixelFormats.Pbgra32);
+                DrawingVisual drawVisual = new DrawingVisual();
+                DrawingContext drawContext = drawVisual.RenderOpen();
+                
+                // Output the graph models to a context
+                var oe = PngExporter.ExportToBitmap(model, width, height, OxyColors.White);
+                drawContext.DrawImage(oe, new Rect(0, 0, width, height));
+
+                drawContext.Close();
+                image.Render(drawVisual);
+
+                PngBitmapEncoder png = new PngBitmapEncoder();
+                png.Frames.Add(BitmapFrame.Create(image));
+                using (Stream stream = File.Create(fileLocation))
+                {
+                    png.Save(stream);
+                }
+            }
+            else if (extension.ToLower() == ".svg")
+            {
+                using (var stream = File.Create(fileLocation))
+                {
+                    var exporter = new SvgExporter() { Width = width, Height = height};
+                    exporter.Export(model, stream);
+                }
+            }
+            else
+            {
+                throw new FormatException(string.Format("Does not support plotting for picture format {0}.", extension));
             }
         }
 

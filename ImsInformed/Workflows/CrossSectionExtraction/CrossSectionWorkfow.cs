@@ -381,7 +381,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine(string.Empty);
                     }
 
-                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.png";
+                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.svg";
                     ImsInformedPlotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor);
 
                     // Printout results

@@ -280,7 +280,7 @@
              // Generate VoltageSeparatedAccumulatedXICs
              var uimfReader = new DataReader(fileLocation);
              Console.WriteLine("Input file: {0}", fileLocation);
-             VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
+             VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm);
          
              Console.WriteLine();
          
@@ -296,7 +296,7 @@
          
                  List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                  List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);
-                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup,  target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
+                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup,  target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm)).ToList();
          
                  // feature scorings and Target selection.
                  double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, uimfReader);
@@ -357,7 +357,7 @@
                          globalMaxIntensity, 
                          workflow.NumberOfScans);
                      
-                     double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(featurePeak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
+                     double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(featurePeak, workflow.uimfReader, workflow.Parameters.MzWindowHalfWidthInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                      
                      // Report all features.
                      Console.WriteLine(" feature found at scan number {0}", featurePeak.HighestPeakApex.DriftTimeCenterInScanNumber);
@@ -424,14 +424,14 @@
                  
                  // Generate VoltageSeparatedAccumulatedXICs
                  var uimfReader = new DataReader(fileLocation);
-                 VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MassToleranceInPpm);
+                 VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm);
          
                  var voltageGroup = accumulatedXiCs.Keys.First();
          
                  // Find peaks using multidimensional peak finder.
                  List<IntensityPoint> intensityPoints = accumulatedXiCs[voltageGroup].IntensityPoints;
                  List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, smoother, parameters.FeatureFilterLevel);
-                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup,  target.MassWithAdduct, parameters.MassToleranceInPpm)).ToList();
+                 List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, uimfReader, voltageGroup,  target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm)).ToList();
          
                  // feature scorings and Target selection.
                  double globalMaxIntensity = IMSUtil.MaxIntensityAfterFrameAccumulation(voltageGroup, uimfReader);
@@ -492,7 +492,7 @@
                          globalMaxIntensity, 
                          workflow.NumberOfScans);
                      
-                     double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(peak, workflow.uimfReader, workflow.Parameters.MassToleranceInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
+                     double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(peak, workflow.uimfReader, workflow.Parameters.MzWindowHalfWidthInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                      
                      // Report all features.
                      if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)

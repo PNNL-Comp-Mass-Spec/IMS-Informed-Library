@@ -54,9 +54,18 @@ namespace ImsInformed.Filters
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool FilterLowIntensity(StandardImsPeak feature, double intensityScore, double intensityThreshold = 0.5)
+        public static bool FilterOnAbsoluteIntensity(StandardImsPeak feature, double intensityScore, double intensityThreshold = 0.5)
         {
             return intensityScore < intensityThreshold;
+        }
+
+        public static bool FilterOnRelativeIntesity(StandardImsPeak feature, double highestPeakIntensity, double percentage = 3)
+        {
+            if (percentage >= 100 || percentage < 0)
+            {
+                throw new ArgumentException(string.Format("Percentage argument of {0}% is invalid", percentage));
+            }
+            return feature.SummedIntensities < highestPeakIntensity / 100 * percentage;
         }
 
         /// <summary>

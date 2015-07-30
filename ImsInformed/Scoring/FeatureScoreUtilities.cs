@@ -66,9 +66,9 @@ namespace ImsInformed.Scoring
         /// The theoretical isotopic profile.
         /// </param>
         /// <returns>
-        /// The <see cref="FeatureStatistics"/>.
+        /// The <see cref="PeakScores"/>.
         /// </returns>
-        public static FeatureStatistics ScoreFeature(this StandardImsPeak peak, double globalMaxIntensity, DataReader uimfReader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, int voltageGroupScans, IImsTarget target, IsotopicScoreMethod isotopicScoreMethod, List<Peak> theoreticalIsotopicProfile)
+        public static PeakScores ScoreFeature(this StandardImsPeak peak, double globalMaxIntensity, DataReader uimfReader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, int voltageGroupScans, IImsTarget target, IsotopicScoreMethod isotopicScoreMethod, List<Peak> theoreticalIsotopicProfile)
         {
             double intensityScore = IntensityScore(peak, globalMaxIntensity);
 
@@ -95,7 +95,7 @@ namespace ImsInformed.Scoring
                     voltageGroupScans);
             }
 
-            return new FeatureStatistics(intensityScore, isotopicScore, peakShapeScore);
+            return new PeakScores(intensityScore, isotopicScore, peakShapeScore);
         }
 
         /// <summary>
@@ -529,12 +529,12 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        public static FeatureStatistics AddFeatureScores(FeatureStatistics a, FeatureStatistics b)
+        public static PeakScores AddFeatureScores(PeakScores a, PeakScores b)
         {
             double intensityScore = a.IntensityScore + b.IntensityScore;
             double isotopicScore = a.IsotopicScore + b.IsotopicScore;
             double peakShapeScore = a.PeakShapeScore + b.PeakShapeScore;
-            return new FeatureStatistics(intensityScore, isotopicScore, peakShapeScore);
+            return new PeakScores(intensityScore, isotopicScore, peakShapeScore);
         }
 
         /// <summary>
@@ -544,12 +544,12 @@ namespace ImsInformed.Scoring
         /// The score holders.
         /// </param>
         /// <returns>
-        /// The <see cref="FeatureStatistics"/>.
+        /// The <see cref="PeakScores"/>.
         /// </returns>
-        public static FeatureStatistics AverageFeatureStatistics(IEnumerable<FeatureStatistics> scoreHolders)
+        public static PeakScores AverageFeatureStatistics(IEnumerable<PeakScores> scoreHolders)
         {
             int count = 0;
-            FeatureStatistics statistics = new FeatureStatistics(0, 0, 0);
+            PeakScores statistics = new PeakScores(0, 0, 0);
 
             foreach (var scoreHolder in scoreHolders)
             {
@@ -566,7 +566,7 @@ namespace ImsInformed.Scoring
                 double intensityScore = statistics.IntensityScore / count;
                 double isotopicScore = statistics.IsotopicScore / count;
                 double peakShapeScore = statistics.PeakShapeScore / count;
-                return new FeatureStatistics(intensityScore, isotopicScore, peakShapeScore);
+                return new PeakScores(intensityScore, isotopicScore, peakShapeScore);
             }
         }
     }

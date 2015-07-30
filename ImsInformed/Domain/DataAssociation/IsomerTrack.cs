@@ -166,12 +166,12 @@ namespace ImsInformed.Domain.DataAssociation
             }
         }
 
-        public FeatureStatistics TrackStatistics
+        public PeakScores TrackStatistics
         {
             get 
             {
-                IEnumerable<FeatureStatistics> allFeatureStatistics = this.ObservedPeaks.Select(x => x.Statistics);
-                FeatureStatistics averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
+                IEnumerable<PeakScores> allFeatureStatistics = this.ObservedPeaks.Select(x => x.Statistics);
+                PeakScores averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
                 return averageObservedPeakStatistics;
             }
         }

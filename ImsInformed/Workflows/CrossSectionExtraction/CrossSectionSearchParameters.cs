@@ -18,24 +18,25 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     public class CrossSectionSearchParameters
     {
         public const double DefaultDriftTimeToleranceInMs = 0.5;
-        public const double DefaultMassToleranceInPpm = 250;
+        public const double DefaultMzWindowHalfWidthInPpm = 250;
         public const int DefaultNumPointForSmoothing = 9;
         public const double DefaultFeatureFilterLevel = 0.25;
         public const double DefaultIntensityThreshold = 0.00; 
         public const double DefaultPeakShapeThreshold = 0.4;
         public const double DefaultIsotopicThreshold = 0.4;
-        public const int DefaultMinFitPoints = 3;
+        public const int DefaultMinFitPoints = 4;
         public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
         public const double DefaultMinR2 = 0.98;
+        public const double DefaultConformerMzTolerance = 20;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
         public CrossSectionSearchParameters() : this(DefaultDriftTimeToleranceInMs, 
-            DefaultMassToleranceInPpm, DefaultNumPointForSmoothing, DefaultFeatureFilterLevel, 
+            DefaultMzWindowHalfWidthInPpm, DefaultNumPointForSmoothing, DefaultFeatureFilterLevel, 
             DefaultIntensityThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
             DefaultMinFitPoints, DefaultPeakDetectorSelection, 
-            DefaultMinR2)
+            DefaultMinR2, DefaultConformerMzTolerance)
         { 
         }
 
@@ -45,7 +46,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="driftTimeToleranceInMs">
         /// The drift Time Tolerance In Ms.
         /// </param>
-        /// <param name="massToleranceInPpm">
+        /// <param name="mzWindowHalfWidthInPpm">
         /// The mass tolerance in ppm.
         /// </param>
         /// <param name="numPointForSmoothing">
@@ -75,11 +76,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="minR2">
         /// The min R 2.
         /// </param>
-        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double massToleranceInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, PeakDetectorEnum peakDetectorSelection, double minR2)
+        /// <param name="conformerMzTolerance"></param>
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double mzWindowHalfWidthInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, PeakDetectorEnum peakDetectorSelection, double minR2, double conformerMzTolerance)
         {
+            this.ConformerMzTolerance = conformerMzTolerance;
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
-            this.MassToleranceInPpm = massToleranceInPpm;
+            this.MzWindowHalfWidthInPpm = mzWindowHalfWidthInPpm;
             this.FeatureFilterLevel = featureFilterLevel;
             this.IntensityThreshold = intensityThreshold;
             this.PeakShapeThreshold = peakShapeThreshold;
@@ -92,51 +95,56 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets or sets the mass tolerance in ppm.
         /// </summary>
-        public double MassToleranceInPpm { get; set; }
+        public double MzWindowHalfWidthInPpm { get; private set; }
 
         /// <summary>
         /// Gets or sets the feature filter level.
         /// </summary>
-        public double FeatureFilterLevel { get; set; }
+        public double FeatureFilterLevel { get; private set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double IntensityThreshold { get; set; }
+        public double IntensityThreshold { get; private set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double PeakShapeThreshold { get; set; }
+        public double ConformerMzTolerance { get; private set; }
+        
+        /// <summary>
+        /// Gets or sets the confidence threshold.
+        /// </summary>
+        public double PeakShapeThreshold { get; private set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double IsotopicThreshold { get; set; }
+        public double IsotopicThreshold { get; private set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public int MinFitPoints { get; set; }
+        public int MinFitPoints { get; private set; }
 
         /// <summary>
         /// Gets or sets the number point for smoothing.
         /// </summary>
-        public int NumPointForSmoothing { get; set; }
+        public int NumPointForSmoothing { get; private set; }
 
         /// <summary>
         /// Gets or sets the scan window width.
         /// </summary>
-        public double DriftTimeToleranceInMs { get; set; }
+        public double DriftTimeToleranceInMs { get; private set; }
 
         /// <summary>
         /// Gets the peak detector selection.
         /// </summary>
-        public PeakDetectorEnum PeakDetectorSelection { get; set; }
+        public PeakDetectorEnum PeakDetectorSelection { get; private set; }
 
         /// <summary>
         /// The min r 2.
         /// </summary>
-        public double MinR2 { get; set; }
+        public double MinR2 { get; private set; }
     }
 }

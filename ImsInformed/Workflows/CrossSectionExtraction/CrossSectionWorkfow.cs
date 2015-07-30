@@ -235,7 +235,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     // Voltage grouping. Note that we only accumulate frames as needed. Accumulate frames globally is too costly. 
                     // Here we accumulate the XICs around target MZ.
-                    VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MassToleranceInPpm);
+                    VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MzWindowHalfWidthInPpm);
 
                     // Perform feature detection and scoring and the given MzInDalton range on the accumulated XICs to get the base peaks.
                     if (detailedVerbose)
@@ -256,7 +256,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         List<StandardImsPeak> standardPeaks = this.FindPeaksBasedOnXIC(voltageGroup, accumulatedXiCs[voltageGroup], target);
                         
                         // Score features
-                        IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
+                        IDictionary<StandardImsPeak, PeakScores> scoresTable = new Dictionary<StandardImsPeak, PeakScores>();
                         if (detailedVerbose)
                         {
                             Trace.WriteLine(
@@ -272,11 +272,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                         foreach (StandardImsPeak peak in standardPeaks)
                         {   
-                            FeatureStatistics currentStatistics = FeatureScoreUtilities.ScoreFeature(
+                            PeakScores currentStatistics = FeatureScoreUtilities.ScoreFeature(
                                 peak, 
                                 globalMaxIntensity,
                                 this.uimfReader,
-                                this.Parameters.MassToleranceInPpm,
+                                this.Parameters.MzWindowHalfWidthInPpm,
                                 this.Parameters.DriftTimeToleranceInMs,
                                 voltageGroup,
                                 this.NumberOfScans,
@@ -288,7 +288,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         }
                     
                         // 2st round filtering: filter out non Target peaks and noise. 
-                        Predicate<StandardImsPeak> intensityThreshold = imsPeak => FeatureFilters.FilterLowIntensity(imsPeak, scoresTable[imsPeak].IntensityScore, this.Parameters.IntensityThreshold);
+                        Predicate<StandardImsPeak> intensityThreshold = imsPeak => FeatureFilters.FilterOnAbsoluteIntensity(imsPeak, scoresTable[imsPeak].IntensityScore, this.Parameters.IntensityThreshold);
                     
                         // filter out features with Ims scans at 1% left or right.
                         Predicate<StandardImsPeak> scanPredicate = imsPeak => FeatureFilters.FilterExtremeDriftTime(imsPeak, this.NumberOfScans);
@@ -302,7 +302,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         // Print out candidate features and how they were rejected.
                         foreach (StandardImsPeak peak in standardPeaks)
                         {
-                            FeatureStatistics currentStatistics = scoresTable[peak];
+                            PeakScores currentStatistics = scoresTable[peak];
                             bool pass = ReportFeatureEvaluation(
                                 peak,
                                 currentStatistics,
@@ -374,6 +374,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // Because for somereason we are not keeping track of drift tube length in UIMF...so we kind of have to go ask the instrument operator..
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
                     AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters);
+
+                    if (optimalAssociationHypothesis == null)
+                    {
+                        CrossSectionWorkflowResult negResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, this.DatasetName, target);
+                        ReportAnslysisResultAndMetrics(negResult, detailedVerbose);
+                        return negResult;
+                    }
 
                     if (detailedVerbose)
                     {
@@ -537,7 +544,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
             if (detailedVerbose)
             {
-                Trace.WriteLine(string.Format("    Average Voltage Group Stability Scor{0:F4}", informedResult.AverageVoltageGroupStability));
+                Trace.WriteLine(string.Format("    Average Voltage Group Stability Score: {0:F4}", informedResult.AverageVoltageGroupStability));
 
                 if (informedResult.AnalysisStatus == AnalysisStatus.Positive)
                 {
@@ -576,7 +583,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// If the feature pass all the filters <see cref="bool"/>.
         /// </returns>
-        private static bool ReportFeatureEvaluation(StandardImsPeak peak, FeatureStatistics scores, bool verbose, IImsTarget target, bool badScanRange, bool lowIntensity, bool badPeakShape, bool lowIsotopicAffinity)
+        private static bool ReportFeatureEvaluation(StandardImsPeak peak, PeakScores scores, bool verbose, IImsTarget target, bool badScanRange, bool lowIntensity, bool badPeakShape, bool lowIsotopicAffinity)
         {
             Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms(#{2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", scores.IntensityScore));
@@ -701,7 +708,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 List<FeatureBlob> featureBlobs = PeakFinding.FindPeakUsingWatershed(intensityPoints, this.smoother, this.Parameters.FeatureFilterLevel);
 
                 // Recapture the 2D peak using the 1D feature blob from multidimensional peak finder.
-                return featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.MassToleranceInPpm)).ToList();
+                return featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.MzWindowHalfWidthInPpm)).ToList();
             } 
             else if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.MASICPeakFinder)
             {
@@ -769,9 +776,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 
 
                 Trace.WriteLine(string.Format("    M/Z: {0:F4} Dalton({1:F4} ppm)", isomer.MzInDalton, isomer.MzInPpm));
-                Trace.WriteLine(string.Format("    Intensity Score: {0:F4}", isomer.FeatureStatistics.IntensityScore));
-                Trace.WriteLine(string.Format("    Peak Shape Score: {0:F4})", isomer.FeatureStatistics.PeakShapeScore));
-                Trace.WriteLine(string.Format("    Isotopic Score: {0:F4}", isomer.FeatureStatistics.IsotopicScore));
+                Trace.WriteLine(string.Format("    Intensity Score: {0:F4}", isomer.PeakScores.IntensityScore));
+                Trace.WriteLine(string.Format("    Peak Shape Score: {0:F4})", isomer.PeakScores.PeakShapeScore));
+                Trace.WriteLine(string.Format("    Isotopic Score: {0:F4}", isomer.PeakScores.IsotopicScore));
                 Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
                 Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));
                 ArrivalTimeSnapShot lastDriftTime = isomer.ArrivalTimeSnapShots.Last();

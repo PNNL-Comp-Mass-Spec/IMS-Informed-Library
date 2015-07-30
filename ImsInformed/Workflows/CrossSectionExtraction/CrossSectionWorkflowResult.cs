@@ -44,7 +44,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// The best feature score.
         /// </summary>
-        public readonly FeatureStatistics AverageObservedPeakStatistics;
+        public readonly PeakScores AverageObservedPeakStatistics;
 
         /// <summary>
         /// The best feature score.
@@ -88,7 +88,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             AnalysisStatus analysisStatus, 
             AssociationHypothesisInfo associationHypothesisInfo, 
             IList<IdentifiedIsomerInfo> isomerResults, 
-            FeatureStatistics averageObservedPeakStatistics, 
+            PeakScores averageObservedPeakStatistics, 
             double averageVoltageGroupStability)
         {
             this.DatasetName = datasetName;
@@ -107,7 +107,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             IImsTarget target,
             AnalysisStatus analysisStatus,
             AssociationHypothesisInfo associationHypothesisInfo, 
-            FeatureStatistics averageObservedPeakStatistics, 
+            PeakScores averageObservedPeakStatistics, 
             double averageVoltageGroupStability)
             : this(
                 datasetName,
@@ -181,14 +181,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             double voltageGroupScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(rejectedVoltageGroups);
             
             // quantize the VG score from VGs in the removal list.
-            IEnumerable<FeatureStatistics> featureStats = rejectedPeaks.Select(x => x.Statistics);
-            FeatureStatistics averageFeatureStatistics = FeatureScoreUtilities.AverageFeatureStatistics(featureStats);
+            IEnumerable<PeakScores> featureStats = rejectedPeaks.Select(x => x.Statistics);
+            PeakScores averagePeakScores = FeatureScoreUtilities.AverageFeatureStatistics(featureStats);
             CrossSectionWorkflowResult informedResult = new CrossSectionWorkflowResult(
                 datasetName, 
                 target, 
                 AnalysisStatus.Negative, 
                 null,
-                averageFeatureStatistics,
+                averagePeakScores,
                 voltageGroupScore);
 
             return informedResult;
@@ -200,8 +200,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             AssociationHypothesisInfo associationHypothesisInfo = new AssociationHypothesisInfo(optimalHypothesis.ProbabilityOfDataGivenHypothesis, optimalHypothesis.ProbabilityOfHypothesisGivenData);
 
             double averageVoltageGroupScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(allVoltageGroups);
-            IEnumerable<FeatureStatistics> allFeatureStatistics = allPeaks.Select(x => x.Statistics);
-            FeatureStatistics averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
+            IEnumerable<PeakScores> allFeatureStatistics = allPeaks.Select(x => x.Statistics);
+            PeakScores averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
 
             IEnumerable<IsomerTrack> tracks = optimalHypothesis.Tracks;
             IList<IdentifiedIsomerInfo> isomersInfo = tracks.Select(x => x.ExportIdentifiedIsomerInfo(viperCompatibleMass, parameters.MinFitPoints, parameters.MinR2, target)).ToList();

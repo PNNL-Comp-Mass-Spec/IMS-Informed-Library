@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="FeatureStatistics.cs" company="PNNL">
+// <copyright file="PeakScores.cs" company="PNNL">
 //   Written for the Department of Energy (PNNL, Richland, WA)
 //   Copyright 2014, Battelle Memorial Institute.  All Rights Reserved.
 // </copyright>
 // <summary>
-//   Defines the FeatureStatistics type.
+//   Defines the PeakScores type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -16,10 +16,10 @@ namespace ImsInformed.Scoring
     /// The feature score holder.
     /// </summary>
     [Serializable]
-    public class FeatureStatistics
+    public class PeakScores
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FeatureStatistics"/> class.
+        /// Initializes a new instance of the <see cref="PeakScores"/> class.
         /// </summary>
         /// <param name="intensityScore">
         /// The intensity score.
@@ -30,7 +30,7 @@ namespace ImsInformed.Scoring
         /// <param name="peakShapeScore">
         /// The peak shape score.
         /// </param>
-        public FeatureStatistics(double intensityScore, double isotopicScore, double peakShapeScore)
+        public PeakScores(double intensityScore, double isotopicScore, double peakShapeScore)
         {
             this.IntensityScore = intensityScore;
             this.PeakShapeScore = peakShapeScore;

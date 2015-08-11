@@ -75,7 +75,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// The track status.
         /// </summary>
-        public readonly FeatureStatistics FeatureStatistics;
+        public readonly PeakScores PeakScores;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentifiedIsomerInfo"/> class.
@@ -103,7 +103,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The viper Compatible Mass.
         /// </param>
         /// <param name="analysisStatus"></param>
-        /// <param name="featureStatistics"></param>
+        /// <param name="peakScores"></param>
         /// <param name="target"></param>
         public IdentifiedIsomerInfo(
             int numberOfFeaturePointsUsed,
@@ -115,7 +115,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             IEnumerable<ArrivalTimeSnapShot> arrivalTimeSnapShots, 
             double viperCompatibleMass, 
             AnalysisStatus analysisStatus, 
-            FeatureStatistics featureStatistics,
+            PeakScores peakScores,
             IImsTarget target)
         {
             this.NumberOfFeaturePointsUsed = numberOfFeaturePointsUsed;
@@ -126,7 +126,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.ArrivalTimeSnapShots = arrivalTimeSnapShots;
             this.ViperCompatibleMass = viperCompatibleMass;
             this.AnalysisStatus = analysisStatus;
-            this.FeatureStatistics = featureStatistics;
+            this.PeakScores = peakScores;
             this.MzInDalton = mzInDalton;
             this.MzInPpm = Util.Metrics.DaltonToPpm(mzInDalton - target.MassWithAdduct, target.MassWithAdduct);
         }

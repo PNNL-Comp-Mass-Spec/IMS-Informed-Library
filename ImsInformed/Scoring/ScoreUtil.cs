@@ -34,7 +34,7 @@ namespace ImsInformed.Scoring
         /// <param name="b">
         /// The b.
         /// </param>
-        public delegate double LikelihoodFunc(FeatureStatistics featureScores);
+        public delegate double LikelihoodFunc(PeakScores featureScores);
 
         /// <summary>
         /// The compare feature input.
@@ -51,7 +51,7 @@ namespace ImsInformed.Scoring
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        private static int CompareFeatureScore(FeatureStatistics a, FeatureStatistics b, LikelihoodFunc likelihoodFunc)
+        private static int CompareFeatureScore(PeakScores a, PeakScores b, LikelihoodFunc likelihoodFunc)
         {
             return likelihoodFunc(a).CompareTo(likelihoodFunc(b));
         }

@@ -50,7 +50,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <param name="statistics">
         /// The Statistics.
         /// </param>
-        public ObservedPeak(VoltageGroup group, StandardImsPeak peak, FeatureStatistics statistics)
+        public ObservedPeak(VoltageGroup group, StandardImsPeak peak, PeakScores statistics)
         {
             this.VoltageGroup = group;
             this.Peak = peak;
@@ -72,7 +72,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <summary>
         /// Gets the voltage group.
         /// </summary>
-        public FeatureStatistics Statistics { get; private set; }
+        public PeakScores Statistics { get; private set; }
 
         /// <summary>
         /// Gets the peak.

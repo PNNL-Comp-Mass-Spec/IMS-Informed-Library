@@ -31,7 +31,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double IntensityIndependentLikelihoodFunction(this ObservedPeak observedPeak)
         {
-            FeatureStatistics featureScores = observedPeak.Statistics;
+            PeakScores featureScores = observedPeak.Statistics;
             return featureScores.IsotopicScore;
         }
 
@@ -46,7 +46,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double NeutralLikelihoodFunction(this ObservedPeak observedPeak)
         {
-            FeatureStatistics featureScores = observedPeak.Statistics;
+            PeakScores featureScores = observedPeak.Statistics;
             return Math.Sqrt(featureScores.IntensityScore * featureScores.IsotopicScore);
         }
 
@@ -61,7 +61,7 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double IntensityDominantLikelihoodFunction(this ObservedPeak observedPeak)
         {
-            FeatureStatistics featureScores = observedPeak.Statistics;
+            PeakScores featureScores = observedPeak.Statistics;
             return featureScores.IntensityScore + 0.5 * featureScores.IsotopicScore;
         }
     }

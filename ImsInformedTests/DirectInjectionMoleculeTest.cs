@@ -34,13 +34,6 @@ namespace ImsInformedTests
     public class DirectInjectionMoleculeTest
     {
         /// <summary>
-        /// The azy.
-        /// </summary>
-        public const string azyPos = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf";
-
-        public const string FIL = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf";
-
-        /// <summary>
         /// The nicotine UIMF file.
         /// </summary>
         public const string NicoFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-NIC_neg2_28Aug14_Columbia_DI.uimf";
@@ -178,38 +171,18 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
-        public void TestTargetDetectionWithIsomersEasy1()
+        [TestCase("C10H12N3O3PS2", IonizationMethod.SodiumPlus, "AZY", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf", Result=2)]
+        [TestCase("C12H6F2N2O2",IonizationMethod.SodiumPlus, "FIL",  @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
+        public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
-            string formula1 = "C10H12N3O3PS2";
-            MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "AZY");
-            string fileLocation1 = azyPos;
-            
-            CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
-            parameters1.MinFitPoints = 3;
-            parameters1.MinR2 = 0.95;
-
-            CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
-            CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
-            Assert.AreEqual(2, results1.IdentifiedIsomers.Count());
-            workfow1.Dispose();
-        }
-
-                /// <summary>
-        /// The test target detection with isomers.
-        /// </summary>
-        [Test][STAThread]
-        public void TestTargetDetectionWithIsomersEasy2()
-        {
-            string formula1 = "C12H6F2N2O2";
-            MolecularTarget sample1 = new MolecularTarget(formula1, IonizationMethod.SodiumPlus, "FIL");
-            string fileLocation1 = FIL;
+            MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);
             
             CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
 
-            CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation1, "output", parameters1);
+            CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation, "output", parameters1);
             CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
-            Assert.AreEqual(2, results1.IdentifiedIsomers.Count());
             workfow1.Dispose();
+            return results1.IdentifiedIsomers.Count();
         }
 
         /// <summary>
@@ -224,8 +197,6 @@ namespace ImsInformedTests
             string fileLocation2 = BAD;
             
             CrossSectionSearchParameters parameters2 = new CrossSectionSearchParameters();
-            parameters2.MinFitPoints = 4;
-            parameters2.MinR2 = 0.95;
             
             CrossSectionWorkfow workfow2 = new CrossSectionWorkfow(fileLocation2, "output", parameters2);
             CrossSectionWorkflowResult results2 = workfow2.RunCrossSectionWorkFlow(sample2, true);
@@ -245,8 +216,6 @@ namespace ImsInformedTests
             string fileLocation3 = BHC;
             
             CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters();
-            parameters3.MinFitPoints = 4;
-            parameters3.MinR2 = 0.95;
             
             CrossSectionWorkfow workfow3 = new CrossSectionWorkfow(fileLocation3, "output", parameters3);
             CrossSectionWorkflowResult results3 = workfow3.RunCrossSectionWorkFlow(sample3, true);

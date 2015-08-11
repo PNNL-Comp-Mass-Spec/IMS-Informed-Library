@@ -147,6 +147,7 @@
     <Compile Include="Domain\FakeUIMFReader.cs" />
     <Compile Include="Domain\LiquidChromatography\FeatureBlobNet.cs" />
     <Compile Include="Domain\StandardImsPeak.cs" />
+    <Compile Include="Filters\ConformerFilter.cs" />
     <Compile Include="Filters\TrackFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
     <Compile Include="IO\DriftTimeLibraryImporter.cs" />
@@ -156,7 +157,7 @@
     <Compile Include="IO\UIMFExporter.cs" />
     <Compile Include="Scoring\TargetPresenceLikelihoodFunctions.cs" />
     <Compile Include="Scoring\FeatureScoreUtilities.cs" />
-    <Compile Include="Scoring\FeatureStatistics.cs" />
+    <Compile Include="Scoring\PeakScores.cs" />
     <Compile Include="Scoring\IsotopicScoreMethod.cs" />
     <Compile Include="Scoring\ScoreUtil.cs" />
     <Compile Include="Scoring\VoltageGroupScoring.cs" />

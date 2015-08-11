@@ -92,7 +92,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             // Find the combination of tracks that produces the highest posterior probablity.
             IOrderedEnumerable<AssociationHypothesis> sortedAssociationHypotheses = hypotheses.OrderByDescending(h => h.ProbabilityOfHypothesisGivenData);
 
-            return sortedAssociationHypotheses.First();
+            return sortedAssociationHypotheses.FirstOrDefault();
         }
 
         /// <summary>

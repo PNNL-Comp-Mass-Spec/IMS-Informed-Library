@@ -223,12 +223,12 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                     List<StandardImsPeak> standardPeaks = featureBlobs.Select(featureBlob => new StandardImsPeak(featureBlob, this.uimfReader, voltageGroup, target.MassWithAdduct, this.Parameters.InitialSearchMassToleranceInPpm)).ToList();
             
                     // Score features
-                    IDictionary<StandardImsPeak, FeatureStatistics> scoresTable = new Dictionary<StandardImsPeak, FeatureStatistics>();
+                    IDictionary<StandardImsPeak, PeakScores> scoresTable = new Dictionary<StandardImsPeak, PeakScores>();
                     Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber));
 
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   
-                        FeatureStatistics currentStatistics = FeatureScoreUtilities.ScoreFeature(
+                        PeakScores currentStatistics = FeatureScoreUtilities.ScoreFeature(
                             peak,
                             globalMaxIntensity,
                             this.uimfReader,
@@ -258,7 +258,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         bool lowIsotopicAffinity = isotopeThreshold(peak);
                         bool lowMzAffinity = massDistanceThreshold(peak);
 
-                        FeatureStatistics currentStatistics = scoresTable[peak];
+                        PeakScores currentStatistics = scoresTable[peak];
                         Trace.WriteLine(string.Empty);
                         Trace.WriteLine(string.Format("        Candidate feature found at drift time {0:F2} ms (scan number {1})",
                             peak.HighestPeakApex.DriftTimeCenterInMs,

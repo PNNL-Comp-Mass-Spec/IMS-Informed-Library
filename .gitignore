@@ -70,3 +70,4 @@ packages/
 
 #Test files
 *.testsettings
+devenv.sln

@@ -18,18 +18,13 @@ namespace ImsInformedTests
     using DeconTools.Backend.Utilities;
 
     using ImsInformed;
-    using ImsInformed.Domain;
     using ImsInformed.IO;
-    using ImsInformed.Statistics;
     using ImsInformed.Targets;
-    using ImsInformed.Util;
     using ImsInformed.Workflows.CrossSectionExtraction;
     using ImsInformed.Workflows.DriftTimeLibraryMatch;
     using ImsInformed.Workflows.VoltageAccumulation;
 
     using InformedProteomics.Backend.Data.Composition;
-
-    using MathNet.Numerics.Distributions;
 
     using NUnit.Framework;
 
@@ -92,9 +87,6 @@ namespace ImsInformedTests
         /// </summary>
         public const string AmtLibPos = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\example_library_files\viper_pos_chemical_based.txt";
 
-        /// <summary>
-        /// The test empirical formula utilities.
-        /// </summary>
         [Test]
         public void TestEmpiricalFormulaUtilities()
         {

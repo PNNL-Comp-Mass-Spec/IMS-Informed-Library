@@ -286,9 +286,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     
                             scoresTable.Add(peak, currentStatistics);
                         }
+
+                        double maxIntensity = standardPeaks.Max(x => x.SummedIntensities);
                     
-                        // 2st round filtering: filter out non Target peaks and noise. 
-                        Predicate<StandardImsPeak> intensityThreshold = imsPeak => FeatureFilters.FilterOnAbsoluteIntensity(imsPeak, scoresTable[imsPeak].IntensityScore, this.Parameters.IntensityThreshold);
+                        Predicate<StandardImsPeak> relativeIntensityThreshold = imsPeak => FeatureFilters.FilterOnRelativeIntesity(imsPeak, maxIntensity, this.Parameters.RelativeIntensityPercentageThreshold);
+
+                        // filter out non Target peaks and noise. 
+                        Predicate<StandardImsPeak> absoluteIntensityThreshold = imsPeak => FeatureFilters.FilterOnAbsoluteIntensity(imsPeak, scoresTable[imsPeak].IntensityScore, this.Parameters.AbsoluteIntensityThreshold);
                     
                         // filter out features with Ims scans at 1% left or right.
                         Predicate<StandardImsPeak> scanPredicate = imsPeak => FeatureFilters.FilterExtremeDriftTime(imsPeak, this.NumberOfScans);
@@ -309,7 +313,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 detailedVerbose, 
                                 target, 
                                 scanPredicate(peak),
-                                intensityThreshold(peak),
+                                absoluteIntensityThreshold(peak),
+                                relativeIntensityThreshold(peak),
                                 shapeThreshold(peak),
                                 isotopeThreshold(peak));   
                          
@@ -328,7 +333,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         
                         standardPeaks.RemoveAll(scanPredicate);
                     
-                        standardPeaks.RemoveAll(intensityThreshold);
+                        standardPeaks.RemoveAll(absoluteIntensityThreshold);
+
+                        standardPeaks.RemoveAll(relativeIntensityThreshold);
                     
                         standardPeaks.RemoveAll(shapeThreshold);
                         
@@ -571,9 +578,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="badScanRange">
         /// The bad scan range.
         /// </param>
-        /// <param name="lowIntensity">
+        /// <param name="lowAbsoluteIntensity">
         /// The low intensity.
         /// </param>
+        /// <param name="lowRelativeIntensity"></param>
         /// <param name="badPeakShape">
         /// The bad peak shape.
         /// </param>
@@ -583,12 +591,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// If the feature pass all the filters <see cref="bool"/>.
         /// </returns>
-        private static bool ReportFeatureEvaluation(StandardImsPeak peak, PeakScores scores, bool verbose, IImsTarget target, bool badScanRange, bool lowIntensity, bool badPeakShape, bool lowIsotopicAffinity)
+        private static bool ReportFeatureEvaluation(StandardImsPeak peak, PeakScores scores, bool verbose, IImsTarget target, bool badScanRange, bool lowAbsoluteIntensity, bool lowRelativeIntensity, bool badPeakShape, bool lowIsotopicAffinity)
         {
             Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms(#{2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", scores.IntensityScore));
             
-            if (!lowIntensity)
+            if (!lowAbsoluteIntensity)
             {
                 Trace.WriteLine(string.Format("            peakShapeScore: {0:F4}", scores.PeakShapeScore));
             
@@ -599,11 +607,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             }
 
             string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
-            rejectionReason += lowIntensity ? "[Low Intensity] " : string.Empty;
-            rejectionReason += !lowIntensity && badPeakShape ? "[Bad Peak Shape] " : string.Empty;
-            rejectionReason += !lowIntensity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
+            rejectionReason += lowAbsoluteIntensity ? "[Low Absolute Intensity] " : string.Empty;
+            rejectionReason += !lowAbsoluteIntensity && lowRelativeIntensity ? "[Low Relative Intensity] " : string.Empty;
+            rejectionReason += !lowAbsoluteIntensity && badPeakShape ? "[Bad Peak Shape] " : string.Empty;
+            rejectionReason += !lowAbsoluteIntensity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
 
-            bool rejected = badScanRange || lowIntensity || lowIsotopicAffinity || badPeakShape;
+            bool rejected = badScanRange || lowAbsoluteIntensity || lowIsotopicAffinity || badPeakShape || lowRelativeIntensity;
 
             if (verbose)
             {

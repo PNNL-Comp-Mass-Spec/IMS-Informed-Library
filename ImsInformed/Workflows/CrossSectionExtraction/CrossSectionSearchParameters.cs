@@ -21,7 +21,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const double DefaultMzWindowHalfWidthInPpm = 250;
         public const int DefaultNumPointForSmoothing = 9;
         public const double DefaultFeatureFilterLevel = 0.25;
-        public const double DefaultIntensityThreshold = 0.00; 
+        public const double DefaultAbsoluteIntensityPercentageThreshold = 0.00; 
+        public const double DefaultRelativeIntensityThreshold = 4; 
         public const double DefaultPeakShapeThreshold = 0.4;
         public const double DefaultIsotopicThreshold = 0.4;
         public const int DefaultMinFitPoints = 4;
@@ -34,9 +35,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         public CrossSectionSearchParameters() : this(DefaultDriftTimeToleranceInMs, 
             DefaultMzWindowHalfWidthInPpm, DefaultNumPointForSmoothing, DefaultFeatureFilterLevel, 
-            DefaultIntensityThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
+            DefaultAbsoluteIntensityPercentageThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
             DefaultMinFitPoints, DefaultPeakDetectorSelection, 
-            DefaultMinR2, DefaultConformerMzTolerance)
+            DefaultMinR2, DefaultConformerMzTolerance, DefaultRelativeIntensityThreshold)
         { 
         }
 
@@ -55,7 +56,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="featureFilterLevel">
         /// The feature filter level.
         /// </param>
-        /// <param name="intensityThreshold">
+        /// <param name="absoluteIntensityThreshold">
         /// The intensity threshold.
         /// </param>
         /// <param name="peakShapeThreshold">
@@ -77,19 +78,21 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The min R 2.
         /// </param>
         /// <param name="conformerMzTolerance"></param>
-        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double mzWindowHalfWidthInPpm, int numPointForSmoothing, double featureFilterLevel, double intensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, PeakDetectorEnum peakDetectorSelection, double minR2, double conformerMzTolerance)
+        /// <param name="relativeIntensityPercentageThreshold"></param>
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double mzWindowHalfWidthInPpm, int numPointForSmoothing, double featureFilterLevel, double absoluteIntensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, PeakDetectorEnum peakDetectorSelection, double minR2, double conformerMzTolerance, double relativeIntensityPercentageThreshold)
         {
             this.ConformerMzTolerance = conformerMzTolerance;
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
             this.MzWindowHalfWidthInPpm = mzWindowHalfWidthInPpm;
             this.FeatureFilterLevel = featureFilterLevel;
-            this.IntensityThreshold = intensityThreshold;
+            this.AbsoluteIntensityThreshold = absoluteIntensityThreshold;
             this.PeakShapeThreshold = peakShapeThreshold;
             this.IsotopicThreshold = isotopicThreshold;
             this.MinFitPoints = minFitPoints;
             this.PeakDetectorSelection = peakDetectorSelection;
             this.MinR2 = minR2;
+            this.RelativeIntensityPercentageThreshold = relativeIntensityPercentageThreshold;
         }
 
         /// <summary>
@@ -105,7 +108,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public double IntensityThreshold { get; private set; }
+        public double AbsoluteIntensityThreshold { get; private set; }
+
+         /// <summary>
+        /// Gets or sets the confidence threshold.
+        /// </summary>
+        public double RelativeIntensityPercentageThreshold { get; private set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.

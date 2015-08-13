@@ -38,7 +38,7 @@ namespace ImsInformed.Targets
         /// The charge State.
         /// </param>
         public DriftTimeTarget(string libraryEntryName, double normalizedDriftTimeInMs, PeptideTarget peptide, int chargeState = 1)
-            : base(peptide.EmpiricalFormula, IonizationMethod.ProtonPlus, libraryEntryName, chargeState)
+            : base(peptide.EmpiricalFormula, IonizationMethod.Protonated, libraryEntryName, chargeState)
         {
             peptide.DriftTimeTargetList.Add(this);    
 

@@ -253,7 +253,7 @@
          {
              string formula = "C9H13ClN6";
              string fileLocation = Cae;
-             MolecularTarget target = new MolecularTarget(formula, IonizationMethod.ProtonPlus, "CAE");
+             MolecularTarget target = new MolecularTarget(formula, IonizationMethod.Protonated, "CAE");
              
              Console.WriteLine("CompositionWithoutAdduct: " + target.CompositionWithoutAdduct);
              Console.WriteLine("Monoisotopic ViperCompatibleMass: " + target.MonoisotopicMass);
@@ -408,7 +408,7 @@
              {
                  bool found = false;
                  
-                 MolecularTarget target = new MolecularTarget(form.Item2, new IonizationAdduct(IonizationMethod.ProtonMinus), form.Item1);
+                 MolecularTarget target = new MolecularTarget(form.Item2, new IonizationAdduct(IonizationMethod.Deprotonated), form.Item1);
                  Console.Write(form.Item1 + ": ");
                  var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
          

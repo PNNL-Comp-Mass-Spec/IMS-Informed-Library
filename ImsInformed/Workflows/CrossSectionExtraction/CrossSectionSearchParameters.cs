@@ -21,8 +21,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const double DefaultMzWindowHalfWidthInPpm = 250;
         public const int DefaultNumPointForSmoothing = 9;
         public const double DefaultFeatureFilterLevel = 0.25;
-        public const double DefaultAbsoluteIntensityPercentageThreshold = 0.00; 
-        public const double DefaultRelativeIntensityThreshold = 4; 
+        public const double DefaultAbsoluteIntensityThreshold = 0.00; 
+        public const double DefaultRelativeIntensityPercentageThreshold = 4; 
         public const double DefaultPeakShapeThreshold = 0.4;
         public const double DefaultIsotopicThreshold = 0.4;
         public const int DefaultMinFitPoints = 4;
@@ -35,9 +35,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         public CrossSectionSearchParameters() : this(DefaultDriftTimeToleranceInMs, 
             DefaultMzWindowHalfWidthInPpm, DefaultNumPointForSmoothing, DefaultFeatureFilterLevel, 
-            DefaultAbsoluteIntensityPercentageThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
+            DefaultAbsoluteIntensityThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
             DefaultMinFitPoints, DefaultPeakDetectorSelection, 
-            DefaultMinR2, DefaultConformerMzTolerance, DefaultRelativeIntensityThreshold)
+            DefaultMinR2, DefaultConformerMzTolerance, DefaultRelativeIntensityPercentageThreshold)
         { 
         }
 

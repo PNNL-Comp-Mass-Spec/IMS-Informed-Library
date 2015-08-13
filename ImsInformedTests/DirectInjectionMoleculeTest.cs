@@ -28,6 +28,8 @@ namespace ImsInformedTests
 
     using NUnit.Framework;
 
+    using PNNLOmics.Data;
+
     /// <summary>
     /// The direct injection molecule test.
     /// </summary>
@@ -37,8 +39,6 @@ namespace ImsInformedTests
         /// The nicotine UIMF file.
         /// </summary>
         public const string NicoFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-NIC_neg2_28Aug14_Columbia_DI.uimf";
-
-        public const string BAD = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf";
 
         /// <summary>
         /// The Acetamiprid file.
@@ -134,18 +134,18 @@ namespace ImsInformedTests
         {
             // Nicotine
             // string formula = "C10H14N2";
-            // ImsTarget sample = new ImsTarget(1, Adduct.ProtonPlus, formula);
+            // ImsTarget sample = new ImsTarget(1, Adduct.Protonated, formula);
             // Console.WriteLine("MZ:   " +  221.0594);
             // string fileLocation = AcetamipridFile;
 
             // Acetamiprid
             // string formula = "C10H11ClN4";
-            // ImsTarget sample = new ImsTarget(1, Adduct.ProtonMinus, formula);
+            // ImsTarget sample = new ImsTarget(1, Adduct.Deprotonated, formula);
             // string fileLocation = AcetamipridFile;
 
             // F1E
             // string formula = "C15H21Cl2FN2O3";
-            // MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus);
+            // MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.Protonated);
             // string fileLocation = F1E;
 
             // BPS Negative
@@ -155,7 +155,7 @@ namespace ImsInformedTests
 
             // BPS Positive
             string formula = "C12H10O4S";
-            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.ProtonPlus, "BPS");
+            MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.Protonated, "BPS");
             string fileLocation = BPSPostive;
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
@@ -171,8 +171,11 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
-        [TestCase("C10H12N3O3PS2", IonizationMethod.SodiumPlus, "AZY", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf", Result=2)]
-        [TestCase("C12H6F2N2O2",IonizationMethod.SodiumPlus, "FIL",  @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
+        [TestCase("C10H12N3O3PS2", IonizationMethod.Sodiumated, "AZY+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf", Result=2)]
+        [TestCase("C12H6F2N2O2",IonizationMethod.Sodiumated, "FIL+Na",  @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
+        [TestCase("C18H12Cl2N2O", IonizationMethod.Deprotonated, "BAD-H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_neg_13Oct14_Columbia_DI.uimf", Result = 1)]
+        [TestCase("C18H12Cl2N2O", IonizationMethod.Sodiumated, "BAD+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
+        [TestCase("C18H12Cl2N2O", IonizationMethod.Protonated, "BAD+H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);
@@ -189,30 +192,11 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
-        public void TestTargetDetectionWithIsomersMedium()
-        {
-            // BAD
-            string formula2 = "C18H12Cl2N2O";
-            MolecularTarget sample2 = new MolecularTarget(formula2, IonizationMethod.SodiumPlus, "BAD");
-            string fileLocation2 = BAD;
-            
-            CrossSectionSearchParameters parameters2 = new CrossSectionSearchParameters();
-            
-            CrossSectionWorkfow workfow2 = new CrossSectionWorkfow(fileLocation2, "output", parameters2);
-            CrossSectionWorkflowResult results2 = workfow2.RunCrossSectionWorkFlow(sample2, true);
-            Assert.AreEqual(results2.IdentifiedIsomers.Count(), 2);
-            workfow2.Dispose();
-        }
-
-        /// <summary>
-        /// The test target detection with isomers.
-        /// </summary>
-        [Test][STAThread]
         public void TestTargetDetectionWithIsomersHard()
         {
             // BHC
             string formula3 = "C13H18ClNO";
-            MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.ProtonPlus, "BHC");
+            MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.Protonated, "BHC");
             string fileLocation3 = BHC;
             
             CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters();
@@ -245,7 +229,7 @@ namespace ImsInformedTests
             // double mz = 161.10787;
             // string uimfFile = NicoFile;
 
-            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.ProtonPlus, "Nicotine");
+            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.Protonated, "Nicotine");
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -276,7 +260,7 @@ namespace ImsInformedTests
             // double mz = 221.059395;
             // string uimfFile = AcetamipridFile;
 
-            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.ProtonMinus, "BPS");
+            MolecularTarget target = new MolecularTarget(mz, IonizationMethod.Deprotonated, "BPS");
 
             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
 
@@ -291,10 +275,10 @@ namespace ImsInformedTests
         {
             // TODO Import AMT library instead of manually add them
             IList<DriftTimeTarget> imsTargets = new List<DriftTimeTarget>();
-            DriftTimeTarget t1 = new DriftTimeTarget("BPS protonated", 23.22, "C12H10O4S", IonizationMethod.ProtonPlus);
-            DriftTimeTarget t2 = new DriftTimeTarget("BPS sodiated", 31.8506, "C12H10O4S", IonizationMethod.SodiumPlus);
-            DriftTimeTarget t3 = new DriftTimeTarget("I made it up", 15, "C14H14O4S", IonizationMethod.SodiumPlus);
-            DriftTimeTarget t4 = new DriftTimeTarget("I made it up again", 15, "C12H11O4S", IonizationMethod.SodiumPlus);
+            DriftTimeTarget t1 = new DriftTimeTarget("BPS protonated", 23.22, "C12H10O4S", IonizationMethod.Protonated);
+            DriftTimeTarget t2 = new DriftTimeTarget("BPS sodiated", 31.8506, "C12H10O4S", IonizationMethod.Sodiumated);
+            DriftTimeTarget t3 = new DriftTimeTarget("I made it up", 15, "C14H14O4S", IonizationMethod.Sodiumated);
+            DriftTimeTarget t4 = new DriftTimeTarget("I made it up again", 15, "C12H11O4S", IonizationMethod.Sodiumated);
             
             imsTargets.Add(t3);
             imsTargets.Add(t1);
@@ -316,7 +300,7 @@ namespace ImsInformedTests
         public void TestMixedSampleCrossSectionExtraction()
         {
             string fileLocation = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\mix\Mix1_8Oct13_Columbia_DI.uimf";
-            IonizationMethod method = IonizationMethod.SodiumPlus;
+            IonizationMethod method = IonizationMethod.Sodiumated;
 
             IList<IImsTarget> targetList = new List<IImsTarget>();
             targetList.Add(new PeptideTarget(12, "DGWHSWPIAHQWPQGPSAVDAAFSWEEK", 1.0));
@@ -359,7 +343,7 @@ namespace ImsInformedTests
         public void TestSingleMoleculeBadTarget()
         {
             string formula = "NotAFormula";
-            Assert.Throws<Exception>(() => new MolecularTarget(formula, IonizationMethod.ProtonMinus, "Magic molecule"));
+            Assert.Throws<Exception>(() => new MolecularTarget(formula, IonizationMethod.Deprotonated, "Magic molecule"));
         }
 
         [Test][STAThread]

@@ -16,17 +16,17 @@
         /// <summary>
         /// Ionization by adding a proton
         /// </summary>
-        ProtonPlus, // Add H+
+        Protonated, // Add H+
 
         /// <summary>
         /// Ionization by removing a proton
         /// </summary>
-        ProtonMinus, // Take out H+
+        Deprotonated, // Take out H+
 
         /// <summary>
         /// Ionization by adding a sodium ion
         /// </summary>
-        SodiumPlus, // Add Na+
+        Sodiumated, // Add Na+
 
         /// <summary>
         /// Ionization by addving sodium ion and removing two protons
@@ -63,7 +63,7 @@
         {
             if (ionizationMethod == IonizationMethod.APCI ||
                 ionizationMethod == IonizationMethod.HCOOMinus || 
-                ionizationMethod == IonizationMethod.ProtonMinus || 
+                ionizationMethod == IonizationMethod.Deprotonated || 
                 ionizationMethod == IonizationMethod.Proton2MinusSodiumPlus)
             {
                 return -1;
@@ -85,7 +85,7 @@
         /// </returns>
         public static int GetMassAductSign(this IonizationMethod ionizationMethod)
         {
-            if (ionizationMethod == IonizationMethod.ProtonMinus)
+            if (ionizationMethod == IonizationMethod.Deprotonated)
             {
                 return -1;
             }
@@ -118,15 +118,15 @@
         public static Composition GetComposition(this IonizationMethod method)
         {
             // compensate for extra composition difference due to different ionization method
-            if (method == IonizationMethod.ProtonPlus)
+            if (method == IonizationMethod.Protonated)
             {
                 return new Composition(0, 1, 0, 0, 0);
             }
-            else if (method == IonizationMethod.ProtonMinus) 
+            else if (method == IonizationMethod.Deprotonated) 
             {
                 return new Composition(0, 1, 0, 0, 0);
             }
-            else if (method == IonizationMethod.SodiumPlus) 
+            else if (method == IonizationMethod.Sodiumated) 
             {
                 return MoleculeUtil.ReadEmpiricalFormula("Na");
             }
@@ -162,15 +162,15 @@
         {
             string method;
 
-            if (ionizationMethod == IonizationMethod.ProtonPlus)
+            if (ionizationMethod == IonizationMethod.Protonated)
             {
                 method = "[M+H]";
             }
-            else if (ionizationMethod == IonizationMethod.ProtonMinus)
+            else if (ionizationMethod == IonizationMethod.Deprotonated)
             {
                 method = "[M-H]";
             }
-            else if (ionizationMethod == IonizationMethod.SodiumPlus)
+            else if (ionizationMethod == IonizationMethod.Sodiumated)
             {
                 method = "[M+Na]";
             }
@@ -229,15 +229,15 @@
             IonizationMethod method;
             if (ionizationMethod == "M+H")
             {
-                method = IonizationMethod.ProtonPlus;
+                method = IonizationMethod.Protonated;
             }
             else if (ionizationMethod == "M-H")
             {
-                method = IonizationMethod.ProtonMinus;
+                method = IonizationMethod.Deprotonated;
             }
             else if (ionizationMethod == "M+NA")
             {
-                method = IonizationMethod.SodiumPlus;
+                method = IonizationMethod.Sodiumated;
             }
             else if (ionizationMethod == "APCI")
             {

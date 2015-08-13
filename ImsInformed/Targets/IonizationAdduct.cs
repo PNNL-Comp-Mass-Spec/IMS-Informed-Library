@@ -64,7 +64,7 @@ namespace ImsInformed.Targets
         /// <param name="numberOfProtons">
         /// The number of protons.
         /// </param>
-        public IonizationAdduct(int numberOfProtons) : this(IonizationMethod.ProtonPlus, numberOfProtons)
+        public IonizationAdduct(int numberOfProtons) : this(IonizationMethod.Protonated, numberOfProtons)
         {
             if (numberOfProtons <= 0)
             {
@@ -112,17 +112,17 @@ namespace ImsInformed.Targets
             for (int i = 0; i < multiplier; i++)
             {
                 // compensate for extra composition difference due to different ionization method
-                if (ionizationMethod == IonizationMethod.ProtonPlus)
+                if (ionizationMethod == IonizationMethod.Protonated)
                 {
                     this.compositionSurplus += new Composition(0, 1, 0, 0, 0);
                     this.ChargeState++;
                 }
-                else if (ionizationMethod == IonizationMethod.ProtonMinus) 
+                else if (ionizationMethod == IonizationMethod.Deprotonated) 
                 {
                     this.compositionDebt += new Composition(0, 1, 0, 0, 0);
                     this.ChargeState--;
                 }
-                else if (ionizationMethod == IonizationMethod.SodiumPlus) 
+                else if (ionizationMethod == IonizationMethod.Sodiumated) 
                 {
                     this.compositionSurplus += MoleculeUtil.ReadEmpiricalFormula("Na");
                     this.ChargeState++;

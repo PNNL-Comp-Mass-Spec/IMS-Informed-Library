@@ -68,7 +68,7 @@ namespace ImsInformed.Targets
             this.ResultList = new List<LcImsTargetResult>();
             this.ModificationList = modificationList;
             this.TargetType = TargetType.Peptide;
-            this.Adduct = new IonizationAdduct(IonizationMethod.ProtonPlus);
+            this.Adduct = new IonizationAdduct(IonizationMethod.Protonated);
             this.DriftTimeTargetList = new List<DriftTimeTarget>();
         }
 

@@ -175,7 +175,7 @@ namespace ImsInformedTests
         [TestCase("C12H6F2N2O2",IonizationMethod.Sodiumated, "FIL+Na",  @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
         [TestCase("C18H12Cl2N2O", IonizationMethod.Deprotonated, "BAD-H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_neg_13Oct14_Columbia_DI.uimf", Result = 1)]
         [TestCase("C18H12Cl2N2O", IonizationMethod.Sodiumated, "BAD+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
-        [TestCase("C18H12Cl2N2O", IonizationMethod.Protonated, "BAD+H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
+        [TestCase("C18H12Cl2N2O", IonizationMethod.Protonated, "BAD+H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 1)]
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);

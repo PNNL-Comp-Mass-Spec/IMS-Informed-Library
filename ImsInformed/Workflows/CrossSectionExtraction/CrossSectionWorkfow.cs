@@ -394,8 +394,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Console.WriteLine("Writes QC plot of fitline to " + this.OutputPath);
                         Trace.WriteLine(string.Empty);
                     }
-
-                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA.svg";
+                    
+                    string extension = (this.Parameters.GraphicsExtension.StartsWith(".")) ?
+                        this.Parameters.GraphicsExtension : "." + this.Parameters.GraphicsExtension;
+                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA" + extension;
                     ImsInformedPlotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor);
 
                     // Printout results

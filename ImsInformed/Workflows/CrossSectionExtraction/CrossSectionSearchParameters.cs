@@ -29,15 +29,24 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
         public const double DefaultMinR2 = 0.98;
         public const double DefaultConformerMzTolerance = 20;
+        public const string DefaultGraphicsExtension = "svg";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
         public CrossSectionSearchParameters() : this(DefaultDriftTimeToleranceInMs, 
-            DefaultMzWindowHalfWidthInPpm, DefaultNumPointForSmoothing, DefaultFeatureFilterLevel, 
-            DefaultAbsoluteIntensityThreshold, DefaultPeakShapeThreshold, DefaultIsotopicThreshold, 
-            DefaultMinFitPoints, DefaultPeakDetectorSelection, 
-            DefaultMinR2, DefaultConformerMzTolerance, DefaultRelativeIntensityPercentageThreshold)
+            DefaultMzWindowHalfWidthInPpm, 
+            DefaultNumPointForSmoothing, 
+            DefaultFeatureFilterLevel, 
+            DefaultAbsoluteIntensityThreshold, 
+            DefaultPeakShapeThreshold, 
+            DefaultIsotopicThreshold, 
+            DefaultMinFitPoints, 
+            DefaultPeakDetectorSelection, 
+            DefaultMinR2, 
+            DefaultConformerMzTolerance, 
+            DefaultRelativeIntensityPercentageThreshold, 
+            DefaultGraphicsExtension)
         { 
         }
 
@@ -79,7 +88,20 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </param>
         /// <param name="conformerMzTolerance"></param>
         /// <param name="relativeIntensityPercentageThreshold"></param>
-        public CrossSectionSearchParameters(double driftTimeToleranceInMs, double mzWindowHalfWidthInPpm, int numPointForSmoothing, double featureFilterLevel, double absoluteIntensityThreshold, double peakShapeThreshold, double isotopicThreshold, int minFitPoints, PeakDetectorEnum peakDetectorSelection, double minR2, double conformerMzTolerance, double relativeIntensityPercentageThreshold)
+        /// <param name="graphicsExtension"></param>
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs, 
+            double mzWindowHalfWidthInPpm, 
+            int numPointForSmoothing, 
+            double featureFilterLevel, 
+            double absoluteIntensityThreshold, 
+            double peakShapeThreshold, 
+            double isotopicThreshold, 
+            int minFitPoints, 
+            PeakDetectorEnum peakDetectorSelection, 
+            double minR2, 
+            double conformerMzTolerance, 
+            double relativeIntensityPercentageThreshold, 
+            string graphicsExtension)
         {
             this.ConformerMzTolerance = conformerMzTolerance;
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
@@ -93,6 +115,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.PeakDetectorSelection = peakDetectorSelection;
             this.MinR2 = minR2;
             this.RelativeIntensityPercentageThreshold = relativeIntensityPercentageThreshold;
+            this.GraphicsExtension = graphicsExtension;
         }
 
         /// <summary>
@@ -149,6 +172,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// Gets the peak detector selection.
         /// </summary>
         public PeakDetectorEnum PeakDetectorSelection { get; private set; }
+
+        /// <summary>
+        /// Gets the graphics format for the QC plots.
+        /// </summary>
+        public string GraphicsExtension{ get; private set; }
 
         /// <summary>
         /// The min r 2.

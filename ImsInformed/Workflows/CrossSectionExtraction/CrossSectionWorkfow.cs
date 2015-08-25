@@ -751,7 +751,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
             if (verbose)
             {
-                Trace.WriteLine("Target chemical: " + target.ChemicalIdentifier);
+                Trace.WriteLine("Target chemical: " + target.SampleClass);
                 Trace.WriteLine("Target description: " + target.TargetDescriptor);
                 if (target.HasCompositionInfo)
                 {

@@ -45,6 +45,8 @@ namespace ImsInformed.Domain.DataAssociation
         /// The collision cross section area.
         /// </summary>
         public double CollisionCrossSectionArea;
+
+        public double T0;
     }
 
     /// <summary>
@@ -333,7 +335,8 @@ namespace ImsInformed.Domain.DataAssociation
                 viperCompatibleMass,
                 this.ConcludeStatus(minFitPoints, minR2),
                 this.TrackStatistics,
-                target
+                target,
+                this.mobilityInfo.T0
                 );
             return info;
         }
@@ -389,6 +392,7 @@ namespace ImsInformed.Domain.DataAssociation
             // Convert the track into a Continuous XY data points.
             this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters * 1000 / (this.FitLine.Slope);
             this.mobilityInfo.RSquared = this.FitLine.RSquared;
+            this.mobilityInfo.T0 = this.FitLine.Intercept;
             
             Composition bufferGas = new Composition(0, 0, 2, 0, 0);
             double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);

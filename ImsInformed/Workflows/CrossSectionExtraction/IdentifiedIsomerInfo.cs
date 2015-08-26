@@ -22,16 +22,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     [Serializable]
     public class IdentifiedIsomerInfo
     {
-        #region Fields
-
         /// <summary>
         ///     The monoisotopic mass.
         /// </summary>
         public readonly double ViperCompatibleMass;
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         ///     The cross sectional area.
@@ -52,6 +46,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         ///     The normalized mobility K0
         /// </summary>
         public readonly double Mobility;
+
+        /// <summary>
+        ///     The time the ion spend outside the drift tube
+        /// </summary>
+        public readonly double T0;
 
         public readonly double MzInDalton;
 
@@ -116,7 +115,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             double viperCompatibleMass, 
             AnalysisStatus analysisStatus, 
             PeakScores peakScores,
-            IImsTarget target)
+            IImsTarget target,
+            double t0)
         {
             this.NumberOfFeaturePointsUsed = numberOfFeaturePointsUsed;
             this.RSquared = rSquared;
@@ -127,10 +127,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.ViperCompatibleMass = viperCompatibleMass;
             this.AnalysisStatus = analysisStatus;
             this.PeakScores = peakScores;
+            this.T0 = t0;
             this.MzInDalton = mzInDalton;
             this.MzInPpm = Util.Metrics.DaltonToPpm(mzInDalton - target.MassWithAdduct, target.MassWithAdduct);
         }
-
-        #endregion
     }
 }

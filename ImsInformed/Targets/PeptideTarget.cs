@@ -142,7 +142,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the chemical identifier.
         /// </summary>
-        public string SampleClass
+        public string CorrespondingChemical
         {
             get
             {

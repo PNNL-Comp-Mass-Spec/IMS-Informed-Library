@@ -84,8 +84,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
             this.NumberOfFrames = this.uimfReader.GetGlobalParams().NumFrames;
             this.NumberOfScans = this.uimfReader.GetFrameParams(1).Scans;
+            this.SampleCollectionDate = this.uimfReader.GetGlobalParams().GetValue(GlobalParamKeyType.DateStarted);
 
             this.DatasetName = Path.GetFileNameWithoutExtension(uimfFileLocation);
+            this.OutputPath = outputDirectory;
+            this.DatasetPath = uimfFileLocation;
 
             this.Parameters = parameters;
 
@@ -133,12 +136,19 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets or sets the parameters.
         /// </summary>
-        public CrossSectionSearchParameters Parameters { get; set; }
+        public CrossSectionSearchParameters Parameters { get; private set; }
 
         /// <summary>
         /// Gets or sets the dataset name.
         /// </summary>
-        public string DatasetName { get; set; }
+        public string DatasetName { get; private set; }
+
+        public string SampleCollectionDate { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the dataset name.
+        /// </summary>
+        public string DatasetPath { get; private set; }
 
          /// <summary>
         /// The _peak detector.
@@ -148,7 +158,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets or sets the output path.
         /// </summary>
-        public string OutputPath { get; set; }
+        public string OutputPath { get; private set; }
 
         /// <summary>
         /// The run cross section work flow.
@@ -369,7 +379,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // Report analysis as negative
                     if (accumulatedXiCs.Keys.Count == 0)
                     {
-                        CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, this.DatasetName, target);
+                        CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, target, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
                         ReportAnslysisResultAndMetrics(informedResult, detailedVerbose);
                         return informedResult;
                     }
@@ -384,7 +394,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     if (optimalAssociationHypothesis == null)
                     {
-                        CrossSectionWorkflowResult negResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, this.DatasetName, target);
+                        CrossSectionWorkflowResult negResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, target, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
                         ReportAnslysisResultAndMetrics(negResult, detailedVerbose);
                         return negResult;
                     }
@@ -440,12 +450,15 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         
                     CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateResultFromAssociationHypothesis(
                         this.Parameters, 
-                        this.DatasetName,
                         optimalAssociationHypothesis, 
                         target,
                         accumulatedXiCs.Keys,
                         allObservations,
-                        viperFriendlyMass);
+                        this.DatasetPath,
+                        this.OutputPath,
+                        this.SampleCollectionDate,
+                        viperFriendlyMass
+                        );
                         ReportAnslysisResultAndMetrics(informedResult, detailedVerbose);
 
                         Trace.Listeners.Clear();
@@ -462,7 +475,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.Listeners.Clear();
 
                     // create the error result
-                    return CrossSectionWorkflowResult.CreateErrorResult(target, this.DatasetName);
+                    return CrossSectionWorkflowResult.CreateErrorResult(target, this.DatasetName, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
                 }
             }
         }
@@ -751,7 +764,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
             if (verbose)
             {
-                Trace.WriteLine("Target chemical: " + target.SampleClass);
+                Trace.WriteLine("Target chemical: " + target.CorrespondingChemical);
                 Trace.WriteLine("Target description: " + target.TargetDescriptor);
                 if (target.HasCompositionInfo)
                 {

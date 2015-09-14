@@ -57,7 +57,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the chemical identifier, googleable, adduct independent information of what the chemical is.
         /// </summary>
-        string SampleClass { get; }
+        string CorrespondingChemical { get; }
 
         /// <summary>
         /// Gets the Target m/z.

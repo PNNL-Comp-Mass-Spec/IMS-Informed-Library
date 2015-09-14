@@ -25,9 +25,9 @@ namespace ImsInformed.Targets
     public class MolecularTarget : IImsTarget
     {
         /// <summary>
-        /// The chemical identifier.
+        /// The CorrespondingChemical identifier.
         /// </summary>
-        private string sampleClass;
+        private string correspondingChemical;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MolecularTarget"/> class.
@@ -38,15 +38,15 @@ namespace ImsInformed.Targets
         /// <param name="ionization">
         /// The ionization.
         /// </param>
-        /// <param name="sampleClass">
-        /// The chemical Identifier.
+        /// <param name="correspondingChemical">
+        /// The CorrespondingChemical Identifier.
         /// </param>
-        public MolecularTarget(double targetMz, IonizationMethod ionization, string sampleClass)
+        public MolecularTarget(double targetMz, IonizationMethod ionization, string correspondingChemical)
         {
             this.MassWithAdduct = targetMz;
             this.TargetType = TargetType.Molecule;
             this.Adduct = new IonizationAdduct(ionization);
-            this.sampleClass = sampleClass;
+            this.correspondingChemical = correspondingChemical;
         }
 
         /// <summary>
@@ -59,12 +59,12 @@ namespace ImsInformed.Targets
         /// <param name="ionization">
         /// The ionization.
         /// </param>
-        /// <param name="sampleClass">
-        /// The chemical Identifier.
+        /// <param name="correspondingChemical">
+        /// The CorrespondingChemical Identifier.
         /// </param>
-        public MolecularTarget(string empiricalFormula, IonizationAdduct ionization, string sampleClass)
+        public MolecularTarget(string empiricalFormula, IonizationAdduct ionization, string correspondingChemical)
         {
-            this.sampleClass = sampleClass;
+            this.correspondingChemical = correspondingChemical;
             this.Setup(empiricalFormula, ionization);
         }
 
@@ -77,14 +77,14 @@ namespace ImsInformed.Targets
         /// <param name="ionization">
         /// The ionization.
         /// </param>
-        /// <param name="sampleClass">
+        /// <param name="correspondingChemical">
         /// </param>
         /// <param name="adductMultiplier">
         /// The adductMultiplier.
         /// </param>
-        public MolecularTarget(string empiricalFormula, IonizationMethod ionization, string sampleClass, int adductMultiplier = 1)
+        public MolecularTarget(string empiricalFormula, IonizationMethod ionization, string correspondingChemical, int adductMultiplier = 1)
         {
-            this.sampleClass = sampleClass;
+            this.correspondingChemical = correspondingChemical;
             IonizationAdduct adduct = new IonizationAdduct(ionization, adductMultiplier);
             this.Setup(empiricalFormula, adduct);
         }
@@ -120,13 +120,13 @@ namespace ImsInformed.Targets
         public Composition CompositionWithoutAdduct { get; private set; }
 
         /// <summary>
-        /// Gets the chemical identifier.
+        /// Gets the CorrespondingChemical identifier.
         /// </summary>
-        public string SampleClass
+        public string CorrespondingChemical
         {
             get
             {
-                return this.sampleClass;
+                return this.correspondingChemical;
             }
         }
 
@@ -142,7 +142,8 @@ namespace ImsInformed.Targets
         {
             get
             {
-                return this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
+                string targetInfo = this.CompositionWithoutAdduct == null ? this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) : string.Format(this.EmpiricalFormula + this.Adduct);
+                return string.Format("{0}-{1}", this.CorrespondingChemical, targetInfo);
             }
         }
 
@@ -213,7 +214,7 @@ namespace ImsInformed.Targets
         {
             return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) && 
                 this.ChargeState == other.ChargeState &&
-                this.sampleClass == other.sampleClass;
+                this.correspondingChemical == other.correspondingChemical;
         }
 
         public override bool Equals(object other) 

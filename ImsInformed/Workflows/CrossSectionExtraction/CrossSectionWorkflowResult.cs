@@ -13,6 +13,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using ImsInformed.Domain.DataAssociation;
@@ -30,6 +31,21 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The dataset analyzed.
         /// </summary>
         public readonly string DatasetName;
+
+        /// <summary>
+        /// The dataset analyzed.
+        /// </summary>
+        public readonly string DatasetPath;
+
+        /// <summary>
+        /// The dataset analyzed.
+        /// </summary>
+        public readonly string DateTime;
+
+         /// <summary>
+        /// The dataset analyzed.
+        /// </summary>
+        public readonly string AnalysisDirectory;
 
         /// <summary>
         /// The target searched against.
@@ -61,6 +77,29 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         private readonly IList<IdentifiedIsomerInfo> isomerResults;
 
+        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class. 
+        /// Constructor for no isomer result. 
+        public CrossSectionWorkflowResult(
+            string datasetPath,
+            IImsTarget target,
+            AnalysisStatus analysisStatus,
+            AssociationHypothesisInfo associationHypothesisInfo, 
+            PeakScores averageObservedPeakStatistics, 
+            double averageVoltageGroupStability, 
+            string analysisDirectory, string dateTime)
+            : this(
+            datasetPath,
+            target,
+            analysisStatus,
+            associationHypothesisInfo,
+            new List<IdentifiedIsomerInfo>(), 
+            averageObservedPeakStatistics, 
+            averageVoltageGroupStability, 
+            analysisDirectory, 
+            dateTime)
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class. 
         /// Multiple isomer result constructor
@@ -82,40 +121,30 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </param>
         /// <param name="averageObservedPeakStatistics"></param>
         /// <param name="averageVoltageGroupStability"></param>
+        /// <param name="datasetPath"></param>
+        /// <param name="analysisDirectory"></param>
         public CrossSectionWorkflowResult(
-            string datasetName, 
+            string datasetPath,
             IImsTarget target, 
             AnalysisStatus analysisStatus, 
             AssociationHypothesisInfo associationHypothesisInfo, 
             IList<IdentifiedIsomerInfo> isomerResults, 
             PeakScores averageObservedPeakStatistics, 
-            double averageVoltageGroupStability)
+            double averageVoltageGroupStability, 
+            string analysisDirectory, 
+            string dateTime)
         {
-            this.DatasetName = datasetName;
             this.Target = target;
             this.AnalysisStatus = analysisStatus;
             this.AssociationHypothesisInfo = associationHypothesisInfo;
             this.isomerResults = isomerResults;
             this.AverageObservedPeakStatistics = averageObservedPeakStatistics;
             this.AverageVoltageGroupStability = averageVoltageGroupStability;
-        }
-
-        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class. 
-        /// Constructor for no isomer result. 
-        public CrossSectionWorkflowResult(
-            string datasetName,
-            IImsTarget target,
-            AnalysisStatus analysisStatus,
-            AssociationHypothesisInfo associationHypothesisInfo, 
-            PeakScores averageObservedPeakStatistics, 
-            double averageVoltageGroupStability)
-            : this(
-                datasetName,
-                target,
-                analysisStatus,
-                associationHypothesisInfo,
-                new List<IdentifiedIsomerInfo>(), averageObservedPeakStatistics, averageVoltageGroupStability)
-        {
+            this.AnalysisDirectory = analysisDirectory;
+            this.DateTime = dateTime;
+            this.DatasetPath = datasetPath;
+            this.DatasetName = Path.GetFileNameWithoutExtension(datasetPath);
+            this.DateTime = dateTime;
         }
 
         /// <summary>
@@ -141,20 +170,24 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="datasetName">
         /// The dataset name.
         /// </param>
+        /// <param name="datasetPath"></param>
         /// <returns>
         /// The <see cref="CrossSectionWorkflowResult"/>.
         /// </returns>
-        public static CrossSectionWorkflowResult CreateErrorResult(IImsTarget target, string datasetName)
+        public static CrossSectionWorkflowResult CreateErrorResult(IImsTarget target, string datasetName, string datasetPath, string analysisPath, string SampleCollectionTime)
         {
             // No hypothesis can be made.
             return new CrossSectionWorkflowResult(
-                datasetName, 
+                datasetPath,
                 target, 
                 AnalysisStatus.UknownError,
                 null, 
                 null,
                 null, 
-                0);
+                0,
+                analysisPath,
+                SampleCollectionTime
+                );
         }
 
         /// <summary>
@@ -175,7 +208,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// The <see cref="CrossSectionWorkflowResult"/>.
         /// </returns>
-        internal static CrossSectionWorkflowResult CreateNegativeResult(IEnumerable<ObservedPeak> rejectedPeaks, IEnumerable<VoltageGroup> rejectedVoltageGroups, string datasetName, IImsTarget target)
+        internal static CrossSectionWorkflowResult CreateNegativeResult(IEnumerable<ObservedPeak> rejectedPeaks, IEnumerable<VoltageGroup> rejectedVoltageGroups, IImsTarget target, string datasetPath, string analysisPath, string sampleCollectionTime)
         {
             // No valid feature peaks were identified. No hypothesis.
             double voltageGroupScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(rejectedVoltageGroups);
@@ -184,17 +217,19 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             IEnumerable<PeakScores> featureStats = rejectedPeaks.Select(x => x.Statistics);
             PeakScores averagePeakScores = FeatureScoreUtilities.AverageFeatureStatistics(featureStats);
             CrossSectionWorkflowResult informedResult = new CrossSectionWorkflowResult(
-                datasetName, 
+                datasetPath,
                 target, 
                 AnalysisStatus.Negative, 
                 null,
                 averagePeakScores,
-                voltageGroupScore);
+                voltageGroupScore,
+                analysisPath,
+                sampleCollectionTime);
 
             return informedResult;
         }
 
-        internal static CrossSectionWorkflowResult CreateResultFromAssociationHypothesis(CrossSectionSearchParameters parameters, string datasetName, AssociationHypothesis optimalHypothesis, IImsTarget target, IEnumerable<VoltageGroup> allVoltageGroups, IEnumerable<ObservedPeak> allPeaks, double viperCompatibleMass = 0)
+        internal static CrossSectionWorkflowResult CreateResultFromAssociationHypothesis(CrossSectionSearchParameters parameters, AssociationHypothesis optimalHypothesis, IImsTarget target, IEnumerable<VoltageGroup> allVoltageGroups, IEnumerable<ObservedPeak> allPeaks, string datasetPath, string analysisPath, string  sampleCollectionDate, double viperCompatibleMass = 0)
         {
             // Initialize the result struct.
             AssociationHypothesisInfo associationHypothesisInfo = new AssociationHypothesisInfo(optimalHypothesis.ProbabilityOfDataGivenHypothesis, optimalHypothesis.ProbabilityOfHypothesisGivenData);
@@ -209,13 +244,16 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             AnalysisStatus finalStatus = TrackToHypothesisConclusionLogic(isomersInfo.Select(info => info.AnalysisStatus));
 
             CrossSectionWorkflowResult informedResult = new CrossSectionWorkflowResult(
-            datasetName, 
+            datasetPath,
             target,
             finalStatus, 
             associationHypothesisInfo,
             isomersInfo,
             averageObservedPeakStatistics,
-            averageVoltageGroupScore);
+            averageVoltageGroupScore,
+            analysisPath,
+            sampleCollectionDate
+            );
             
             return informedResult;
         }

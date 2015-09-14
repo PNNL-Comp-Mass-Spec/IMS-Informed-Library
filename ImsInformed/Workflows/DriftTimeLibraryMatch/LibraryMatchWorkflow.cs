@@ -194,7 +194,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// </returns>
         private LibraryMatchResult RunLibrayMatchWorkflow(DriftTimeTarget target)
         {
-            Trace.WriteLine("    Target: " + target.SampleClass);
+            Trace.WriteLine("    Target: " + target.CorrespondingChemical);
             Trace.WriteLine("    Target Info: " + target.TargetDescriptor);
 
             // Generate Theoretical Isotopic Profile

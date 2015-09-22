@@ -8,6 +8,7 @@
 namespace ImsInformed.Workflows.CrossSectionExtraction
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -256,7 +257,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IList<VoltageGroup> rejectedVoltageGroups = new List<VoltageGroup>();
                     IList<ObservedPeak> filteredObservations = new List<ObservedPeak>();
                     IList<ObservedPeak> allObservations = new List<ObservedPeak>();
-                    IList<ObservedPeak> rejectedObservations = new List<ObservedPeak>();
+                    IDictionary<string, IList<ObservedPeak>> rejectedObservations = new Dictionary<string, IList<ObservedPeak>>();
 
                     // Iterate through the features and perform filtering on isotopic affinity, intensity, drift time and peak shape.
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
@@ -317,7 +318,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         foreach (StandardImsPeak peak in standardPeaks)
                         {
                             PeakScores currentStatistics = scoresTable[peak];
-                            bool pass = ReportFeatureEvaluation(
+                            string rejectionReason = ReportFeatureEvaluation(
                                 peak,
                                 currentStatistics,
                                 detailedVerbose, 
@@ -327,6 +328,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 relativeIntensityThreshold(peak),
                                 shapeThreshold(peak),
                                 isotopeThreshold(peak));   
+                            bool pass = string.IsNullOrEmpty(rejectionReason);
                          
                             ObservedPeak analyzedPeak = new ObservedPeak(voltageGroup, peak, currentStatistics);
                             if (pass)
@@ -335,7 +337,15 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             }
                             else
                             {
-                                rejectedObservations.Add(analyzedPeak);
+                                if (rejectedObservations.ContainsKey(rejectionReason))
+                                {
+                                    rejectedObservations[rejectionReason].Add(analyzedPeak);
+                                }
+
+                                else
+                                {
+                                    rejectedObservations.Add(rejectionReason, new List<ObservedPeak>(){analyzedPeak});
+                                }
                             }
 
                             allObservations.Add(analyzedPeak);
@@ -376,10 +386,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         accumulatedXiCs.Remove(voltageGroup);
                     }
 
+                    IEnumerable<ObservedPeak> rejectedPeaks = rejectedObservations.Values.SelectMany(x => x);
+
                     // Report analysis as negative
                     if (accumulatedXiCs.Keys.Count == 0)
                     {
-                        CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, target, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
+                        CrossSectionWorkflowResult informedResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedPeaks, rejectedVoltageGroups, target, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
                         ReportAnslysisResultAndMetrics(informedResult, detailedVerbose);
                         return informedResult;
                     }
@@ -394,7 +406,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     if (optimalAssociationHypothesis == null)
                     {
-                        CrossSectionWorkflowResult negResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedObservations, rejectedVoltageGroups, target, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
+                        CrossSectionWorkflowResult negResult = CrossSectionWorkflowResult.CreateNegativeResult(rejectedPeaks, rejectedVoltageGroups, target, this.DatasetPath, this.OutputPath, this.SampleCollectionDate);
                         ReportAnslysisResultAndMetrics(negResult, detailedVerbose);
                         return negResult;
                     }
@@ -408,7 +420,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     string extension = (this.Parameters.GraphicsExtension.StartsWith(".")) ?
                         this.Parameters.GraphicsExtension : "." + this.Parameters.GraphicsExtension;
                     string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA" + extension;
-                    ImsInformedPlotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor);
+                    ImsInformedPlotter plotter = new ImsInformedPlotter();
+                    plotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor, rejectedObservations);
 
                     // Printout results
                     if (detailedVerbose)
@@ -606,7 +619,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// If the feature pass all the filters <see cref="bool"/>.
         /// </returns>
-        private static bool ReportFeatureEvaluation(StandardImsPeak peak, PeakScores scores, bool verbose, IImsTarget target, bool badScanRange, bool lowAbsoluteIntensity, bool lowRelativeIntensity, bool badPeakShape, bool lowIsotopicAffinity)
+        private static string ReportFeatureEvaluation(StandardImsPeak peak, PeakScores scores, bool verbose, IImsTarget target, bool badScanRange, bool lowAbsoluteIntensity, bool lowRelativeIntensity, bool badPeakShape, bool lowIsotopicAffinity)
         {
             Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms(#{2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", scores.IntensityScore));
@@ -621,11 +634,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 }
             }
 
-            string rejectionReason = badScanRange ? "        [Bad scan range] " : "        ";
-            rejectionReason += lowAbsoluteIntensity ? "[Low Absolute Intensity] " : string.Empty;
-            rejectionReason += !lowAbsoluteIntensity && lowRelativeIntensity ? "[Low Relative Intensity] " : string.Empty;
-            rejectionReason += !lowAbsoluteIntensity && badPeakShape ? "[Bad Peak Shape] " : string.Empty;
-            rejectionReason += !lowAbsoluteIntensity && lowIsotopicAffinity ? "[Different Isotopic Profile] " : string.Empty;
+            string rejectionReason = badScanRange ? "[Bad scan range] " : 
+                lowAbsoluteIntensity ? "[Low Absolute Intensity] " :
+                badPeakShape ? "[Bad Peak Shape] " : 
+                lowIsotopicAffinity ? "[Different Isotopic Profile] " : 
+                lowRelativeIntensity ? "[Low Relative Intensity] " : string.Empty;
 
             bool rejected = badScanRange || lowAbsoluteIntensity || lowIsotopicAffinity || badPeakShape || lowRelativeIntensity;
 
@@ -633,7 +646,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             {
                 if (rejected)
                 {
-                    Trace.WriteLine(rejectionReason);
+                    Trace.WriteLine("        " + rejectionReason);
                 }
                 else
                 {
@@ -643,7 +656,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 Trace.WriteLine(string.Empty);
             }
 
-            return !rejected;
+            return rejectionReason;
         }
 
         /// <summary>

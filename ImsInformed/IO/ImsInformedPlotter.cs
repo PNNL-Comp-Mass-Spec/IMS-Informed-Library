@@ -16,6 +16,7 @@ namespace ImsInformed.IO
     using System.Linq;
     using System.Windows;
     using System.Windows.Media;
+    using System.Windows.Media.Animation;
     using System.Windows.Media.Imaging;
 
     using ImsInformed.Domain.DataAssociation;
@@ -38,6 +39,11 @@ namespace ImsInformed.IO
     /// </summary>
     internal class ImsInformedPlotter
     {
+        public ImsInformedPlotter()
+        {
+        
+        }
+
         /// <summary>
         /// The plot association hypothesis.
         /// </summary>
@@ -48,11 +54,44 @@ namespace ImsInformed.IO
         /// The plot location.
         /// </param>
         [STAThread]
-        public static void PlotAssociationHypothesis(AssociationHypothesis hypothesis, string plotLocation, string datasetName, string targetDescriptor)
+        public void PlotAssociationHypothesis(AssociationHypothesis hypothesis, string plotLocation, string datasetName, string targetDescriptor, IDictionary<string, IList<ObservedPeak>> preFilteredPeaks)
         {
+            //int width = 450;
+            //int height = 256;
+
             int width = 900;
             int height = 512;
-            PlotDiagram(plotLocation, AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor), width, height);
+            PlotModel associationHypothsisPlot = this.AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor);
+            associationHypothsisPlot = this.AnnotateRemovedPeaks(associationHypothsisPlot, preFilteredPeaks);
+            this.PlotDiagram(plotLocation, associationHypothsisPlot, width, height);
+        }
+
+        private PlotModel AnnotateRemovedPeaks(PlotModel associationHypothsisPlot, IDictionary<string, IList<ObservedPeak>> preFilteredPeaks)
+        {
+            Func<ObservedPeak, ScatterPoint> fitPointMap = obj =>
+            {
+                ObservedPeak observation = obj;
+                ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
+                double size = MapToPointSize(observation);
+                ScatterPoint sp = new ScatterPoint(xyPoint.X, xyPoint.Y, size);
+                return sp;
+            };
+
+            foreach (KeyValuePair<string, IList<ObservedPeak>> pair in preFilteredPeaks)
+            {
+                string rejectionReason = pair.Key;
+                IEnumerable<ObservedPeak> peaks = pair.Value;
+
+                ScatterSeries series = new ScatterSeries
+                {
+                    Title = rejectionReason
+                };
+                
+                associationHypothsisPlot.Series.Add(series);
+                series.Points.AddRange(peaks.Select(x => fitPointMap(x))); 
+            }
+
+            return associationHypothsisPlot;
         }
 
         /// <summary>
@@ -67,9 +106,9 @@ namespace ImsInformed.IO
         /// <param name="width"></param>
         /// <param name="height"></param>
         [STAThread]
-        public static void PlotMobilityFit(FitLine fitline, string plotLocation, int width, int height)
+        public void PlotMobilityFit(FitLine fitline, string plotLocation, int width, int height)
         {
-            PlotDiagram(plotLocation, MobilityFitLinePlot(fitline), width, height);
+            this.PlotDiagram(plotLocation, this.MobilityFitLinePlot(fitline), width, height);
         }
 
         /// <summary>
@@ -83,7 +122,7 @@ namespace ImsInformed.IO
         /// </param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        private static void PlotDiagram(string fileLocation, PlotModel model, int width, int height)
+        private void PlotDiagram(string fileLocation, PlotModel model, int width, int height)
         {
             string extension = Path.GetExtension(fileLocation);
             if (extension == null)
@@ -140,17 +179,23 @@ namespace ImsInformed.IO
         /// <returns>
         /// The <see cref="PlotModel"/>.
         /// </returns>
-        private static PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, string targetDescriptor, bool plotXAxisFromZero = false)
+        private PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, string targetDescriptor, bool plotXAxisFromZero = false)
         {
             PlotModel model = new PlotModel();
+
+            model.LegendBorderThickness = 0;
+            model.LegendOrientation = LegendOrientation.Horizontal;
+            model.LegendPlacement = LegendPlacement.Outside;
+            model.LegendPosition = LegendPosition.BottomLeft;
+
             model.TitlePadding = 0;
-            model.Title = "Association Hypothesis Plot";
-            model.Subtitle = datasetName + "_" + targetDescriptor;
+            // model.Title = "Association Hypothesis Plot";
+            // model.Subtitle = datasetName + "_" + targetDescriptor;
 
             model.Axes.Add(
                 new LinearAxis
                     {
-                        Title = "IMS scan time (seconds)",
+                        Title = "IMS arrival time (seconds)",
                         MajorGridlineStyle = LineStyle.Solid,
                         Position = AxisPosition.Left,
                     });
@@ -158,44 +203,44 @@ namespace ImsInformed.IO
             model.Axes.Add(
                 new LinearAxis
                     {
-                        Title = "Pressure / (Temperature * Voltage) (1 / V))",
+                        Title = "λ (Volts^-1))",
                         Position = AxisPosition.Bottom,
                         MajorGridlineStyle = LineStyle.Solid,
                     });
 
             // Add all the points
-            ObservedPeak[] allPoints = hypothesis.AllObservations.ToArray();
+            IEnumerable<ObservedPeak> onTrackPeaks = hypothesis.OnTrackObservations;
+            IEnumerable<ObservedPeak> offTrackPeaks = hypothesis.AllObservations.Where(x => !hypothesis.IsOnTrack(x));
 
-            Func<object, ScatterPoint> fitPointMap = obj =>
+            Func<ObservedPeak, ScatterPoint> fitPointMap = obj =>
             {
-                ObservedPeak observation = (ObservedPeak)obj;
+                ObservedPeak observation = obj;
                 ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
-                double size = 6 * observation.Statistics.IntensityScore;
-                double color = hypothesis.IsOnTrack(observation) ? 0 : 1;
-                ScatterPoint sp = new ScatterPoint(xyPoint.X, xyPoint.Y, size, color);
+                double size = MapToPointSize(observation);
+                ScatterPoint sp = new ScatterPoint(xyPoint.X, xyPoint.Y, size);
                 return sp;
             };
 
-            model.Axes.Add(new LinearColorAxis()
+            var ontrackSeries= new ScatterSeries
             {
-                Position = AxisPosition.None,
-                HighColor = OxyColors.Red,
-                LowColor = OxyColors.Blue,
-                Minimum = 0.1,
-                Maximum = 0.9,
-                Key = "outlierAxis",
-                Palette =
-                    new OxyPalette(
-                    OxyColor.FromRgb(255, 0, 0),
-                    OxyColor.FromRgb(153, 255, 54))
-            });
+                Title = "[Peaks On Tracks]",
+                MarkerFill = OxyColors.BlueViolet
+            };
 
-            model.Series.Add(new ScatterSeries
+
+            var offtrackSeries= new ScatterSeries
             {
-                Mapping = fitPointMap,
-                ItemsSource = allPoints,
-                ColorAxisKey = "outlierAxis"
-            });
+                Title = "[Peaks Off Tracks]",
+                MarkerFill = OxyColors.Red
+            };
+
+            ontrackSeries.Points.AddRange(onTrackPeaks.Select(x => fitPointMap(x))); 
+
+            offtrackSeries.Points.AddRange(offTrackPeaks.Select(x => fitPointMap(x))); 
+
+            model.Series.Add(ontrackSeries);
+
+            model.Series.Add(offtrackSeries);
 
             var allTracks = hypothesis.Tracks;
 
@@ -225,6 +270,12 @@ namespace ImsInformed.IO
             return model;
         }
 
+        private static double MapToPointSize(ObservedPeak observation)
+        {
+            double size =  10 * observation.Statistics.IntensityScore;
+            return size < 2 ? 2 : size;
+        }
+
         /// <summary>
         /// The mobility fit FitLine plot.
         /// </summary>
@@ -234,7 +285,7 @@ namespace ImsInformed.IO
         /// <returns>
         /// The <see cref="PlotModel"/>.
         /// </returns>
-        private static PlotModel MobilityFitLinePlot(FitLine fitline)
+        private PlotModel MobilityFitLinePlot(FitLine fitline)
         {
 
             IEnumerable<ContinuousXYPoint> fitPointList = fitline.FitPointCollection;
@@ -261,28 +312,16 @@ namespace ImsInformed.IO
             model.TitlePadding = 0;
             model.Title = "Mobility Fit FitLine";
 
-            LinearColorAxis outlierAxis = new LinearColorAxis()
-            {
-                Position = AxisPosition.None,
-                HighColor = OxyColors.Red,
-                LowColor = OxyColors.Blue,
-                Minimum = 0.1,
-                Maximum = 0.9,
-                Palette = new OxyPalette(OxyColor.FromRgb(255, 0, 0), OxyColor.FromRgb(153, 255, 54))
-            };
-
             ScatterSeries fitPointSeries = new ScatterSeries
             {
                 Mapping = fitPointMap,
                 ItemsSource = fitPointList,
-                ColorAxisKey = "outlierAxis"
             };
 
             ScatterSeries outlierSeries = new ScatterSeries
             {
                 Mapping = OutlierPointMap,
                 ItemsSource = outlierList,
-                ColorAxisKey = "outlierAxis"
             };
 
             Func<object, DataPoint> lineMap = obj => 
@@ -329,8 +368,6 @@ namespace ImsInformed.IO
                 //FilterMaxValue = 2000,
             };
 
-            outlierAxis.Key = "outlierAxis";
-            model.Axes.Add(outlierAxis);
             model.Axes.Add(yAxis);
             model.Axes.Add(xAxis);
             model.Series.Add(fitPointSeries);

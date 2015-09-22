@@ -28,8 +28,10 @@ namespace ImsInformed.IO
     using OxyPlot.Series;
     using OxyPlot.Wpf;
 
+    using HorizontalAlignment = OxyPlot.HorizontalAlignment;
     using LinearAxis = OxyPlot.Axes.LinearAxis;
     using LinearColorAxis = OxyPlot.Axes.LinearColorAxis;
+    using LineAnnotation = OxyPlot.Annotations.LineAnnotation;
     using LineSeries = OxyPlot.Series.LineSeries;
     using ScatterSeries = OxyPlot.Series.ScatterSeries;
     using SvgExporter = OxyPlot.Wpf.SvgExporter;
@@ -245,26 +247,34 @@ namespace ImsInformed.IO
             var allTracks = hypothesis.Tracks;
 
             // Add the tracks as linear axes
+            int count = 1;
             foreach (var track in allTracks)
             {
                 FitLine fitline = track.FitLine;
+                LineAnnotation annotation = new LineAnnotation();
+                annotation.Slope = fitline.Slope;
+                annotation.Intercept = fitline.Intercept;
+                annotation.TextMargin = 2;
+                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; Isotopic Score: {2:F2};, Track Probability: {3:F2};", 
+                    count, track.AverageMzInDalton, track.TrackStatistics.IsotopicScore, track.TrackProbability);
+                count++;
+                model.Annotations.Add(annotation);
+                //Func<object, DataPoint> lineMap = obj =>
+                //{
+                //    ObservedPeak observation = (ObservedPeak)obj;
+                //    ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
+                //    double x = xyPoint.X;
+                //    double y = fitline.ModelPredictX2Y(x);
+                //    DataPoint sp = new DataPoint(x, y);
+                //    return sp;
+                //};
 
-                Func<object, DataPoint> lineMap = obj =>
-                {
-                    ObservedPeak observation = (ObservedPeak)obj;
-                    ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
-                    double x = xyPoint.X;
-                    double y = fitline.ModelPredictX2Y(x);
-                    DataPoint sp = new DataPoint(x, y);
-                    return sp;
-                };
-
-                model.Series.Add(new LineSeries()
-                {
-                    Mapping = lineMap,
-                    ItemsSource = track.ObservedPeaks,
-                    Color = OxyColors.Purple
-                });
+                //model.Series.Add(new LineSeries()
+                //{
+                //    Mapping = lineMap,
+                //    ItemsSource = track.ObservedPeaks,
+                //    Color = OxyColors.Purple
+                //});
             }
 
             return model;

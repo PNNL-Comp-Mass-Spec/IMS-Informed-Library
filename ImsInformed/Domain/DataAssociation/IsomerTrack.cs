@@ -314,7 +314,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <returns>
         /// The <see cref="IdentifiedIsomerInfo"/>.
         /// </returns>
-        public IdentifiedIsomerInfo ExportIdentifiedIsomerInfo(double viperCompatibleMass, int minFitPoints, double minR2, IImsTarget target)
+        public IdentifiedIsomerInfo ExportIdentifiedIsomerInfo(double viperCompatibleMass, int minFitPoints, double minR2, IImsTarget target, double bestMzInPpm)
         {
             double averageVoltageGroupStabilityScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(this.definedVoltageGroups);
 
@@ -336,7 +336,8 @@ namespace ImsInformed.Domain.DataAssociation
                 this.ConcludeStatus(minFitPoints, minR2),
                 this.TrackStatistics,
                 target,
-                this.mobilityInfo.T0
+                this.mobilityInfo.T0,
+                bestMzInPpm
                 );
             return info;
         }

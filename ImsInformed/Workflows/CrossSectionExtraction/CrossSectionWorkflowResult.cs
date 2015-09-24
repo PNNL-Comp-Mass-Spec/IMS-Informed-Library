@@ -20,6 +20,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Scoring;
     using ImsInformed.Targets;
+    using ImsInformed.Util;
 
     /// <summary>
     /// The molecule informed workflow result.
@@ -123,6 +124,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="averageVoltageGroupStability"></param>
         /// <param name="datasetPath"></param>
         /// <param name="analysisDirectory"></param>
+        /// <param name="dateTime"></param>
         public CrossSectionWorkflowResult(
             string datasetPath,
             IImsTarget target, 
@@ -238,8 +240,12 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             IEnumerable<PeakScores> allFeatureStatistics = allPeaks.Select(x => x.Statistics);
             PeakScores averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
 
-            IEnumerable<IsomerTrack> tracks = optimalHypothesis.Tracks;
-            IList<IdentifiedIsomerInfo> isomersInfo = tracks.Select(x => x.ExportIdentifiedIsomerInfo(viperCompatibleMass, parameters.MinFitPoints, parameters.MinR2, target)).ToList();
+            IEnumerable<IsomerTrack> tracks = optimalHypothesis.Tracks.ToList();
+
+            // Find the conformer with the closest m/z
+            IsomerTrack trackWithBestMz = tracks.OrderBy(x => Math.Abs(Metrics.DaltonToPpm(x.AverageMzInDalton - target.MassWithAdduct, target.MassWithAdduct))).First();
+            double bestMzInPpm = Metrics.DaltonToPpm(trackWithBestMz.AverageMzInDalton - target.MassWithAdduct, target.MassWithAdduct);
+            IList<IdentifiedIsomerInfo> isomersInfo = tracks.Select(x => x.ExportIdentifiedIsomerInfo(viperCompatibleMass, parameters.MinFitPoints, parameters.MinR2,  target, bestMzInPpm)).ToList();
             
             AnalysisStatus finalStatus = TrackToHypothesisConclusionLogic(isomersInfo.Select(info => info.AnalysisStatus));
 

@@ -15,6 +15,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     using ImsInformed.Domain;
     using ImsInformed.Scoring;
     using ImsInformed.Targets;
+    using ImsInformed.Util;
 
     /// <summary>
     ///     The isomer result.
@@ -55,6 +56,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public readonly double MzInDalton;
 
         public readonly double MzInPpm;
+
+        public readonly double RelativeMzInPpm;
 
         /// <summary>
         ///     The points used.
@@ -116,7 +119,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             AnalysisStatus analysisStatus, 
             PeakScores peakScores,
             IImsTarget target,
-            double t0)
+            double t0,
+            double bestMzInPpm)
         {
             this.NumberOfFeaturePointsUsed = numberOfFeaturePointsUsed;
             this.RSquared = rSquared;
@@ -129,7 +133,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.PeakScores = peakScores;
             this.T0 = t0;
             this.MzInDalton = mzInDalton;
-            this.MzInPpm = Util.Metrics.DaltonToPpm(mzInDalton - target.MassWithAdduct, target.MassWithAdduct);
+            this.MzInPpm = Metrics.DaltonToPpm(mzInDalton - target.MassWithAdduct, target.MassWithAdduct);
+            this.RelativeMzInPpm = Math.Abs(MzInPpm - bestMzInPpm);
         }
     }
 }

@@ -61,8 +61,8 @@ namespace ImsInformed.IO
             //int width = 450;
             //int height = 256;
 
-            int width = 900;
-            int height = 512;
+            int width = 900 / 4 * 3;
+            int height = 512 / 4 * 3;
             PlotModel associationHypothsisPlot = this.AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor);
             associationHypothsisPlot = this.AnnotateRemovedPeaks(associationHypothsisPlot, preFilteredPeaks);
             this.PlotDiagram(plotLocation, associationHypothsisPlot, width, height);
@@ -186,9 +186,9 @@ namespace ImsInformed.IO
             PlotModel model = new PlotModel();
 
             model.LegendBorderThickness = 0;
-            model.LegendOrientation = LegendOrientation.Horizontal;
-            model.LegendPlacement = LegendPlacement.Outside;
-            model.LegendPosition = LegendPosition.BottomLeft;
+            model.LegendOrientation = LegendOrientation.Vertical;
+            model.LegendPlacement = LegendPlacement.Inside;
+            model.LegendPosition = LegendPosition.LeftTop;
 
             model.TitlePadding = 0;
             // model.Title = "Association Hypothesis Plot";
@@ -254,8 +254,9 @@ namespace ImsInformed.IO
                 LineAnnotation annotation = new LineAnnotation();
                 annotation.Slope = fitline.Slope;
                 annotation.Intercept = fitline.Intercept;
+                annotation.TextPadding = 3;
                 annotation.TextMargin = 2;
-                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; Isotopic Score: {2:F2};, Track Probability: {3:F2};", 
+                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; Isotopic Score: {2:F2}; Track Probability: {3:F2};", 
                     count, track.AverageMzInDalton, track.TrackStatistics.IsotopicScore, track.TrackProbability);
                 count++;
                 model.Annotations.Add(annotation);
@@ -282,7 +283,7 @@ namespace ImsInformed.IO
 
         private static double MapToPointSize(ObservedPeak observation)
         {
-            double size =  10 * observation.Statistics.IntensityScore;
+            double size =  8 * observation.Statistics.IntensityScore;
             return size < 2 ? 2 : size;
         }
 

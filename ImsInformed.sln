@@ -1,18 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImsInformed", "ImsInformed\ImsInformed.csproj", "{2AB9291A-A662-47DC-B1CC-95BD81F03A2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImsInformedTests", "ImsInformedTests\ImsInformedTests.csproj", "{0B528F85-C20A-48B1-91D2-ABACEC864971}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{75C4A2D0-7BEB-4E0D-A106-9DC10A66F781}"
-	ProjectSection(SolutionItems) = preProject
-		ImsInformed.vsmdi = ImsInformed.vsmdi
-		Local.testsettings = Local.testsettings
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

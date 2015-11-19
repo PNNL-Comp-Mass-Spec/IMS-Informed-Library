@@ -71,9 +71,9 @@ namespace ImsInformed.Util
         /// </returns>
         public static List<FeatureBlob> FindPeakUsingWatershed(List<IntensityPoint> intensityPoints, SavitzkyGolaySmoother smoother, double featureFilterLevel)
         {
-            // Smooth Chromatogram
             IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPoints);
-            smoother.Smooth(ref pointList);
+            
+            // Ignore the smoother for now as it distort peak apexs arbitrarily. smoother.Smooth(ref pointList);
             
             // Peak Find Chromatogram
             List<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList).ToList();

@@ -174,6 +174,7 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
+         [TestCase("C6H14O12P2", IonizationMethod.Deprotonated, "Fructose-1-6-diphosphate", @"Z:\MixedDatasets\Mix\20151110_mix1_neg0001.uimf", Result=2)]
         [TestCase("C10H12N3O3PS2", IonizationMethod.Sodiumated, "AZY+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf", Result=2)]
         [TestCase("C12H6F2N2O2",IonizationMethod.Sodiumated, "FIL+Na",  @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
         [TestCase("C18H12Cl2N2O", IonizationMethod.Deprotonated, "BAD-H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_neg_13Oct14_Columbia_DI.uimf", Result = 1)]

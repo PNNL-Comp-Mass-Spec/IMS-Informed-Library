@@ -73,6 +73,9 @@ namespace ImsInformed.Domain
         /// </param>
         public StandardImsPeak(FeatureBlob watershedFeature, DataReader uimfReader, VoltageGroup voltageGroup, double targetMz, double massToleranceInPpm)
         {
+            // I know this is a really convoluted way for peak detection and characterization. But unless the multidimensional peak finder can perform true
+            // 2D peak detections on the m/z and drift time axes instead of only rentention time and m/z time, we are stuck with this 1D peak detectors 
+            // for 2D operations. Wish there is funding so we can continue developing on multidimensional peak finder.
             double tofWidthInSeconds = voltageGroup.AverageTofWidthInSeconds;
 
             if (watershedFeature.Statistics == null)

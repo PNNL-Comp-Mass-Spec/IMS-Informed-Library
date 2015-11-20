@@ -296,7 +296,7 @@ namespace ImsInformed.Domain.DirectInjection
             // guilty until proven innocent
             bool similarity = false;
 
-            const double MinDifferentialVoltage = 5;
+            const double MinDifferentialVoltage = 4;
             
             // if first voltage, declare it as similar.
             if ((false) ||

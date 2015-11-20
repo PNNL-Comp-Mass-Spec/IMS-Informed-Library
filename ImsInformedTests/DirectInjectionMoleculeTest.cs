@@ -174,6 +174,9 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
+        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"Z:\choline\20151113_choline0001.uimf", Result=1)]
+        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"Z:\choline\20151113_choline0002.uimf", Result=1)]
+        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"Z:\choline\20151113_choline0003.uimf", Result=1)]
         [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"Z:\choline\20151113_choline0004.uimf", Result=1)]
         [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"Z:\choline\20151113_choline0005.uimf", Result=1)]
         [TestCase("C10H12N3O3PS2", IonizationMethod.Sodiumated, "AZY+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf", Result=2)]

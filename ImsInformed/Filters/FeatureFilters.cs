@@ -38,7 +38,7 @@ namespace ImsInformed.Filters
         /// </returns>
         public static bool FilterExtremeDriftTime(StandardImsPeak feature, int totalImsScans)
         {
-            int scanImsRep = feature.HighestPeakApex.DriftTimeCenterInScanNumber;
+            int scanImsRep = feature.PeakApex.DriftTimeCenterInScanNumber;
 
             // Nullify the intensity score if the Scan is in 1% scans left or right areas.
             int errorMargin = (int)Math.Round(totalImsScans * 0.01);
@@ -108,7 +108,7 @@ namespace ImsInformed.Filters
         /// </returns>
         public static bool FilterHighMzDistance(StandardImsPeak feature, DriftTimeTarget target, double matchingMassToleranceInPpm)
         {
-            double massDifferenceInDalton = feature.HighestPeakApex.MzCenterInDalton - target.MassWithAdduct;
+            double massDifferenceInDalton = feature.PeakApex.MzCenterInDalton - target.MassWithAdduct;
             double massDifferenceInPpm = massDifferenceInDalton / target.MassWithAdduct * 1000000;
             return Math.Abs(massDifferenceInPpm) > matchingMassToleranceInPpm;
         }

@@ -24,9 +24,9 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
         public DiffusionProfileDescriptor(ObservedPeak observation)
         {
             this.ArrivalTimeCenterLocation = observation.Peak.PeakCenterLocationOnArrivalTime();
-            this.ArrivalTimeDiffusionWidthInMs = observation.Peak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs - observation.Peak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
+            this.ArrivalTimeDiffusionWidthInMs = observation.Peak.PeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs - observation.Peak.PeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
             this.MzCenterLocation = observation.Peak.PeakCenterLocationOnMz();
-            this.MzDiffusionWidthInPpm = Metrics.DaltonToPpm(observation.Peak.HighestPeakApex.MzFullWidthHalfMaxHigh - observation.Peak.HighestPeakApex.MzFullWidthHalfMaxLow, observation.Peak.HighestPeakApex.MzCenterInDalton);
+            this.MzDiffusionWidthInPpm = Metrics.DaltonToPpm(observation.Peak.PeakApex.MzFullWidthHalfMaxHigh - observation.Peak.PeakApex.MzFullWidthHalfMaxLow, observation.Peak.PeakApex.MzCenterInDalton);
         }
 
         /// <summary>

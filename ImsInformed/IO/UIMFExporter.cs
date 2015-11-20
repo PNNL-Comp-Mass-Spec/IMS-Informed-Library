@@ -16,6 +16,7 @@ namespace ImsInformed.IO
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Util;
@@ -68,7 +69,7 @@ namespace ImsInformed.IO
         /// </returns>
         public bool ExportVoltageGroupAsSingleFrameUimf(string outputPath, VoltageGroup voltageGroup, DataReader originalUIMF, bool averageNotSum, int startScan, int endScan, int startBin, int endBin, double xCompression, double yCompression, bool fullScan)
         {
-            int startingFrame = voltageGroup.FirstFirstFrameNumber;
+            int startingFrame = voltageGroup.FirstFrameNumber;
             int endingFrame = voltageGroup.LastFrameNumber;
 
                 FrameParams frameParam = originalUIMF.GetFrameParams(startingFrame);
@@ -105,7 +106,7 @@ namespace ImsInformed.IO
                 uimfWriter.InsertGlobal(newGlobalParams);
 
                 // Insert the single frame.
-                FrameParams newFrameParams = originalUIMF.GetFrameParams(voltageGroup.FirstFirstFrameNumber);
+                FrameParams newFrameParams = originalUIMF.GetFrameParams(voltageGroup.FirstFrameNumber);
                 if (averageNotSum)
                 {
                     int postProcessingAccumulation = averageNotSum ? 1 : voltageGroup.FrameAccumulationCount;
@@ -128,7 +129,7 @@ namespace ImsInformed.IO
                         1,
                         newFrameParams,
                         scan,
-                        scanData,
+                        scanData.ToList(),
                         newGlobalParams.BinWidth);
                 }
 

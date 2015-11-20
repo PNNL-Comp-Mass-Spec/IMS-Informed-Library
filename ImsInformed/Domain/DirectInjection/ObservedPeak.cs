@@ -93,7 +93,7 @@ namespace ImsInformed.Domain.DirectInjection
             if (this.ObservationType == ObservationType.Peak)
             {
                 double voltageGroupDescriptor = this.VoltageGroup.MeanVoltageInVolts;
-                double peakDescriptor = this.Peak.HighestPeakApex.DriftTimeCenterInMs;
+                double peakDescriptor = this.Peak.PeakApex.DriftTimeCenterInMs;
                 double intensity = this.Peak.SummedIntensities;
 
                 return string.Format("[{0:F2} V, {1:F2}, {2:F0}]", voltageGroupDescriptor, peakDescriptor, intensity);
@@ -115,7 +115,7 @@ namespace ImsInformed.Domain.DirectInjection
             if (this.mobilityPoint == null)
             {
                 // convert drift time to SI unit seconds
-                double y = this.Peak.HighestPeakApex.DriftTimeCenterInMs;
+                double y = this.Peak.PeakApex.DriftTimeCenterInMs;
                 
                 // P/(T*V) value in pascal per (volts * kelvin)
                 double x = this.VoltageGroup.MeanPressureNondimensionalized / 

@@ -229,7 +229,7 @@ namespace ImsInformed.Domain.DataAssociation
                 int peakCount = this.RealPeakCount;
                 foreach (var peak in this.ObservedPeaks)
                 {
-                    mzAverage += peak.Peak.HighestPeakApex.MzCenterInDalton;
+                    mzAverage += peak.Peak.PeakApex.MzCenterInDalton;
                 }
 
                 return mzAverage / peakCount;
@@ -422,7 +422,7 @@ namespace ImsInformed.Domain.DataAssociation
         private ArrivalTimeSnapShot ExtractArrivalTimeSnapShot(ObservedPeak peak)
         {
             ArrivalTimeSnapShot snapShot;
-            snapShot.MeasuredArrivalTimeInMs = peak.Peak.HighestPeakApex.DriftTimeCenterInMs;
+            snapShot.MeasuredArrivalTimeInMs = peak.Peak.PeakApex.DriftTimeCenterInMs;
             snapShot.PressureInTorr = peak.VoltageGroup.MeanPressureInTorr;
             snapShot.TemperatureInKelvin = peak.VoltageGroup.MeanTemperatureInKelvin;
             snapShot.DriftTubeVoltageInVolt = peak.VoltageGroup.MeanVoltageInVolts;

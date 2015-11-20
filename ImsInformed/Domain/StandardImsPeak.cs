@@ -92,19 +92,19 @@ namespace ImsInformed.Domain
             this.MinRetentionTimeInFrameNumber = watershedFeature.Statistics.ScanLcMin;
             this.MaxRetentionTimeInFrameNumber = watershedFeature.Statistics.ScanLcMax;
 
-            ImsApex highestPeakApex;
+            ImsApex peakApex;
             int driftTimeScan = watershedFeature.Statistics.ScanImsRep;
             this.SummedIntensities = watershedFeature.Statistics.SumIntensities;
             
-            highestPeakApex.DriftTimeCenterInScanNumber = driftTimeScan;
-            highestPeakApex.DriftTimeCenterInMs = tofWidthInSeconds * driftTimeScan * 1000;
+            peakApex.DriftTimeCenterInScanNumber = driftTimeScan;
+            peakApex.DriftTimeCenterInMs = tofWidthInSeconds * driftTimeScan * 1000;
 
             // Note this works for direct injection. But in fact you see this method requires voltageGroup, which is only used in direct injection. You got the idea
-            highestPeakApex.RetentionTimeCenterInFrameNumber = 0;
-            highestPeakApex.RetentionTimeCenterInMinutes = 0;
+            peakApex.RetentionTimeCenterInFrameNumber = 0;
+            peakApex.RetentionTimeCenterInMinutes = 0;
             
-            highestPeakApex.MzCenterInBinNumber = 0;
-            highestPeakApex.MzCenterInDalton = 0;
+            peakApex.MzCenterInBinNumber = 0;
+            peakApex.MzCenterInDalton = 0;
 
             // TODO : Add centerMz edge there too.
             double[] mzArray;
@@ -113,49 +113,67 @@ namespace ImsInformed.Domain
             double targetMzMax = targetMz * (1 + massToleranceInPpm / 1000000);
 
             // Somehow frame is zero indexed instead
-            uimfReader.GetSpectrum(voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
+            uimfReader.GetSpectrum(voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
             
             if (mzArray.Count() != 0)
             {
                 int indexOfMax = intensitiesArray.ToList().IndexOf(intensitiesArray.Max());
-                highestPeakApex.MzCenterInDalton = mzArray[intensitiesArray.ToList().IndexOf(intensitiesArray.Max())];
+                peakApex.MzCenterInDalton = mzArray[intensitiesArray.ToList().IndexOf(intensitiesArray.Max())];
 
                 // Get the full width half max window intensity in centerMz
                 double halfMax = intensitiesArray[indexOfMax] / 2;
             
 
-                highestPeakApex.MzFullWidthHalfMaxLow = mzArray[0];
+                peakApex.MzFullWidthHalfMaxLow = mzArray[0];
                 for (int i = indexOfMax; i > 0; i--)
                 {
                     if (intensitiesArray[i] < halfMax)
                     {
-                        highestPeakApex.MzFullWidthHalfMaxLow = mzArray[i];
+                        peakApex.MzFullWidthHalfMaxLow = mzArray[i];
                     }
                 }
 
                 int count = mzArray.Count();
-                highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[count - 1];
+                peakApex.MzFullWidthHalfMaxHigh = mzArray[count - 1];
                 for (int i = indexOfMax; i < mzArray.Count(); i++)
                 {
                     if (intensitiesArray[i] < halfMax)
                     {
-                        highestPeakApex.MzFullWidthHalfMaxHigh = mzArray[i];
+                        peakApex.MzFullWidthHalfMaxHigh = mzArray[i];
                     }
                 }
 
-                double deltaLowInPpm = (highestPeakApex.MzCenterInDalton - highestPeakApex.MzFullWidthHalfMaxLow) / highestPeakApex.MzCenterInDalton * 1000000;
-                double deltaHighInPpm = (highestPeakApex.MzFullWidthHalfMaxHigh - highestPeakApex.MzCenterInDalton) / highestPeakApex.MzCenterInDalton * 1000000;
-                highestPeakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
+                
+                double deltaLowInPpm = (peakApex.MzCenterInDalton - peakApex.MzFullWidthHalfMaxLow) / peakApex.MzCenterInDalton * 1000000;
+                double deltaHighInPpm = (peakApex.MzFullWidthHalfMaxHigh - peakApex.MzCenterInDalton) / peakApex.MzCenterInDalton * 1000000;
+                peakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
 
                 // Get the full width half max in NormalizedDriftTimeInMs
-                highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs = this.MaxDriftTimeInMs;
-                highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs = this.MinDriftTimeInMs;
+                peakApex.DriftTimeFullWidthHalfMaxHigherBondInMs = this.MaxDriftTimeInMs;
+                peakApex.DriftTimeFullWidthHalfMaxLowerBondInMs = this.MinDriftTimeInMs;
 
-                highestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber = this.MaxDriftTimeInScanNumber;
-                highestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MinDriftTimeInScanNumber;
+                peakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber = this.MaxDriftTimeInScanNumber;
+                peakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber = this.MinDriftTimeInScanNumber;
 
-                highestPeakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(highestPeakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs   - highestPeakApex.DriftTimeCenterInMs));
-                this.HighestPeakApex = highestPeakApex;
+                peakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(peakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs   - peakApex.DriftTimeCenterInMs));
+
+                this.PeakApex = peakApex;
+                
+                this.MinMzInDalton = peakApex.MzCenterInDalton - ( peakApex.MzCenterInDalton - peakApex.MzFullWidthHalfMaxLow) * 2;
+                this.MaxMzInDalton = peakApex.MzCenterInDalton + (peakApex.MzFullWidthHalfMaxHigh - peakApex.MzCenterInDalton) * 2;
+
+                // quick and dirty fix: reacquire the peak drift time apex.
+                ExtractedIonChromatogram xic = ExtractedIonChromatogram.AverageXICFromFrames(uimfReader, 
+                    voltageGroup.FirstFrameNumber, 
+                    voltageGroup.LastFrameNumber,
+                    (this.MinMzInDalton + this.MaxMzInDalton) / 2,
+                    (this.MaxMzInDalton - this.MinMzInDalton) / 2 / this.PeakApex.MzCenterInDalton * 1000000,
+                    (this.MinDriftTimeInMs + this.MaxDriftTimeInMs) / 2,
+                    (this.MaxDriftTimeInMs - this.MinDriftTimeInMs) / 2);
+                double imsScanAccurate = xic.IntensityPoints.OrderByDescending(x => x.Intensity).First().ScanIms * tofWidthInSeconds * 1000;
+                peakApex.DriftTimeCenterInMs = imsScanAccurate;
+
+                
             }
         }
 
@@ -174,7 +192,7 @@ namespace ImsInformed.Domain
 
         public ImsApex CenterOfMassApex { get; private set; }
 
-        public ImsApex HighestPeakApex { get; private set; }
+        public ImsApex PeakApex { get; private set; }
 
         public int MinDriftTimeInScanNumber { get; private set; }
 
@@ -242,15 +260,15 @@ namespace ImsInformed.Domain
     {
         public static double PeakCenterLocationOnMz(this StandardImsPeak peak)
         {
-            double frontalPortion = peak.HighestPeakApex.MzCenterInDalton - peak.HighestPeakApex.MzFullWidthHalfMaxLow;
-            double fullPeakWidth = peak.HighestPeakApex.MzFullWidthHalfMaxHigh - peak.HighestPeakApex.MzFullWidthHalfMaxLow;
+            double frontalPortion = peak.PeakApex.MzCenterInDalton - peak.PeakApex.MzFullWidthHalfMaxLow;
+            double fullPeakWidth = peak.PeakApex.MzFullWidthHalfMaxHigh - peak.PeakApex.MzFullWidthHalfMaxLow;
             return frontalPortion / fullPeakWidth;
         }
 
         public static double PeakCenterLocationOnArrivalTime(this StandardImsPeak peak)
         {
-            double frontalPortion = peak.HighestPeakApex.DriftTimeCenterInMs - peak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
-            double fullPeakWidth = peak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs - peak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
+            double frontalPortion = peak.PeakApex.DriftTimeCenterInMs - peak.PeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
+            double fullPeakWidth = peak.PeakApex.DriftTimeFullWidthHalfMaxHigherBondInMs - peak.PeakApex.DriftTimeFullWidthHalfMaxLowerBondInMs;
             return frontalPortion / fullPeakWidth;
         }
     }

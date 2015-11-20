@@ -227,7 +227,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             
                     // Score features
                     IDictionary<StandardImsPeak, PeakScores> scoresTable = new Dictionary<StandardImsPeak, PeakScores>();
-                    Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFirstFrameNumber, voltageGroup.LastFrameNumber));
+                    Trace.WriteLine(string.Format("    Voltage Group: {0:F4} V, [{1}-{2}]", voltageGroup.MeanVoltageInVolts, voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber));
 
                     foreach (StandardImsPeak peak in standardPeaks)
                     {   
@@ -264,16 +264,16 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
                         PeakScores currentStatistics = scoresTable[peak];
                         Trace.WriteLine(string.Empty);
                         Trace.WriteLine(string.Format("        Candidate feature found at drift time {0:F2} ms (scan number {1})",
-                            peak.HighestPeakApex.DriftTimeCenterInMs,
-                            peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+                            peak.PeakApex.DriftTimeCenterInMs,
+                            peak.PeakApex.DriftTimeCenterInScanNumber));
                         Trace.WriteLine(
                             string.Format(
-                                "            M/Z: {0:F2} Dalton", peak.HighestPeakApex.MzCenterInDalton));
+                                "            M/Z: {0:F2} Dalton", peak.PeakApex.MzCenterInDalton));
                         Trace.WriteLine(
                             string.Format(
                                 "            Drift time: {0:F2} ms (scan number {1})",
-                                peak.HighestPeakApex.DriftTimeCenterInMs,
-                                peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+                                peak.PeakApex.DriftTimeCenterInMs,
+                                peak.PeakApex.DriftTimeCenterInScanNumber));
                         Trace.WriteLine(
                             string.Format("            MzInDalton difference: {0:F2} ppm", distance.MassDifferenceInPpm));
                         

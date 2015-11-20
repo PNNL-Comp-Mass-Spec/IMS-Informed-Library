@@ -115,6 +115,25 @@ namespace ImsInformed.Domain.DirectInjection
             this.NumberOfMobilityScans = param.Scans;
         }
 
+        public static ExtractedIonChromatogram AverageXICFromFrames(DataReader uimfReader, int frameNumberFrom, int frameNumberTo, double centerMz, double massToleranceInPpm, double centerDriftTimeInMs, double driftTimeErrorInMs)
+        {
+            ExtractedIonChromatogram result = new ExtractedIonChromatogram();
+            for (     int i = frameNumberFrom; i <= frameNumberTo; i++)
+            {
+                var xic = new ExtractedIonChromatogram(uimfReader, i, centerMz, massToleranceInPpm, centerDriftTimeInMs, driftTimeErrorInMs);
+                if (i == frameNumberFrom)
+                {
+                    result = xic;
+                }
+                else
+                {
+                    result += xic;
+                }
+            }
+            
+            return result;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
         /// XIC is a list of intensity points sorted by Mobility Scan number from low to high.
@@ -131,7 +150,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             if (a.NumberOfMobilityScans != b.NumberOfMobilityScans || !a.CenterMz.Equals(b.CenterMz))
             {
-                throw new InvalidOperationException("Cannot sum XICs with different mobilities or MZ.");
+                throw new InvalidOperationException("Cannot sum XICs with different number of mobilities or different MZ.");
             }
 
             this.CenterMz = a.CenterMz;

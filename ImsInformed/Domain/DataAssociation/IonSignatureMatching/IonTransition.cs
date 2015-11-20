@@ -50,11 +50,11 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
                 DiffusionProfileDescriptor descriptorSource = new DiffusionProfileDescriptor(source);
                 DiffusionProfileDescriptor descriptorTarget = new DiffusionProfileDescriptor(sink);
 
-                double mzDifference = Math.Abs(source.Peak.HighestPeakApex.MzCenterInDalton - sink.Peak.HighestPeakApex.MzCenterInDalton);
+                double mzDifference = Math.Abs(source.Peak.PeakApex.MzCenterInDalton - sink.Peak.PeakApex.MzCenterInDalton);
 
                 this.MzDifferenceInPpm = Metrics.DaltonToPpm(
                     mzDifference,
-                    (source.Peak.HighestPeakApex.MzCenterInDalton + sink.Peak.HighestPeakApex.MzCenterInDalton) / 2);
+                    (source.Peak.PeakApex.MzCenterInDalton + sink.Peak.PeakApex.MzCenterInDalton) / 2);
 
                 this.IntensityDifferenceInPercentageOfMax = Math.Abs(source.Peak.SummedIntensities - sink.Peak.SummedIntensities) / Math.Max(source.Peak.SummedIntensities,     sink.Peak.SummedIntensities);
 
@@ -151,7 +151,7 @@ namespace ImsInformed.Domain.DataAssociation.IonSignatureMatching
         private double EnteringProbability(ObservedPeak peak)
         {
             VoltageGroup vg = peak.VoltageGroup;
-            double result =  1 - (double)vg.FirstFirstFrameNumber / vg.TotalNumberOfFramesInData;
+            double result =  1 - (double)vg.FirstFrameNumber / vg.TotalNumberOfFramesInData;
             return result;
         }
     }

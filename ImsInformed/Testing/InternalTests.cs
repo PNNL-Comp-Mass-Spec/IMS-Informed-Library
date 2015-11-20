@@ -302,7 +302,7 @@ namespace ImsInformed.Testing
              {
                  Console.WriteLine("Voltage group: {0} V, Frame {1}-{2}, {3:F2}K, {4:F2}Torr", 
                      voltageGroup.MeanVoltageInVolts, 
-                     voltageGroup.FirstFirstFrameNumber, 
+                     voltageGroup.FirstFrameNumber, 
                      voltageGroup.LastFrameNumber,
                      voltageGroup.MeanTemperatureInKelvin,
                      voltageGroup.MeanPressureInTorr);
@@ -373,7 +373,7 @@ namespace ImsInformed.Testing
                      double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(featurePeak, workflow.uimfReader, workflow.Parameters.MzWindowHalfWidthInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                      
                      // Report all features.
-                     Console.WriteLine(" feature found at scan number {0}", featurePeak.HighestPeakApex.DriftTimeCenterInScanNumber);
+                     Console.WriteLine(" feature found at scan number {0}", featurePeak.PeakApex.DriftTimeCenterInScanNumber);
                      Console.WriteLine("     IntensityScore: {0}", intensityScore);
                      Console.WriteLine("     peakShapeScore: {0}", peakShapeScore);
                      Console.WriteLine("     isotopicScore - Angle:    {0}", isotopicScoreAngle);
@@ -508,42 +508,42 @@ namespace ImsInformed.Testing
                      double peakShapeScore = FeatureScoreUtilities.PeakShapeScore(peak, workflow.uimfReader, workflow.Parameters.MzWindowHalfWidthInPpm, workflow.Parameters.DriftTimeToleranceInMs, voltageGroup, globalMaxIntensity, workflow.NumberOfScans);
                      
                      // Report all features.
-                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
+                     if (peak.PeakApex.DriftTimeCenterInScanNumber == 115)
                      {
                          Console.Write("{0:F4} ", intensityScore);
                          found = true;
                      }
          
                      // Report all features.
-                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
+                     if (peak.PeakApex.DriftTimeCenterInScanNumber == 115)
                      {
                          Console.Write("{0:F4} ", isotopicScoreDistance);
                          found = true;
                      }
          
                      // Report all features.
-                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
+                     if (peak.PeakApex.DriftTimeCenterInScanNumber == 115)
                      {
                          Console.Write("{0:F4} ", isotopicScoreDistanceAlternative);
                          found = true;
                      }
          
                      // Report all features.
-                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
+                     if (peak.PeakApex.DriftTimeCenterInScanNumber == 115)
                      {
                          Console.Write("{0:F4} ", isotopicScoreAngle);
                          found = true;
                      }
          
                      // Report all features.
-                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
+                     if (peak.PeakApex.DriftTimeCenterInScanNumber == 115)
                      {
                          Console.Write("{0:F4} ", isotopicScorePerson);
                          found = true;
                      }
          
                      // Report all features.
-                     if (peak.HighestPeakApex.DriftTimeCenterInScanNumber == 115)
+                     if (peak.PeakApex.DriftTimeCenterInScanNumber == 115)
                      {
                          Console.Write("{0:F4} ", isotopicScoreBhattacharyya);
                          found = true;

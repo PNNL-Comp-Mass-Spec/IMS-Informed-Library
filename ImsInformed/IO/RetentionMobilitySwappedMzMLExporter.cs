@@ -40,7 +40,7 @@ namespace ImsInformed.IO
 
         public bool ExportMzML(string sourceUIMFPath, string outputPath, VoltageGroup voltageGroup, DataReader originalUIMF, bool averageNotSum)
         {
-            FrameParams frameParam = originalUIMF.GetFrameParams(voltageGroup.FirstFirstFrameNumber);
+            FrameParams frameParam = originalUIMF.GetFrameParams(voltageGroup.FirstFrameNumber);
             GlobalParams globalParams = originalUIMF.GetGlobalParams();
 
             this.scans = (int)frameParam.GetValueDouble(FrameParamKeyType.Scans);
@@ -204,7 +204,7 @@ namespace ImsInformed.IO
             writer.WriteStartElement("spectrumList");
             writer.WriteAttributeString("count", this.scans.ToString(CultureInfo.InvariantCulture));
 
-            int startingFrame = voltageGroup.FirstFirstFrameNumber;
+            int startingFrame = voltageGroup.FirstFrameNumber;
             int endingFrame = voltageGroup.LastFrameNumber;
             Console.Write("Summing frame[{0} - {1}]...    ", startingFrame, endingFrame);
 
@@ -264,7 +264,7 @@ namespace ImsInformed.IO
                 writer.WriteAttributeString("cvRef", "MS");
                 writer.WriteAttributeString("accession", "MS:1000016");
                 writer.WriteAttributeString("name", "scan start time");
-                writer.WriteAttributeString("value", reader.GetDriftTime(voltageGroup.FirstFirstFrameNumber, lcScan, true).ToString(CultureInfo.InvariantCulture));
+                writer.WriteAttributeString("value", reader.GetDriftTime(voltageGroup.FirstFrameNumber, lcScan, true).ToString(CultureInfo.InvariantCulture));
                 writer.WriteAttributeString("unitCvRef", "UO");
                 writer.WriteAttributeString("unitAccession", "UO:0000031");
                 writer.WriteAttributeString("unitName", "minute");

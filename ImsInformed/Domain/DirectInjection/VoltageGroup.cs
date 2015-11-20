@@ -50,7 +50,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// </param>
         public VoltageGroup(int firstFrameNumber, int totalFramesInData)
         {
-            this.FirstFirstFrameNumber = firstFrameNumber;
+            this.FirstFrameNumber = firstFrameNumber;
             this.MeanVoltageInVolts = 0;
             this.VarianceVoltage = 0;
             this.MeanTemperatureNondimensionalized = 0;
@@ -65,7 +65,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <summary>
         /// Gets the first frame number.
         /// </summary>
-        public int FirstFirstFrameNumber { get; private set; }
+        public int FirstFrameNumber { get; private set; }
 
         /// <summary>
         /// Gets the first frame number.
@@ -74,7 +74,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             get
             {
-                return this.FirstFirstFrameNumber + this.FrameAccumulationCount - 1;
+                return this.FirstFrameNumber + this.FrameAccumulationCount - 1;
             }
         }
 
@@ -260,7 +260,7 @@ namespace ImsInformed.Domain.DirectInjection
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             
-            return this.FirstFirstFrameNumber == other.FirstFirstFrameNumber && this.LastFrameNumber == other.LastFrameNumber;
+            return this.FirstFrameNumber == other.FirstFrameNumber && this.LastFrameNumber == other.LastFrameNumber;
         }
 
         public override bool Equals(object other) 
@@ -277,7 +277,7 @@ namespace ImsInformed.Domain.DirectInjection
         public override int GetHashCode() 
         {
             int result = 29;
-            result = result * 13 + this.FirstFirstFrameNumber;
+            result = result * 13 + this.FirstFrameNumber;
             result = result * 13 + this.LastFrameNumber;
             return result;
         }

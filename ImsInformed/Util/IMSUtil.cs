@@ -149,7 +149,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static double MaxIntensityAfterFrameAccumulation(VoltageGroup group, DataReader reader)
         {
-            return 255 * group.FrameAccumulationCount * reader.GetFrameParams(group.FirstFirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
+            return 255 * group.FrameAccumulationCount * reader.GetFrameParams(group.FirstFrameNumber).GetValueInt32(FrameParamKeyType.Accumulations);
         }
 
         /// <summary>
@@ -169,8 +169,8 @@ namespace ImsInformed.Util
         public static double MaxGlobalIntensities(VoltageGroup group, DataReader reader)
         {
             GlobalParams global = reader.GetGlobalParams();
-            FrameParams param = reader.GetFrameParams(@group.FirstFirstFrameNumber);
-            int firstFrame = group.FirstFirstFrameNumber;
+            FrameParams param = reader.GetFrameParams(@group.FirstFrameNumber);
+            int firstFrame = group.FirstFrameNumber;
             int lastFrame = group.LastFrameNumber;
             int firstScan = 1;
             int lastScan = param.Scans;

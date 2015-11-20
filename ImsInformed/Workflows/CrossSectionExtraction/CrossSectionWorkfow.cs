@@ -280,7 +280,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                                 string.Format(
                                     "    Voltage group: {0:F2} V, Frame {1}-{2}, {3:F2}K, {4:F2}Torr",
                                     voltageGroup.MeanVoltageInVolts,
-                                    voltageGroup.FirstFirstFrameNumber, 
+                                    voltageGroup.FirstFrameNumber, 
                                     voltageGroup.LastFrameNumber,
                                     voltageGroup.MeanTemperatureInKelvin,
                                     voltageGroup.MeanPressureInTorr));
@@ -440,7 +440,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             foreach (ObservedPeak peak in track.ObservedPeaks)
                             {
                                 Trace.WriteLine(string.Format("       [td: {0:F2}ms, V: {1:F2}V, T: {2:F2}K, P: {3:F2}Torr]", 
-                                    peak.Peak.HighestPeakApex.DriftTimeCenterInMs,
+                                    peak.Peak.PeakApex.DriftTimeCenterInMs,
                                     peak.VoltageGroup.MeanVoltageInVolts,
                                     peak.VoltageGroup.MeanTemperatureInKelvin,
                                     peak.VoltageGroup.MeanPressureInTorr));
@@ -627,7 +627,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         private static string ReportFeatureEvaluation(StandardImsPeak peak, PeakScores scores, bool verbose, IImsTarget target, bool badScanRange, bool lowAbsoluteIntensity, bool lowRelativeIntensity, bool badPeakShape, bool lowIsotopicAffinity)
         {
-            Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms(#{2})] ", peak.HighestPeakApex.MzCenterInDalton, peak.HighestPeakApex.DriftTimeCenterInMs,     peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+            Trace.WriteLine(string.Format("        Candidate feature found at [centerMz = {0:F4}, drift time = {1:F2} ms(#{2})] ", peak.PeakApex.MzCenterInDalton, peak.PeakApex.DriftTimeCenterInMs,     peak.PeakApex.DriftTimeCenterInScanNumber));
             Trace.WriteLine(string.Format("            IntensityScore: {0:F4}", scores.IntensityScore));
             
             if (!lowAbsoluteIntensity)
@@ -685,7 +685,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 {
                     VoltageGroup voltageGroup = observation.VoltageGroup;
                     StandardImsPeak peak = observation.Peak;
-                    double driftTimeInMs = peak.HighestPeakApex.DriftTimeCenterInMs;
+                    double driftTimeInMs = peak.PeakApex.DriftTimeCenterInMs;
                     
                     // Normalize the drift time to be displayed.
                     double normalizedDriftTimeInMs = IMSUtil.NormalizeDriftTime(driftTimeInMs, voltageGroup);
@@ -701,14 +701,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         Trace.WriteLine(
                             string.Format(
                                 "        Frame range: [{0}, {1}]",
-                                voltageGroup.FirstFirstFrameNumber,
+                                voltageGroup.FirstFrameNumber,
                                 voltageGroup.LastFrameNumber));
                     
                         Trace.WriteLine(
                             string.Format(
                                 "        Normalized Drift Time: {0:F4} ms (Scan# = {1})",
                                 normalizedDriftTimeInMs,
-                                peak.HighestPeakApex.DriftTimeCenterInScanNumber));
+                                peak.PeakApex.DriftTimeCenterInScanNumber));
 
                         Trace.WriteLine(string.Format("        VoltageGroupScoring: {0:F4}", voltageGroup.VoltageGroupScore));
                         Trace.WriteLine(string.Format("        IntensityScore: {0:F4}", observation.Statistics.IntensityScore));

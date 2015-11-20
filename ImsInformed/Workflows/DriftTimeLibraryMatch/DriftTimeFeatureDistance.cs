@@ -28,8 +28,8 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         public DriftTimeFeatureDistance(DriftTimeTarget target, StandardImsPeak observedPeak, VoltageGroup voltageGroupThePeakWasObserved)
         {
             double predicatedDriftTime = IMSUtil.DeNormalizeDriftTime(target.NormalizedDriftTimeInMs, voltageGroupThePeakWasObserved);
-            this.DriftTimeDifferenceInMs = observedPeak.HighestPeakApex.DriftTimeCenterInMs - predicatedDriftTime;
-            this.MassDifferenceInDalton = observedPeak.HighestPeakApex.MzCenterInDalton - target.MassWithAdduct;
+            this.DriftTimeDifferenceInMs = observedPeak.PeakApex.DriftTimeCenterInMs - predicatedDriftTime;
+            this.MassDifferenceInDalton = observedPeak.PeakApex.MzCenterInDalton - target.MassWithAdduct;
             this.MassDifferenceInPpm = this.MassDifferenceInDalton / target.MassWithAdduct * 1000000;
         }
 

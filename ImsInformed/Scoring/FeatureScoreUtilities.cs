@@ -161,8 +161,8 @@ namespace ImsInformed.Scoring
         /// </returns>
         public static double PeakShapeScore(StandardImsPeak imsPeak, DataReader reader, double massToleranceInPpm, double driftTimeToleranceInMs, VoltageGroup voltageGroup, double globalMaxIntensities, int numberOfScans)
         {
-            int scanRep = imsPeak.HighestPeakApex.DriftTimeCenterInScanNumber;
-            double toleranceInMz = massToleranceInPpm / 1e6 * imsPeak.HighestPeakApex.MzCenterInDalton;
+            int scanRep = imsPeak.PeakApex.DriftTimeCenterInScanNumber;
+            double toleranceInMz = massToleranceInPpm / 1e6 * imsPeak.PeakApex.MzCenterInDalton;
             int scanWidth = (int)Math.Ceiling(driftTimeToleranceInMs / 1000 / voltageGroup.AverageTofWidthInSeconds);
             int scanWindowSize = scanWidth * 2 + 1;
 
@@ -174,12 +174,12 @@ namespace ImsInformed.Scoring
             }
                                   
             int[][] intensityWindow = reader.GetFramesAndScanIntensitiesForAGivenMz(
-                voltageGroup.FirstFirstFrameNumber,
+                voltageGroup.FirstFrameNumber,
                 voltageGroup.LastFrameNumber,
                 DataReader.FrameType.MS1, 
                 scanNumberMin,
                 scanNumberMax,
-                imsPeak.HighestPeakApex.MzCenterInDalton,
+                imsPeak.PeakApex.MzCenterInDalton,
                 toleranceInMz);
 
             // Average the intensity window across frames
@@ -267,15 +267,15 @@ namespace ImsInformed.Scoring
             }
 
             // Get the scanWindow size
-            int scanNumberMax = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
-            int scanNumberMin = imsPeak.HighestPeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
+            int scanNumberMax = imsPeak.PeakApex.DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
+            int scanNumberMin = imsPeak.PeakApex.DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
             if ((scanNumberMin < 0) || (scanNumberMax > totalScans - 1))
             {
                 return 0;
             }
 
             // Get the mass error from the observed feature peak from the Target theoretical peak
-            double mzOffset = imsPeak.HighestPeakApex.MzCenterInDalton - target.MassWithAdduct;
+            double mzOffset = imsPeak.PeakApex.MzCenterInDalton - target.MassWithAdduct;
 
             List<double> observedIsotopicPeakList = new List<double>();
 
@@ -289,8 +289,8 @@ namespace ImsInformed.Scoring
                 double Mz = isotopicPeakList[i].XValue;
                 
                 var peakList = reader.GetXic(Mz + mzOffset, 
-                    imsPeak.HighestPeakApex.MzWindowToleranceInPpm,
-                    voltageGroup.FirstFirstFrameNumber,
+                    imsPeak.PeakApex.MzWindowToleranceInPpm,
+                    voltageGroup.FirstFrameNumber,
                     voltageGroup.LastFrameNumber,
                     scanNumberMin,
                     scanNumberMax,

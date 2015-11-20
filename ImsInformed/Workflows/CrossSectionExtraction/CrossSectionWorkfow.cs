@@ -85,7 +85,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             }
             
             this.Parameters = parameters;
-            this.smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
+
+            this.smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 5);
+
             this.theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
             this.peakDetector = new ChromPeakDetector(0.0001, 0.0001);
 

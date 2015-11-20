@@ -22,7 +22,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
     {
         public const double DefaultDriftTimeToleranceInMs = 0.5;
         public const double DefaultMzWindowHalfWidthInPpm = 250;
-        public const int DefaultNumPointForSmoothing = 9;
+        public const int DefaultNumPointForSmoothing = 11;
         public const double DefaultFeatureFilterLevel = 0.25;
         public const double DefaultAbsoluteIntensityThreshold = 0.00; 
         public const double DefaultRelativeIntensityPercentageThreshold = 10; 

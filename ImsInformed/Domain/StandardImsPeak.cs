@@ -163,6 +163,8 @@ namespace ImsInformed.Domain
                 this.MaxMzInDalton = peakApex.MzCenterInDalton + (peakApex.MzFullWidthHalfMaxHigh - peakApex.MzCenterInDalton) * 2;
 
                 // quick and dirty fix: reacquire the peak drift time apex.
+                // TODO: The rest of the code here is responsible for the recent slow down of the algorithm performance 
+                // TODO: Need to offload the feature detection to multidimensional peak finder.
                 ExtractedIonChromatogram xic = ExtractedIonChromatogram.AverageXICFromFrames(uimfReader, 
                     voltageGroup.FirstFrameNumber, 
                     voltageGroup.LastFrameNumber,

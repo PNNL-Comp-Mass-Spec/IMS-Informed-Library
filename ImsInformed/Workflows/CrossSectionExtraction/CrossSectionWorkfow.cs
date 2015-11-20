@@ -742,7 +742,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        private List<StandardImsPeak> FindPeaksBasedOnXIC(VoltageGroup voltageGroup, ExtractedIonChromatogram chromatogram, IImsTarget target)
+        private List<StandardImsPeak> FindPeaksBasedOnXIC(VoltageGroup voltageGroup, ImsDataWindow chromatogram, IImsTarget target)
         {
             if (this.Parameters.PeakDetectorSelection == PeakDetectorEnum.WaterShed)
             {

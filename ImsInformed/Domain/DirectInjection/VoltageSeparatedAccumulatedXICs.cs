@@ -23,7 +23,7 @@ namespace ImsInformed.Domain.DirectInjection
     /// <summary>
     /// VoltageSeparatedAccumulatedXICs, where Accumulated XIC stands for a 3D XIC accumulated over the frame axis.
     /// </summary>
-    internal class VoltageSeparatedAccumulatedXiCs : Dictionary<VoltageGroup, ExtractedIonChromatogram>
+    internal class VoltageSeparatedAccumulatedXiCs : Dictionary<VoltageGroup, ImsDataWindow>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="VoltageSeparatedAccumulatedXiCs"/> class. 
@@ -54,7 +54,7 @@ namespace ImsInformed.Domain.DirectInjection
         {
             bool noVoltageGroupsYet = true;
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
-            ExtractedIonChromatogram currentXIC = new ExtractedIonChromatogram();
+            ImsDataWindow currentXIC = new ImsDataWindow();
             VoltageGroup currentVoltageGroup = new VoltageGroup(1, frameNum);
             for (int i = 1; i <= frameNum; i++)
             {
@@ -71,18 +71,18 @@ namespace ImsInformed.Domain.DirectInjection
                 }
 
                 // Add XICs to the VXICs
-                ExtractedIonChromatogram extractedIonChromatogram;
+                ImsDataWindow imsDataWindow;
                 if (normalizedTargetDriftTimeInMs > 0 || driftTimeToleranceInMs > 0)
                 {
                     double expectedDriftTime = IMSUtil.DeNormalizeDriftTime(
                         normalizedTargetDriftTimeInMs,
                         Metrics.Nondimensionalized2Torr(driftTubePressureNondimensionalized),
                         Metrics.Nondimensionalized2Kelvin(driftTubeTemperatureNondimensionalized));
-                    extractedIonChromatogram = new ExtractedIonChromatogram(uimfReader, i, targetMz, massToleranceInPpm, expectedDriftTime, driftTimeToleranceInMs);
+                    imsDataWindow = new ImsDataWindow(uimfReader, i, targetMz, massToleranceInPpm, expectedDriftTime, driftTimeToleranceInMs);
                 }
                 else
                 {
-                    extractedIonChromatogram = new ExtractedIonChromatogram(uimfReader, i, targetMz, massToleranceInPpm);
+                    imsDataWindow = new ImsDataWindow(uimfReader, i, targetMz, massToleranceInPpm);
                 }
                 
                 bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
@@ -97,12 +97,12 @@ namespace ImsInformed.Domain.DirectInjection
 
                     currentVoltageGroup = new VoltageGroup(i, frameNum);
                     currentVoltageGroup.AddVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
-                    currentXIC = extractedIonChromatogram;
+                    currentXIC = imsDataWindow;
                     noVoltageGroupsYet = false;
                 }
                 else
                 {
-                    currentXIC += extractedIonChromatogram;
+                    currentXIC += imsDataWindow;
                 }
             }
 

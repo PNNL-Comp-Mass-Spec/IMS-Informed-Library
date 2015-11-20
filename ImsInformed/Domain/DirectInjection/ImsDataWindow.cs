@@ -24,14 +24,14 @@ namespace ImsInformed.Domain.DirectInjection
     /// <summary>
     /// This is the XIC summed over the centerMz but not drift time axis.
     /// </summary>
-    internal class ExtractedIonChromatogram 
+    internal class ImsDataWindow 
     {
-        public ExtractedIonChromatogram()
+        public ImsDataWindow()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// Initializes a new instance of the <see cref="ImsDataWindow"/> class. 
         /// Get the extracted ion chromatogram from the whole drift time scan range.
         /// </summary>
         /// <param name="uimfReader">
@@ -46,9 +46,11 @@ namespace ImsInformed.Domain.DirectInjection
         /// <param name="massToleranceInPpm">
         /// The mass Tolerance In Ppm.
         /// </param>
-        public ExtractedIonChromatogram(DataReader uimfReader, int frameNumber, double centerMz, double massToleranceInPpm)
+        public ImsDataWindow(DataReader uimfReader, int frameNumber, double centerMz, double massToleranceInPpm)
         {
             FrameParams param = uimfReader.GetFrameParams(frameNumber);
+
+            uimfReader.AccumulateFrameData();
 
             this.IntensityPoints = uimfReader.GetXic(
                     centerMz,
@@ -66,7 +68,7 @@ namespace ImsInformed.Domain.DirectInjection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class.
+        /// Initializes a new instance of the <see cref="ImsDataWindow"/> class.
         /// Get the extracted ion chromatogram from the a particular drift time scan range.
         /// </summary>
         /// <param name="uimfReader">
@@ -87,7 +89,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <param name="driftTimeErrorInMs">
         /// The drift time error in ms.
         /// </param>
-        public ExtractedIonChromatogram(DataReader uimfReader, int frameNumber, double centerMz, double massToleranceInPpm, double centerDriftTimeInMs, double driftTimeErrorInMs)
+        public ImsDataWindow(DataReader uimfReader, int frameNumber, double centerMz, double massToleranceInPpm, double centerDriftTimeInMs, double driftTimeErrorInMs)
         {
             FrameParams param = uimfReader.GetFrameParams(frameNumber);
 
@@ -116,7 +118,7 @@ namespace ImsInformed.Domain.DirectInjection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// Initializes a new instance of the <see cref="ImsDataWindow"/> class. 
         /// XIC is a list of intensity points sorted by Mobility Scan number from low to high.
         /// </summary>
         /// <param name="a">
@@ -127,7 +129,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// </param>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        private ExtractedIonChromatogram(ExtractedIonChromatogram a, ExtractedIonChromatogram b)
+        private ImsDataWindow(ImsDataWindow a, ImsDataWindow b)
         {
             if (a.NumberOfMobilityScans != b.NumberOfMobilityScans || !a.CenterMz.Equals(b.CenterMz))
             {
@@ -170,9 +172,9 @@ namespace ImsInformed.Domain.DirectInjection
         /// </param>
         /// <returns>
         /// </returns>
-        public static ExtractedIonChromatogram operator +(ExtractedIonChromatogram A, ExtractedIonChromatogram B)
+        public static ImsDataWindow operator +(ImsDataWindow A, ImsDataWindow B)
         {
-            ExtractedIonChromatogram result = new ExtractedIonChromatogram(A, B);
+            ImsDataWindow result = new ImsDataWindow(A, B);
             return result;
         }
 

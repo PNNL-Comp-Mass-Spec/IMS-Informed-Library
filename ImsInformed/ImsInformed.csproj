@@ -141,7 +141,7 @@
     <Compile Include="Domain\DataAssociation\ObservationTransitionGraphRenderingEngine.cs" />
     <Compile Include="Domain\DataAssociation\DataAssociationTuningParameters.cs" />
     <Compile Include="Domain\DirectInjection\ObservedPeak.cs" />
-    <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
+    <Compile Include="Domain\DirectInjection\ImsDataWindow.cs" />
     <Compile Include="Domain\DirectInjection\VoltageGroup.cs" />
     <Compile Include="Domain\DirectInjection\VoltageSeparatedAccumulatedXICs.cs" />
     <Compile Include="Domain\FakeUIMFReader.cs" />

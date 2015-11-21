@@ -93,6 +93,8 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         private bool fitLineNotComputed;
 
+        private int numberOfVoltageGroups;
+
         /// <summary>
         /// The ion signature matching probability.
         /// </summary>
@@ -117,7 +119,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <param name="driftTubeLengthInMeters">
         /// The drift tube length in meters.
         /// </param>
-        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters) : this(driftTubeLengthInMeters)
+        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters, int numberOfVoltageGroups) : this(driftTubeLengthInMeters, numberOfVoltageGroups)
         {
             foreach (var peak in peaks)
             {
@@ -134,7 +136,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <param name="target">
         /// The inferedTarget.
         /// </param>
-        public IsomerTrack(double driftTubeLengthInMeters)
+        public IsomerTrack(double driftTubeLengthInMeters, int numberOfVoltageGroups)
         {
             this.driftTubeLengthInMeters = driftTubeLengthInMeters;
             this.fitLineNotComputed = true;
@@ -144,6 +146,7 @@ namespace ImsInformed.Domain.DataAssociation
             this.mobilityInfo.Mobility = 0;
             this.mobilityInfo.RSquared = 0;
             this.ionSignatureMatchingProbability = 0;
+            this.numberOfVoltageGroups = numberOfVoltageGroups;
         }
 
         /// <summary>
@@ -164,10 +167,29 @@ namespace ImsInformed.Domain.DataAssociation
         {
             get
             {
-                double p2 = this.FitLine.RSquared;
-                double p1 = this.ionSignatureMatchingProbability;
+                // R2 should play more of a role in determining track probability. So higher weight is given.
 
-                return p2 * p1;
+                double pR2 = this.FitLine.RSquared;
+                double digits = 0 - Math.Log10(1- pR2);
+                pR2 = ScoreUtil.MapToZeroOneExponential(digits, 2, 0.9);
+                double pSig = this.ionSignatureMatchingProbability;
+                double pcount = ScoreUtil.MapToZeroOneExponential(this.RealPeakCount, (double)this.numberOfVoltageGroups * 0.9, 0.9);
+
+                double r2Weight = DataAssociationTuningParameters.R2Weight;
+                double peakCountWeight = DataAssociationTuningParameters.PeakCountWeight;
+                double signatureConsistencyWeight = DataAssociationTuningParameters.SignatureConsistencyWeight;
+                double sum = r2Weight + signatureConsistencyWeight + peakCountWeight;
+                r2Weight = r2Weight / sum;
+                signatureConsistencyWeight = signatureConsistencyWeight / sum;
+                peakCountWeight = peakCountWeight / sum;
+
+                double logResult = r2Weight * Math.Log(pR2) + 
+                signatureConsistencyWeight * Math.Log(pSig) +
+                peakCountWeight * Math.Log(pcount);
+
+                double result = Math.Exp(logResult);
+
+                return result;
             }
         }
 

@@ -406,11 +406,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     else
                     {
                     // Perform the data association algorithm.
-                    IIonTracker tracker = new CombinatorialIonTracker(1000);
+                    IIonTracker tracker = new CombinatorialIonTracker(3000);
 
                     // Because for somereason we are not keeping track of drift tube length in UIMF...so we kind of have to go ask the instrument operator..
                     double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
-                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters);
+                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters, accumulatedXiCs.Keys.Count);
 
                     if (optimalAssociationHypothesis == null)
                     {
@@ -824,6 +824,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 Trace.WriteLine(string.Format("    Intensity Score: {0:F4}", isomer.PeakScores.IntensityScore));
                 Trace.WriteLine(string.Format("    Peak Shape Score: {0:F4})", isomer.PeakScores.PeakShapeScore));
                 Trace.WriteLine(string.Format("    Isotopic Score: {0:F4}", isomer.PeakScores.IsotopicScore));
+                Trace.WriteLine(string.Format("    R2: {0:F4} ms", isomer.RSquared));
                 Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
                 Trace.WriteLine(string.Format("    T0: {0:F4} ms", isomer.T0));
                 Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));

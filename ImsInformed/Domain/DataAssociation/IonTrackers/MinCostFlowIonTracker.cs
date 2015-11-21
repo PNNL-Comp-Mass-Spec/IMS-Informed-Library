@@ -37,9 +37,9 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             throw new NotImplementedException();
         }
 
-        public static IsomerTrack ToTrack(IEnumerable<IonTransition> edges, double driftTubeLength)
+        public static IsomerTrack ToTrack(IEnumerable<IonTransition> edges, double driftTubeLength, int totalNumberOfVoltageGroups)
         {
-            IsomerTrack track = new IsomerTrack(driftTubeLength);
+            IsomerTrack track = new IsomerTrack(driftTubeLength, totalNumberOfVoltageGroups);
             foreach (IonTransition edge in edges)
             {
                 track.AddIonTransition(edge);
@@ -65,14 +65,24 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength)
+        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength, int numberOfVoltageGroups)
         {
             foreach (IEnumerable<IonTransition> rawTrack in edges)
             {
-                IsomerTrack track = ToTrack(rawTrack, driftTubeLength);
+                IsomerTrack track = ToTrack(rawTrack, driftTubeLength, numberOfVoltageGroups);
 
                 yield return track;
             }
+        }
+
+        public AssociationHypothesis FindOptimumHypothesis(
+            IEnumerable<ObservedPeak> observations,
+            double driftTubeLength,
+            IImsTarget target,
+            CrossSectionSearchParameters parameters,
+            int numberOfVoltageGroups)
+        {
+            throw new NotImplementedException();
         }
     }
 }

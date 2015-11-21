@@ -33,5 +33,15 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         {
             throw new NotImplementedException();
         }
+
+        public AssociationHypothesis FindOptimumHypothesis(
+            IEnumerable<ObservedPeak> observations,
+            double driftTubeLength,
+            IImsTarget target,
+            CrossSectionSearchParameters parameters,
+            int numberOfVoltageGroups)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -67,7 +67,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        public AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations, double driftTubeLength, IImsTarget massTarget, CrossSectionSearchParameters parameters)
+        public AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations, double driftTubeLength, IImsTarget massTarget, CrossSectionSearchParameters parameters, int numberOfVoltageGroups)
         {
             observations = observations.ToList();
 
@@ -82,7 +82,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             // Find the top N tracks using K shorestest path algorithm
             IEnumerable<IEnumerable<IonTransition>> kShorestPaths = transitionGraph.PeakGraph.RankedShortestPathHoffmanPavley(t => 0 - Math.Log(t.TransitionProbability), transitionGraph.SourceVertex, transitionGraph.SinkVertex, this.maxTracks);
 
-            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength);
+            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength, numberOfVoltageGroups);
 
             // filter paths
             TrackFilter filter = new TrackFilter();
@@ -179,42 +179,6 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// The find all track combinations.
-        /// </summary>
-        /// <param name="graph">
-        /// The graph.
-        /// </param>
-        /// <param name="driftTubeLength">
-        /// The drift tube length.
-        /// </param>
-        /// <param name="target">
-        /// The target.
-        /// </param>
-        /// <param name="parameters">
-        /// The parameters.
-        /// </param>
-        /// <returns>
-        /// The <see cref="IEnumerable"/>.
-        /// </returns>
-        private IEnumerable<IsomerTrack> FindAllReasonableTracks(ObservationTransitionGraph<IonTransition> graph, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters)
-        {
-            this.trackPointsCounter = 0;
-
-            VoltageGroup[] sortedVoltageGroup = graph.SortedVoltageGroups().ToArray();
-
-            ObservedPeak[] selectedPeaks = new ObservedPeak[sortedVoltageGroup.Length];
-
-            bool overflow = false;
-            while (!overflow)
-            {
-                overflow = this.IncrementCombination(sortedVoltageGroup, ref selectedPeaks, graph, parameters.MinFitPoints);
-                ObservedPeak[] realPeaks = selectedPeaks.Where(p => p != null).ToArray();
-                IsomerTrack newTrack = new IsomerTrack(realPeaks, driftTubeLength);
-                yield return newTrack;
-            }            
         }
 
         /// <summary>

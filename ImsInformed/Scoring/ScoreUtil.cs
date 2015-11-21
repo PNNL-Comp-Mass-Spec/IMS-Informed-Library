@@ -131,7 +131,7 @@ namespace ImsInformed.Scoring
                 throw new ArgumentException();
             }
 
-            double a = 0 - Math.Log(y0) / x0;
+            double a = inverseMapping ? 0 - Math.Log(y0) / x0 : 0 - Math.Log(1 - y0) / x0;
             double result = 1 - Math.Exp(0 - a * input);
             return inverseMapping ? 1 - result : result;
         }

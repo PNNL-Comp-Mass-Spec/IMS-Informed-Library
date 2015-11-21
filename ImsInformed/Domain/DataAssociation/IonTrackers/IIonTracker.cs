@@ -38,6 +38,6 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <returns>
         /// The <see cref="AssociationHypothesis"/>.
         /// </returns>
-        AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters);
+        AssociationHypothesis FindOptimumHypothesis(IEnumerable<ObservedPeak> observations, double driftTubeLength, IImsTarget target, CrossSectionSearchParameters parameters, int numberOfVoltageGroups);
     }
 }

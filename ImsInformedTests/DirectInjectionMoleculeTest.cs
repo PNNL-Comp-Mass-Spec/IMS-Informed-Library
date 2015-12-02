@@ -195,8 +195,9 @@ namespace ImsInformedTests
 
             CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation, "output", parameters1);
             CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
+            int count = results1.IdentifiedIsomers.Count();
             workfow1.Dispose();
-            return results1.IdentifiedIsomers.Count();
+            return count;
         }
 
         /// <summary>

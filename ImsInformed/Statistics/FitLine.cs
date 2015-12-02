@@ -17,10 +17,6 @@ namespace ImsInformed.Statistics
     using System.Collections.Generic;
     using System.Linq;
 
-    using DeconTools.Backend.Utilities;
-
-    using NUnit.Framework;
-
     /// <summary>
     /// The fit FitLine.
     /// </summary>
@@ -32,6 +28,10 @@ namespace ImsInformed.Statistics
 
         private readonly HashSet<FitlinePoint> outlierCollection;
 
+        private double rSquared;
+
+        private double mse;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FitLine"/> class.
         /// </summary>
@@ -41,15 +41,20 @@ namespace ImsInformed.Statistics
         /// <param name="outlierThreshold">
         /// The cook's distance threshold for a point to be identified as outliers.
         /// </param>
-        public FitLine(IEnumerable<ContinuousXYPoint> fitPoints)
+        public FitLine()
         {
-            this.MSE = 0;
+            this.Mse = 0;
             this.RSquared = 0;
             this.Slope = 0;
             this.Intercept = 0;
             this.outlierCollection = new HashSet<FitlinePoint>();
             this.fitPointCollection = new List<FitlinePoint>();
             this.state = FitlineState.Observing;
+        }
+
+        public FitLine(IEnumerable<ContinuousXYPoint> initialPoints) : this()
+        {
+            this.AddPoints(initialPoints);
         }
 
         /// <summary>
@@ -85,14 +90,50 @@ namespace ImsInformed.Statistics
         public double Slope { get; private set; }
 
         /// <summary>
-        /// Gets or sets the MSE.
+        /// Gets or sets the mean square error.
         /// </summary>
-        public double MSE { get; private set; }
+        public double Mse
+        {
+            get
+            {
+                if (this.state >= FitlineState.DiagnosticsComplete)
+                {
+                    return this.mse;
+                }
+                else
+                {
+                    throw new Exception("Cannot obtain MSE as diagnostics step was not completed");
+                }
+            }
+
+            private set
+            {
+                this.mse = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the RSquared.
         /// </summary>
-        public double RSquared { get; private set; }
+        public double RSquared
+        {
+            get
+            {
+                if (this.state >= FitlineState.DiagnosticsComplete)
+                {
+                    return this.rSquared;
+                }
+                else
+                {
+                    throw new Exception("Cannot obtain R2 as diagnostics step was not completed");
+                }
+            }
+
+            private set
+            {
+                this.rSquared = value;
+            }
+        }
 
         /// <summary>
         /// Return the predicted Y at given X
@@ -111,6 +152,26 @@ namespace ImsInformed.Statistics
             }
 
             return (this.Slope * x) + this.Intercept;
+        }
+
+        public void AddPoint(ContinuousXYPoint point)
+        {
+            this.fitPointCollection.Add(new FitlinePoint(point));
+            this.state = FitlineState.Observing;
+        }
+
+        public void AddPoints(IEnumerable<ContinuousXYPoint> points)
+        {
+            foreach (var point in points)
+            {
+                this.AddPoint(point);
+            }
+        }
+
+        public void RemovePoint(ContinuousXYPoint point)
+        {
+            this.fitPointCollection.Remove(new FitlinePoint(point));
+            this.state = FitlineState.Observing;
         }
 
         /// <summary>
@@ -219,8 +280,9 @@ namespace ImsInformed.Statistics
                             }
                         }
 
-                        this.fitPointCollection.Remove(highestPoint);
+                        this.RemovePoint(highestPoint.Point);
                         this.outlierCollection.Add(highestPoint);
+
                     }
 
                     this.PerformRegression(this.FitPointCollection);
@@ -239,7 +301,7 @@ namespace ImsInformed.Statistics
             // Calculate diagnostic information
             if (this.state >= FitlineState.ModelComplete)
             {
-                this.MSE = this.CalculateMSE();
+                this.Mse = this.CalculateMSE();
                 this.RSquared = this.CalculateRSquared();
                 if (weightFunc != null)
                 {
@@ -283,9 +345,9 @@ namespace ImsInformed.Statistics
         /// </param>
         public void PerformRegression()
         {
-            this.PerformRegression(this.FitPointCollection);
+            this.LeastSquaresFitdLinear(this.FitPointCollection);
+            this.state = FitlineState.ModelComplete;
         }
-
         
         /// <summary>
         /// Computes fit FitLine for potential voltage group and writes
@@ -296,13 +358,14 @@ namespace ImsInformed.Statistics
         protected abstract void LeastSquaresFitLinear(IEnumerable<FitlinePoint> xyPoints, out double gain, out double offset);
 
         /// <summary>
-        /// Perform least square fit.
+        /// wrapper for updating gain and offset using LeastSquaresFitLinear
         /// </summary>
         /// <param name="xyPoints"></param>
         protected void LeastSquaresFitdLinear(IEnumerable<FitlinePoint> xyPoints)
         {
             double gain;
             double offset;
+
             this.LeastSquaresFitLinear(xyPoints, out gain, out offset);
             this.Slope = gain;
             this.Intercept = offset;
@@ -345,7 +408,7 @@ namespace ImsInformed.Statistics
         }
 
         /// <summary>
-        /// The compute residuel.
+        /// Compute the residual of a fit point.
         /// </summary>
         /// <param name="point">
         /// The point.

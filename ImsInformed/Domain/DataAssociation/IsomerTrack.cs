@@ -396,6 +396,8 @@ namespace ImsInformed.Domain.DataAssociation
         {
             IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoints();
             this.fitLine = new LeastSquaresFitLine(points);
+            this.fitLine.PerformRegression();
+            this.fitLine.DiagnoseRegression();
             this.fitLineNotComputed = false;
         }
 

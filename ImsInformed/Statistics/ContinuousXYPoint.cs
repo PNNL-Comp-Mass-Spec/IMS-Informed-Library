@@ -33,10 +33,6 @@ namespace ImsInformed.Statistics
         /// </summary>
         public double Y { get; protected set; }
 
-        /// <summary>
-        /// Gets or sets the cooks d.
-        /// </summary>
-        public double CooksD { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContinuousXYPoint"/> class.
@@ -45,7 +41,6 @@ namespace ImsInformed.Statistics
         {
             this.X = 0;
             this.Y = 0;
-            this.CooksD = 0;
         }
 
         /// <summary>
@@ -61,7 +56,6 @@ namespace ImsInformed.Statistics
         {
             this.X = x;
             this.Y = y;
-            this.CooksD = 0;
         }
 
         public bool Equals(ContinuousXYPoint other)

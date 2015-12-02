@@ -19,11 +19,19 @@ namespace ImsInformed.Statistics
 
     using DeconTools.Backend.Utilities;
 
+    using NUnit.Framework;
+
     /// <summary>
     /// The fit FitLine.
     /// </summary>
-    internal class FitLine
+    internal abstract class FitLine
     {
+        private FitlineState state;
+
+        private readonly List<FitlinePoint> fitPointCollection;
+
+        private readonly HashSet<FitlinePoint> outlierCollection;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FitLine"/> class.
         /// </summary>
@@ -39,40 +47,52 @@ namespace ImsInformed.Statistics
             this.RSquared = 0;
             this.Slope = 0;
             this.Intercept = 0;
-            this.OutlierCollection = new HashSet<ContinuousXYPoint>();
-            this.FitPointCollection = new HashSet<ContinuousXYPoint>();
-            this.LeastSquaresFitLinear(fitPoints);
+            this.outlierCollection = new HashSet<FitlinePoint>();
+            this.fitPointCollection = new List<FitlinePoint>();
+            this.state = FitlineState.Observing;
         }
 
         /// <summary>
         /// Gets or sets the point collection.
         /// </summary>
-        public HashSet<ContinuousXYPoint> FitPointCollection { get; private set; }
+        public IEnumerable<FitlinePoint> FitPointCollection
+        {
+            get
+            {
+                return this.fitPointCollection;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the point collection.
         /// </summary>
-        public HashSet<ContinuousXYPoint> OutlierCollection { get; private set; }
+        public IEnumerable<FitlinePoint> OutlierCollection
+        {
+            get
+            {
+               return this.outlierCollection;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the intercept.
         /// </summary>
-        public double Intercept { get; protected set; }
+        public double Intercept { get; private set; }
 
         /// <summary>
         /// Gets or sets the slope.
         /// </summary>
-        public double Slope { get; protected set; }
+        public double Slope { get; private set; }
 
         /// <summary>
         /// Gets or sets the MSE.
         /// </summary>
-        public double MSE { get; protected set; }
+        public double MSE { get; private set; }
 
         /// <summary>
         /// Gets or sets the RSquared.
         /// </summary>
-        public double RSquared { get; protected set; }
+        public double RSquared { get; private set; }
 
         /// <summary>
         /// Return the predicted Y at given X
@@ -85,6 +105,11 @@ namespace ImsInformed.Statistics
         /// </returns>
         public double ModelPredictX2Y(double x)
         {
+            if (this.state < FitlineState.ModelComplete)
+            {
+                throw new Exception("Cannot predict value with model, please run linear regression first.");
+            }
+
             return (this.Slope * x) + this.Intercept;
         }
 
@@ -97,8 +122,14 @@ namespace ImsInformed.Statistics
         /// <returns>
         /// the predicted Y at given X <see cref="double"/>.
         /// </returns>
+        /// <exception cref="Exception">Cannot predict value with model, please run linear regression first.</exception>
         public double ModelPredictY2X(double y)
         {
+            if (this.state < FitlineState.ModelComplete)
+            {
+                throw new Exception("Cannot predict value with model, please run linear regression first.");
+            }
+
             return (y - this.Intercept) / this.Slope;
         }
 
@@ -118,42 +149,51 @@ namespace ImsInformed.Statistics
         /// </exception>
         public int RemoveOutliersAboveThreshold(double CooksDThreshold, int minFitPoints)
         {
-            if (this.FitPointCollection.Count > minFitPoints)
+            if (this.state >= FitlineState.DiagnosticsComplete)
             {
-                int discretion = this.FitPointCollection.Count - minFitPoints;
-                if (this.FitPointCollection == null)
+                if (this.fitPointCollection.Count > minFitPoints)
                 {
-                    throw new InvalidOperationException("Fitline has not been created");
-                }
-
-                foreach (var point in this.FitPointCollection)
-                {
-                    if (discretion < 1)
+                    int discretion = this.fitPointCollection.Count - minFitPoints;
+                    if (this.FitPointCollection == null)
                     {
-                        break;
+                        throw new InvalidOperationException("Fitline has not been created");
                     }
-                    else
+
+                    foreach (var point in this.FitPointCollection)
                     {
-                        if (point.CooksD > CooksDThreshold)
+                        if (discretion < 1)
                         {
-                            this.OutlierCollection.Add(point);
-                            discretion--;
+                            break;
+                        }
+                        else
+                        {
+                            if (point.CooksD > CooksDThreshold)
+                            {
+                                this.outlierCollection.Add(point);
+                                discretion--;
+                            }
                         }
                     }
-                }
 
-                foreach (var point in this.OutlierCollection)
-                {
-                    if (this.FitPointCollection.Contains(point)) 
+                    foreach (var point in this.OutlierCollection)
                     {
-                        this.FitPointCollection.Remove(point);
+                        if (this.FitPointCollection.Contains(point)) 
+                        {
+                            this.fitPointCollection.Remove(point);
+                        }
                     }
-                }
 
-                this.LeastSquaresFitLinear(this.FitPointCollection);
+                    // Refit the line
+                    this.PerformRegression(this.FitPointCollection);
+                    this.DiagnoseRegression();
+                }
+            }
+            else
+            {
+                throw new Exception("Remove outlier only when linear regression already ran and diagnostics finished.");
             }
 
-            return this.FitPointCollection.Count;
+            return this.fitPointCollection.Count;
         }
 
         /// <summary>
@@ -161,91 +201,146 @@ namespace ImsInformed.Statistics
         /// </summary>
         public int RemoveOutlierWithHighestCookDistance(int minFitPoints)
         {
-            int size = this.FitPointCollection.Count;
-            if (size >= minFitPoints)
+            if (this.state >= FitlineState.DiagnosticsComplete)
             {
-                if (size != 0)
+                int size = this.fitPointCollection.Count;
+                if (size >= minFitPoints)
                 {
-                    ContinuousXYPoint highestPoint = this.FitPointCollection.First();
-                    double highestCookD = highestPoint.CooksD;
-                    foreach (var point in this.FitPointCollection)
+                    if (size != 0)
                     {
-                        if (point.CooksD > highestCookD)
+                        FitlinePoint highestPoint = this.FitPointCollection.First();
+                        double highestCookD = highestPoint.CooksD;
+                        foreach (var point in this.FitPointCollection)
                         {
-                            highestPoint = point;
-                            highestCookD = point.CooksD;
+                            if (point.CooksD > highestCookD)
+                            {
+                                highestPoint = point;
+                                highestCookD = point.CooksD;
+                            }
                         }
+
+                        this.fitPointCollection.Remove(highestPoint);
+                        this.outlierCollection.Add(highestPoint);
                     }
 
-                    this.FitPointCollection.Remove(highestPoint);
-                    this.OutlierCollection.Add(highestPoint);
+                    this.PerformRegression(this.FitPointCollection);
                 }
-
-                this.LeastSquaresFitLinear(this.FitPointCollection);
             }
-            return this.FitPointCollection.Count;
+            else
+            {
+                throw new Exception("Remove outlier without running linear regression finishing diagnostics.");
+            }
+            return this.outlierCollection.Count;
         }
 
+        /// <exception cref="Exception">A delegate callback throws an exception.</exception>
+        public void DiagnoseRegression(Func<FitlinePoint, double> weightFunc = null)
+        {
+            // Calculate diagnostic information
+            if (this.state >= FitlineState.ModelComplete)
+            {
+                this.MSE = this.CalculateMSE();
+                this.RSquared = this.CalculateRSquared();
+                if (weightFunc != null)
+                {
+                    this.DiagnosePoints(weightFunc);
+                }
+                else
+                {
+                    this.DiagnosePoints(x => 1);
+                }
+                
+                this.state = FitlineState.DiagnosticsComplete;
+            }
+            else
+            {
+                throw new Exception("Has to complete model first, cannot diagnose regression");
+            }
+        }
+
+        /// <summary>
+        /// Refit a group of points to the fit line.
+        /// </summary>
+        /// <param name="xyPoints">
+        /// The xy points.
+        /// </param>
+        public void PerformRegression(IEnumerable<FitlinePoint> xyPoints)
+        {
+            IList<FitlinePoint> fitlinePoints = xyPoints as IList<FitlinePoint> ?? xyPoints.ToList();
+            this.LeastSquaresFitdLinear(fitlinePoints);
+
+            this.fitPointCollection.Clear();
+            this.fitPointCollection.AddRange(fitlinePoints);
+            this.outlierCollection.Clear();
+            this.state = FitlineState.ModelComplete;
+        }
+
+        /// <summary>
+        /// Using current fits points stored in the fitline to initiate regression
+        /// </summary>
+        /// <param name="xyPoints">
+        /// The xy points.
+        /// </param>
+        public void PerformRegression()
+        {
+            this.PerformRegression(this.FitPointCollection);
+        }
+
+        
         /// <summary>
         /// Computes fit FitLine for potential voltage group and writes
         /// </summary>
         /// <param name="xyPoints">
         /// The xy points.
         /// </param>
-        private void LeastSquaresFitLinear(IEnumerable<ContinuousXYPoint> xyPoints)
-        {
-            int count = 0;
-            double meanX = 0;
-            double meanY = 0;
-            double meanXSquared = 0;
-            double meanXY = 0;
-            foreach (ContinuousXYPoint point in xyPoints)
-            {
-                this.FitPointCollection.Add(point.Clone());
-                count++;
-                meanX += point.X;
-                meanY += point.Y;
-                meanXSquared += point.X * point.X;
-                meanXY += point.X * point.Y;
-            }
-            meanX = meanX / count;
-            meanY = meanY / count;
-            meanXY = meanXY / count;
-            meanXSquared = meanXSquared / count;
+        protected abstract void LeastSquaresFitLinear(IEnumerable<FitlinePoint> xyPoints, out double gain, out double offset);
 
-            this.Slope = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
-            this.Intercept = meanY - this.Slope * meanX;
-            this.MSE = this.CalculateMSE();
-            this.RSquared = this.CalculateRSquared();
-            this.CalculateCooksDistances();
+        /// <summary>
+        /// Perform least square fit.
+        /// </summary>
+        /// <param name="xyPoints"></param>
+        protected void LeastSquaresFitdLinear(IEnumerable<FitlinePoint> xyPoints)
+        {
+            double gain;
+            double offset;
+            this.LeastSquaresFitLinear(xyPoints, out gain, out offset);
+            this.Slope = gain;
+            this.Intercept = offset;
         }
 
         /// <summary>
         /// Calculate Cook's distance for all points
         /// </summary>
-        private void CalculateCooksDistances()
+        /// <exception cref="Exception">A delegate callback throws an exception.</exception>
+        protected void DiagnosePoints(Func<FitlinePoint, double> weightFunc)
         {
-            int pointsCount = this.FitPointCollection.Count;
+            int pointsCount = this.fitPointCollection.Count;
 
-            // calcaulate average X
-            double meanX = 0;
-            foreach (ContinuousXYPoint point in this.FitPointCollection)
+            if (this.state >= FitlineState.ModelComplete)
             {
-                meanX += point.X;
-            }
-            meanX /= pointsCount;
+                // calcaulate average X
+                double meanX = 0;
+                foreach (ContinuousXYPoint point in this.FitPointCollection.Select(x => x.Point))
+                {
+                    meanX += point.X;
+                }
+                meanX /= pointsCount;
 
-            // Calculate sum of squares / SSx.
-            double SSx = 0;
-            foreach (ContinuousXYPoint point in this.FitPointCollection)
-            {
-                SSx += (point.X - meanX) * (point.X - meanX);
-            }
+                // Calculate sum of squares / SSx.
+                double SSx = 0;
+                foreach (ContinuousXYPoint point in this.FitPointCollection.Select(x => x.Point))
+                {
+                    SSx += (point.X - meanX) * (point.X - meanX);
+                }
 
-            // hat value = 1/n + (xi - x_bar)^2 / SSx
-            foreach (ContinuousXYPoint point in this.FitPointCollection)
-            {
-                point.CooksD = CooksDistance(point, SSx, meanX, pointsCount);
+                // hat value = 1/n + (xi - x_bar)^2 / SSx
+                foreach (FitlinePoint point in this.FitPointCollection)
+                {
+                    double leverage;
+                    point.CooksD = this.CooksDistance(point.Point, SSx, meanX, pointsCount, out leverage);
+                    point.Leverage = leverage;
+                    point.Weight = weightFunc(point);
+                }
             }
         }
 
@@ -260,15 +355,22 @@ namespace ImsInformed.Statistics
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
-        private double ComputeResiduel(ContinuousXYPoint point)
+        protected double ComputeResidual(ContinuousXYPoint point)
         {
-            if (this.FitPointCollection.Contains(point))
+            if (this.state >= FitlineState.ModelComplete)
             {
-                return Math.Abs(this.ModelPredictX2Y(point.X) - point.Y);
+                if (this.fitPointCollection.FirstOrDefault(x => point.Equals(point)) != null)
+                {
+                    return Math.Abs(this.ModelPredictX2Y(point.X) - point.Y);
+                }
+                else
+                {
+                    throw new ArgumentException("Point given is not inside Fitline point list");
+                }
             }
             else
             {
-                throw new ArgumentException("Point given is not inside Fitline point list");
+                throw new Exception("Has to complete model first, cannot diagnose regression");
             }
         }
 
@@ -290,30 +392,31 @@ namespace ImsInformed.Statistics
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private double CooksDistance(ContinuousXYPoint point, double ssh, double meanX, int pointsCount)
+        protected double CooksDistance(ContinuousXYPoint point, double ssh, double meanX, int pointsCount, out double leverage)
         {
             double distance;
-            double residuel = this.ComputeResiduel(point);
+            double residuel = this.ComputeResidual(point);
             double p = 3;
             double mse = this.CalculateMSE();
             distance = residuel * residuel / p / mse;
             // Get the Hii from the hat matrix
             double hii = 1.0 / pointsCount + (point.X - meanX) * (point.X - meanX) / ssh;
             distance = distance * hii / ((1 - hii) * (1 - hii));
+            leverage = hii;
             return distance;
         }
 
         // compute the mean square error
-        private double CalculateMSE()
+        protected double CalculateMSE()
         {
             double sum = 0;
-            foreach (ContinuousXYPoint point in this.FitPointCollection)
+            foreach (ContinuousXYPoint point in this.FitPointCollection.Select(x => x.Point))
             {
-                double residuel = this.ComputeResiduel(point);
+                double residuel = this.ComputeResidual(point);
                 sum += residuel * residuel;
             }
 
-            return sum / this.FitPointCollection.Count;
+            return sum / this.fitPointCollection.Count;
         }
 
         /// <summary>
@@ -322,32 +425,39 @@ namespace ImsInformed.Statistics
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private double CalculateRSquared()
+        protected double CalculateRSquared()
         {
-            // Calculate average Y
-            double avgY = 0;
-            foreach (ContinuousXYPoint point in this.FitPointCollection)
+            if (this.state >= FitlineState.ModelComplete)
             {
-                avgY += point.Y;
-            }
-            
-            avgY /= this.FitPointCollection.Count;
+                // Calculate average Y
+                double avgY = 0;
+                foreach (ContinuousXYPoint point in this.FitPointCollection.Select(x => x.Point))
+                {
+                    avgY += point.Y;
+                }
+                
+                avgY /= this.fitPointCollection.Count;
 
-            // Calculate explained sum of squares
-            double SSreg = 0;
-            double SStot = 0;
-            foreach (ContinuousXYPoint point in this.FitPointCollection)
+                // Calculate explained sum of squares
+                double SSreg = 0;
+                double SStot = 0;
+                foreach (ContinuousXYPoint point in this.FitPointCollection.Select(x => x.Point))
+                {
+                    double residual = this.ComputeResidual(point);
+                    double residual2 = Math.Abs(avgY - point.Y);
+
+                    SSreg += residual * residual;
+                    SStot += residual2 * residual2;
+                }
+
+                double rSquared = 1 - SSreg / SStot;
+
+                return rSquared;
+            }
+            else
             {
-                double residuel1 = this.ComputeResiduel(point);
-                double residuel2 = Math.Abs(avgY - point.Y);
-
-                SSreg += residuel1 * residuel1;
-                SStot += residuel2 * residuel2;
+                throw new Exception("Cannot calculate R2 without performing linear regression first");
             }
-
-            double rSquared = 1 - SSreg / SStot;
-
-            return rSquared;
         }
     }
 }  

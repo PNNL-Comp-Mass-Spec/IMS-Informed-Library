@@ -302,8 +302,8 @@ namespace ImsInformed.IO
         private PlotModel MobilityFitLinePlot(FitLine fitline)
         {
 
-            IEnumerable<ContinuousXYPoint> fitPointList = fitline.FitPointCollection;
-            IEnumerable<ContinuousXYPoint> outlierList = fitline.OutlierCollection;
+            IEnumerable<ContinuousXYPoint> fitPointList = fitline.FitPointCollection.Select(x => x.Point);
+            IEnumerable<ContinuousXYPoint> outlierList = fitline.OutlierCollection.Select(x => x.Point);
             Func<object, ScatterPoint> fitPointMap = obj => 
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;

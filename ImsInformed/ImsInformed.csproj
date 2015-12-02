@@ -163,6 +163,10 @@
     <Compile Include="Scoring\VoltageGroupScoring.cs" />
     <Compile Include="Statistics\Combinatorics.cs" />
     <Compile Include="Statistics\FitLine.cs" />
+    <Compile Include="Statistics\FitlinePoint.cs" />
+    <Compile Include="Statistics\FitlineState.cs" />
+    <Compile Include="Statistics\IRLSFitline.cs" />
+    <Compile Include="Statistics\LeastSquaresFitLine.cs" />
     <Compile Include="Statistics\NormalityTest.cs" />
     <Compile Include="IO\AlignmentImporter.cs" />
     <Compile Include="IO\ImsTargetResultExporter.cs" />

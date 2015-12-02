@@ -484,14 +484,11 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         private IEnumerable<ContinuousXYPoint> ToContinuousXyPoints()
         {
-            HashSet<ContinuousXYPoint> allFitPoints = new HashSet<ContinuousXYPoint>();
             foreach (ObservedPeak observation in this.observedPeaks)
             {
                 ContinuousXYPoint point = observation.ToContinuousXyPoint();
-                allFitPoints.Add(point);
+                yield return point;
             }
-
-            return allFitPoints;
         }
     }
 }

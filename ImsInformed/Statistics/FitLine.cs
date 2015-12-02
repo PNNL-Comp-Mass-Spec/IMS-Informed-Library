@@ -424,7 +424,7 @@ namespace ImsInformed.Statistics
             {
                 if (this.fitPointCollection.FirstOrDefault(x => point.Equals(point)) != null)
                 {
-                    return Math.Abs(this.ModelPredictX2Y(point.X) - point.Y);
+                    return point.Y - this.ModelPredictX2Y(point.X);
                 }
                 else
                 {

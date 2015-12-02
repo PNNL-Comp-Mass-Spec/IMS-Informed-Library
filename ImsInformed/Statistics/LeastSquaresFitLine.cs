@@ -32,7 +32,7 @@
 
             // Calculate slope and intercept
             gain = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
-            offset = meanY - this.Slope * meanX;
+            offset = meanY - gain * meanX;
         }
     }
 }

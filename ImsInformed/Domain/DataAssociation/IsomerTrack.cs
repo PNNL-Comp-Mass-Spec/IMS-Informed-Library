@@ -81,7 +81,7 @@ namespace ImsInformed.Domain.DataAssociation
             {
                 if (this.fitLineNotComputed)
                 {
-                    this.ComputeLinearFitLine();
+                    this.ComputeLinearFitLine(this.fitLine);
                 }
 
                 return this.fitLine;
@@ -119,7 +119,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <param name="driftTubeLengthInMeters">
         /// The drift tube length in meters.
         /// </param>
-        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters, int numberOfVoltageGroups) : this(driftTubeLengthInMeters, numberOfVoltageGroups)
+        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters, int numberOfVoltageGroups, FitLine fitline) : this(driftTubeLengthInMeters, numberOfVoltageGroups, fitline)
         {
             foreach (var peak in peaks)
             {
@@ -136,7 +136,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// <param name="target">
         /// The inferedTarget.
         /// </param>
-        public IsomerTrack(double driftTubeLengthInMeters, int numberOfVoltageGroups)
+        public IsomerTrack(double driftTubeLengthInMeters, int numberOfVoltageGroups, FitLine fitline)
         {
             this.driftTubeLengthInMeters = driftTubeLengthInMeters;
             this.fitLineNotComputed = true;
@@ -147,6 +147,7 @@ namespace ImsInformed.Domain.DataAssociation
             this.mobilityInfo.RSquared = 0;
             this.ionSignatureMatchingProbability = 0;
             this.numberOfVoltageGroups = numberOfVoltageGroups;
+            this.fitLine = fitline;
         }
 
         /// <summary>
@@ -392,10 +393,9 @@ namespace ImsInformed.Domain.DataAssociation
         /// <summary>
         /// The compute linear fit FitLine.
         /// </summary>
-        private void ComputeLinearFitLine()
+        private void ComputeLinearFitLine(FitLine fitline)
         {
-            IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoints();
-            this.fitLine = new IRLSFitline(points, 10);
+            this.fitLine.ResetPoints(this.ToContinuousXyPoints());
             this.fitLine.PerformRegression();
             this.fitLine.DiagnoseRegression();
             this.fitLineNotComputed = false;
@@ -412,11 +412,6 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         private MobilityInfo ComputeMobilityInfo(IImsTarget target)
         {
-            if (this.fitLineNotComputed)
-            {
-                this.ComputeLinearFitLine();
-            }
-
             // Convert the track into a Continuous XY data points.
             this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters * 1000 / (this.FitLine.Slope);
             this.mobilityInfo.RSquared = this.FitLine.RSquared;

@@ -259,8 +259,8 @@ namespace ImsInformed.IO
                 annotation.Intercept = fitline.Intercept;
                 annotation.TextPadding = 3;
                 annotation.TextMargin = 2;
-                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; Isotopic Score: {2:F2}; Track Probability: {3:F2};", 
-                    count, track.AverageMzInDalton, track.TrackStatistics.IsotopicScore, track.TrackProbability);
+                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; Isotopic Score: {2:F2}; Track Probability: {3:F2}; R2: {4:F2};", 
+                    count, track.AverageMzInDalton, track.TrackStatistics.IsotopicScore, track.TrackProbability, track.FitLine.RSquared);
                 count++;
                 model.Annotations.Add(annotation);
                 //Func<object, DataPoint> lineMap = obj =>

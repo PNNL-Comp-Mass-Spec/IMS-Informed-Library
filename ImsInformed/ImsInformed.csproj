@@ -163,6 +163,7 @@
     <Compile Include="Scoring\VoltageGroupScoring.cs" />
     <Compile Include="Statistics\Combinatorics.cs" />
     <Compile Include="Statistics\FitLine.cs" />
+    <Compile Include="Statistics\FitlineEnum.cs" />
     <Compile Include="Statistics\FitlinePoint.cs" />
     <Compile Include="Statistics\FitlineState.cs" />
     <Compile Include="Statistics\IRLSFitline.cs" />

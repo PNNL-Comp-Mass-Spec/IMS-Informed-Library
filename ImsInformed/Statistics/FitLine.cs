@@ -16,6 +16,7 @@ namespace ImsInformed.Statistics
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
 
     /// <summary>
     /// The fit FitLine.
@@ -160,6 +161,12 @@ namespace ImsInformed.Statistics
             this.state = FitlineState.Observing;
         }
 
+        public void ResetPoints(IEnumerable<ContinuousXYPoint> points)
+        {
+            this.fitPointCollection.Clear();
+            this.AddPoints(points);
+        }
+
         public void AddPoints(IEnumerable<ContinuousXYPoint> points)
         {
             foreach (var point in points)
@@ -297,8 +304,10 @@ namespace ImsInformed.Statistics
             // Calculate diagnostic information
             if (this.state >= FitlineState.ModelComplete)
             {
-                this.Mse = this.CalculateMSE();
-                this.RSquared = this.CalculateRSquared();
+                double mse = this.CalculateMSE();
+                double r2 =  this.CalculateRSquared();
+                this.Mse = mse;
+                this.RSquared = r2;
                 if (weightFunc != null)
                 {
                     this.DiagnosePoints(weightFunc);

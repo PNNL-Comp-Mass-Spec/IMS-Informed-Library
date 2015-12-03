@@ -18,6 +18,12 @@ namespace ImsInformed.Statistics
         private double meanAbsoluteDeviation;
         private double tuningConstant = 4.685;
 
+        public IRLSFitline(int iterations)
+            : base()
+        {
+            this.iterations = iterations;
+        }
+
         public IRLSFitline(IEnumerable<ContinuousXYPoint> fitPoints, int iterations)
             : base(fitPoints)
         {
@@ -30,7 +36,7 @@ namespace ImsInformed.Statistics
             // Calculate residual
             double residual = this.ComputeResidual(point.Point);
             double adjustedResidual = residual / Math.Sqrt(1 - point.Leverage);
-            double standardizedAdjustedResidual = adjustedResidual / (this.tuningConstant * this.meanAbsoluteDeviation);
+            double standardizedAdjustedResidual = adjustedResidual / (this.tuningConstant * this.meanAbsoluteDeviation / 0.6745);
             double biSquareWeight = Math.Pow(1 - Math.Pow(standardizedAdjustedResidual, 2), 2);
             return Math.Abs(standardizedAdjustedResidual) >= 1 ? 0 : biSquareWeight;
         }

@@ -18,6 +18,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
 
     using ImsInformed.Domain.DataAssociation.IonSignatureMatching;
     using ImsInformed.Domain.DirectInjection;
+    using ImsInformed.Statistics;
     using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
 
@@ -37,9 +38,9 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             throw new NotImplementedException();
         }
 
-        public static IsomerTrack ToTrack(IEnumerable<IonTransition> edges, double driftTubeLength, int totalNumberOfVoltageGroups)
+        public static IsomerTrack ToTrack(IEnumerable<IonTransition> edges, double driftTubeLength, int totalNumberOfVoltageGroups, FitLine fitline)
         {
-            IsomerTrack track = new IsomerTrack(driftTubeLength, totalNumberOfVoltageGroups);
+            IsomerTrack track = new IsomerTrack(driftTubeLength, totalNumberOfVoltageGroups, fitline);
             foreach (IonTransition edge in edges)
             {
                 track.AddIonTransition(edge);
@@ -65,11 +66,11 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength, int numberOfVoltageGroups)
+        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength, int numberOfVoltageGroups, FitLine fitline)
         {
             foreach (IEnumerable<IonTransition> rawTrack in edges)
             {
-                IsomerTrack track = ToTrack(rawTrack, driftTubeLength, numberOfVoltageGroups);
+                IsomerTrack track = ToTrack(rawTrack, driftTubeLength, numberOfVoltageGroups, fitline);
 
                 yield return track;
             }

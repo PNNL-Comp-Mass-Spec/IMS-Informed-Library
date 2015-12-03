@@ -5,6 +5,11 @@
 
     internal class LeastSquaresFitLine : FitLine
     {
+        public LeastSquaresFitLine()
+            : base()
+        {
+        }
+
         public LeastSquaresFitLine(IEnumerable<ContinuousXYPoint> fitPoints)
             : base(fitPoints)
         {

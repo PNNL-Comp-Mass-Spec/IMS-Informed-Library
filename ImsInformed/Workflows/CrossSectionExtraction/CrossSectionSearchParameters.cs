@@ -13,6 +13,7 @@
 // RIGHTS.
 namespace ImsInformed.Workflows.CrossSectionExtraction
 {
+    using ImsInformed.Statistics;
     using ImsInformed.Util;
 
     /// <summary>
@@ -30,6 +31,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const double DefaultIsotopicThreshold = 0.4;
         public const int DefaultMinFitPoints = 4;
         public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
+        public const FitlineEnum DefaultRegressionSelection =  FitlineEnum.OrdinaryLeastSquares;
         public const double DefaultMinR2 = 0.95;
         public const string DefaultGraphicsExtension = "svg";
 
@@ -45,6 +47,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             DefaultIsotopicThreshold, 
             DefaultMinFitPoints, 
             DefaultPeakDetectorSelection, 
+            DefaultRegressionSelection,
             DefaultMinR2,
             DefaultRelativeIntensityPercentageThreshold, 
             DefaultGraphicsExtension)
@@ -81,6 +84,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="peakDetectorSelection">
         /// The peak Detector Selection.
         /// </param>
+        /// <param name="regressionSelection"></param>
         /// <param name="minR2">
         /// The min R 2.
         /// </param>
@@ -95,6 +99,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             double isotopicThreshold, 
             int minFitPoints, 
             PeakDetectorEnum peakDetectorSelection, 
+            FitlineEnum regressionSelection,
             double minR2, 
             double relativeIntensityPercentageThreshold, 
             string graphicsExtension)
@@ -108,6 +113,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.IsotopicThreshold = isotopicThreshold;
             this.MinFitPoints = minFitPoints;
             this.PeakDetectorSelection = peakDetectorSelection;
+            this.RegressionSelection = regressionSelection;
             this.MinR2 = minR2;
             this.RelativeIntensityPercentageThreshold = relativeIntensityPercentageThreshold;
             this.GraphicsExtension = graphicsExtension;
@@ -162,6 +168,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// Gets the peak detector selection.
         /// </summary>
         public PeakDetectorEnum PeakDetectorSelection { get; private set; }
+
+        public FitlineEnum RegressionSelection { get; private set; }
 
         /// <summary>
         /// Gets the graphics format for the QC plots.

@@ -243,10 +243,6 @@ namespace ImsInformed.Statistics
                             this.fitPointCollection.Remove(point);
                         }
                     }
-
-                    // Refit the line
-                    this.PerformRegression(this.FitPointCollection);
-                    this.DiagnoseRegression();
                 }
             }
             else
@@ -326,7 +322,7 @@ namespace ImsInformed.Statistics
         /// <param name="xyPoints">
         /// The xy points.
         /// </param>
-        public void PerformRegression(IEnumerable<FitlinePoint> xyPoints)
+        public virtual void PerformRegression(IEnumerable<FitlinePoint> xyPoints)
         {
             IList<FitlinePoint> fitlinePoints = xyPoints as IList<FitlinePoint> ?? xyPoints.ToList();
             this.LeastSquaresFitdLinear(fitlinePoints);
@@ -343,7 +339,7 @@ namespace ImsInformed.Statistics
         /// <param name="xyPoints">
         /// The xy points.
         /// </param>
-        public void PerformRegression()
+        public virtual void PerformRegression()
         {
             this.LeastSquaresFitdLinear(this.FitPointCollection);
             this.state = FitlineState.ModelComplete;
@@ -507,7 +503,7 @@ namespace ImsInformed.Statistics
                 foreach (ContinuousXYPoint point in this.FitPointCollection.Select(x => x.Point))
                 {
                     double residual = this.ComputeResidual(point);
-                    double residual2 = Math.Abs(avgY - point.Y);
+                    double residual2 = point.Y - avgY;
 
                     SSreg += residual * residual;
                     SStot += residual2 * residual2;

@@ -30,7 +30,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const double DefaultIsotopicThreshold = 0.4;
         public const int DefaultMinFitPoints = 4;
         public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
-        public const double DefaultMinR2 = 0.98;
+        public const double DefaultMinR2 = 0.95;
         public const string DefaultGraphicsExtension = "svg";
 
         /// <summary>

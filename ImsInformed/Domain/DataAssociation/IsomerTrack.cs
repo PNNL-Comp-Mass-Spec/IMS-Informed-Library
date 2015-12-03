@@ -395,7 +395,7 @@ namespace ImsInformed.Domain.DataAssociation
         private void ComputeLinearFitLine()
         {
             IEnumerable<ContinuousXYPoint> points = this.ToContinuousXyPoints();
-            this.fitLine = new LeastSquaresFitLine(points);
+            this.fitLine = new IRLSFitline(points, 10);
             this.fitLine.PerformRegression();
             this.fitLine.DiagnoseRegression();
             this.fitLineNotComputed = false;

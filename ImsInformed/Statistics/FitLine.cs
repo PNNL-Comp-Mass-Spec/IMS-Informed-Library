@@ -493,7 +493,7 @@ namespace ImsInformed.Statistics
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        protected double CalculateRSquared()
+        protected virtual double CalculateRSquared()
         {
             if (this.state >= FitlineState.ModelComplete)
             {

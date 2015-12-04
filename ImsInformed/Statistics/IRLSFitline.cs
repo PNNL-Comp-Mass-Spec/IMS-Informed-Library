@@ -31,6 +31,7 @@ namespace ImsInformed.Statistics
         }
 
         // Calculate bisquare weight.
+        // w = (abs(r) < 1) ?  (1 - r^2)^2 : 1
         private double BiSquareWeight(FitlinePoint point)
         {
             // Calculate residual
@@ -45,6 +46,36 @@ namespace ImsInformed.Statistics
         public override void PerformRegression()
         {
             this.PerformRegression(this.FitPointCollection);
+        }
+
+        // R2 is calculated differently in IRLS fit
+        protected override double CalculateRSquared()
+        {
+            // Calculate average Y
+            double avgY = 0;
+            foreach (FitlinePoint point in this.FitPointCollection)
+            {
+                avgY += point.Point.Y * point.Weight;
+            }
+            
+            var points = this.FitPointCollection.ToList();
+            avgY /= points.Count;
+
+            // Calculate explained sum of squares
+            double SSreg = 0;
+            double SStot = 0;
+            foreach (FitlinePoint point in this.FitPointCollection)
+            {
+                double residual = this.ComputeResidual(point.Point);
+                double residual2 = point.Point.Y * point.Weight - avgY;
+
+                SSreg += Math.Pow(residual * point.Weight, 2);
+                SStot += Math.Pow(residual2, 2);
+            }
+
+            double rSquared = 1 - SSreg / SStot;
+
+            return rSquared;
         }
         
         /// <summary>

@@ -824,7 +824,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                 Trace.WriteLine(string.Format("    Intensity Score: {0:F4}", isomer.PeakScores.IntensityScore));
                 Trace.WriteLine(string.Format("    Peak Shape Score: {0:F4})", isomer.PeakScores.PeakShapeScore));
                 Trace.WriteLine(string.Format("    Isotopic Score: {0:F4}", isomer.PeakScores.IsotopicScore));
-                Trace.WriteLine(string.Format("    R2: {0:F4} ms", isomer.RSquared));
+                Trace.WriteLine(string.Format("    R2: {0:F4}", isomer.RSquared));
                 Trace.WriteLine(string.Format("    Mobility: {0:F4} cm^2/(s*V)", isomer.Mobility));
                 Trace.WriteLine(string.Format("    T0: {0:F4} ms", isomer.T0));
                 Trace.WriteLine(string.Format("    Cross Sectional Area: {0:F4} Å^2", isomer.CrossSectionalArea));

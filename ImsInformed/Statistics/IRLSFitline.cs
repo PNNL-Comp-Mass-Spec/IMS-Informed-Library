@@ -120,30 +120,26 @@ namespace ImsInformed.Statistics
         /// <param name="offset"></param>
         protected override void LeastSquaresFitLinear(IEnumerable<FitlinePoint> xyPoints, out double gain, out double offset)
         {
-            int count = 0;
-            double meanX = 0;
-            double meanY = 0;
-            double meanXSquared = 0;
-            double meanXY = 0;
+            double varianceX;
+            double totalWeight = 0;
+            double sumX = 0;
+            double sumY = 0;
+            double sumX2 = 0;
+            double sumXy = 0;
             foreach (FitlinePoint point in xyPoints)
             {
-                count++;
                 double pointWeight = point.Weight;
-                double x = point.Point.X * pointWeight;
-                double y = point.Point.Y * pointWeight;
-                meanX += x;
-                meanY += y;
-                meanXSquared += Math.Pow(x, 2);
-                meanXY += x * y;
+                totalWeight += pointWeight;
+                sumX += point.Point.X * pointWeight;
+                sumY += point.Point.Y * pointWeight;
+                sumX2 += Math.Pow(point.Point.X, 2) * pointWeight;
+                sumXy +=  point.Point.X * point.Point.Y * pointWeight;
             }
-            meanX = meanX / count;
-            meanY = meanY / count;
-            meanXY = meanXY / count;
-            meanXSquared = meanXSquared / count;
 
             // Calculate slope and intercept
-            gain = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
-            offset = meanY - gain * meanX;
+            varianceX = totalWeight * sumX2 - Math.Pow(sumX, 2);
+            offset = (sumY * sumX2 - sumX * sumXy) / varianceX;
+            gain = (totalWeight * sumXy - sumX * sumY) / varianceX;
         }
 
         private double CalculateMAD(IEnumerable<double> inputs)

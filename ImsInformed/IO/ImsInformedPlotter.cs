@@ -89,7 +89,8 @@ namespace ImsInformed.IO
 
                 ScatterSeries series = new ScatterSeries
                 {
-                    Title = rejectionReason
+                    Title = rejectionReason,
+                    MarkerType = MarkerType.Circle
                 };
                 
                 associationHypothsisPlot.Series.Add(series);
@@ -229,14 +230,16 @@ namespace ImsInformed.IO
             var ontrackSeries= new ScatterSeries
             {
                 Title = "[Peaks On Tracks]",
-                MarkerFill = OxyColors.BlueViolet
+                MarkerFill = OxyColors.BlueViolet,
+                MarkerType = MarkerType.Circle
             };
 
 
             var offtrackSeries= new ScatterSeries
             {
                 Title = "[Peaks Off Tracks]",
-                MarkerFill = OxyColors.Red
+                MarkerFill = OxyColors.Red,
+                MarkerType = MarkerType.Circle
             };
 
             ontrackSeries.Points.AddRange(onTrackPeaks.Select(x => fitPointMap(x))); 

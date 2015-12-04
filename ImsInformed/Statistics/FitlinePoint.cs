@@ -50,5 +50,10 @@ namespace ImsInformed.Statistics
         {
             return this.Point.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return string.Format("X: {0:F10}, Y: {1:F2}, W: {2:F2}", this.Point.X, this.Point.Y, this.Weight);
+        }
     }
 }

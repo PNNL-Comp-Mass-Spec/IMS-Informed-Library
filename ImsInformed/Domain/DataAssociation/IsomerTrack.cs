@@ -395,9 +395,10 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         private void ComputeLinearFitLine(FitLine fitline)
         {
-            this.fitLine.ResetPoints(this.ToContinuousXyPoints());
-            this.fitLine.PerformRegression();
-            this.fitLine.DiagnoseRegression();
+            fitline.ResetPoints(this.ToContinuousXyPoints());
+            fitline.PerformRegression();
+            fitline.DiagnoseRegression();
+            this.fitLine= fitline;
             this.fitLineNotComputed = false;
         }
 

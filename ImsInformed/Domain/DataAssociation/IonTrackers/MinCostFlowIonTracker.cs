@@ -66,11 +66,12 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength, int numberOfVoltageGroups, FitLine fitline)
+        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength, int numberOfVoltageGroups, FitlineEnum fitlineType)
         {
             foreach (IEnumerable<IonTransition> rawTrack in edges)
             {
-                IsomerTrack track = ToTrack(rawTrack, driftTubeLength, numberOfVoltageGroups, fitline);
+                FitLine newFitline = (fitlineType == FitlineEnum.OrdinaryLeastSquares) ? (FitLine)new LeastSquaresFitLine() : new IRLSFitline(10000);
+                IsomerTrack track = ToTrack(rawTrack, driftTubeLength, numberOfVoltageGroups, newFitline);
 
                 yield return track;
             }

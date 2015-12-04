@@ -82,8 +82,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             // Find the top N tracks using K shorestest path algorithm
             IEnumerable<IEnumerable<IonTransition>> kShorestPaths = transitionGraph.PeakGraph.RankedShortestPathHoffmanPavley(t => 0 - Math.Log(t.TransitionProbability), transitionGraph.SourceVertex, transitionGraph.SinkVertex, this.maxTracks);
 
-            FitLine line = (parameters.RegressionSelection == FitlineEnum.OrdinaryLeastSquares) ? (FitLine)new LeastSquaresFitLine() : new IRLSFitline(10000);
-            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength, numberOfVoltageGroups, line);
+            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength, numberOfVoltageGroups, parameters.RegressionSelection);
 
             // filter paths
             TrackFilter filter = new TrackFilter();
@@ -114,7 +113,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             allPeaks = allPeaks.ToArray();
             List<IsomerTrack> tracks = validTracks.ToList();
 
-            const int AlgorithmLimit = 25;
+            const int AlgorithmLimit = 20;
             int size = tracks.Count;
 
             if (size >= AlgorithmLimit)

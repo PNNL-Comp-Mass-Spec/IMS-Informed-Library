@@ -109,7 +109,7 @@ namespace ImsInformed.Statistics
                 percentDiff = slopeOld == 0 ? 1 : Math.Abs((this.Slope - slopeOld) / slopeOld * 100);
                 slopeOld = this.Slope;
             }
-            while (i < this.iterations && percentDiff > 0.0000000000001);
+            while (i < this.iterations && percentDiff > 0.0000000001);
         }
         
         /// <summary>

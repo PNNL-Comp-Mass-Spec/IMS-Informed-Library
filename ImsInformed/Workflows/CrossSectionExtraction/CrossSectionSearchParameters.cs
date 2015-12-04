@@ -32,7 +32,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const int DefaultMinFitPoints = 4;
         public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
         public const FitlineEnum DefaultRegressionSelection =  FitlineEnum.IterativelyBiSquareReweightedLeastSquares;
-        public const double DefaultMinR2 = 0.95;
+        public const double DefaultMinR2 = 0.99;
         public const string DefaultGraphicsExtension = "svg";
 
         /// <summary>

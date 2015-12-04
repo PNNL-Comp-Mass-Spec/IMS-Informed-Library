@@ -54,6 +54,10 @@ namespace ImsInformed.Statistics
         /// /// <exception cref="Exception">A delegate callback throws an exception.</exception>
         public override void PerformRegression(IEnumerable<FitlinePoint> xyPoints)
         {
+            double slopeOld = 0;
+            int i = 0;
+            double percentDiff;
+
             var fitlinePoints = xyPoints as IList<FitlinePoint> ?? xyPoints.ToList();
 
             // Init weight
@@ -62,13 +66,19 @@ namespace ImsInformed.Statistics
                 point.Weight = 1;
             }
 
-            for (int i = 0; i < this.iterations; i++)
+            // Until the gain and slope converges or max number of iterations is reached.
+            do
             {
+                i++;
                 base.PerformRegression();
                 IEnumerable<double> residuals = fitlinePoints.Select(x => this.ComputeResidual(x.Point));
                 this.meanAbsoluteDeviation = this.CalculateMAD(residuals);
                 this.DiagnoseRegression(this.BiSquareWeight);
+                
+                percentDiff = slopeOld == 0 ? 1 : Math.Abs((this.Slope - slopeOld) / slopeOld * 100);
+                slopeOld = this.Slope;
             }
+            while (i < this.iterations && percentDiff > 0.0000000000001);
         }
         
         /// <summary>

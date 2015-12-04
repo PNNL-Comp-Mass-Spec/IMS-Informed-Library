@@ -441,7 +441,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                             Trace.WriteLine(string.Format(" T{0}:   ", count));
                             foreach (ObservedPeak peak in track.ObservedPeaks)
                             {
-                                Trace.WriteLine(string.Format("       [td: {0:F2}ms, V: {1:F2}V, T: {2:F2}K, P: {3:F2}Torr]", 
+                                Trace.WriteLine(string.Format("       [td: {0:F4}ms, V: {1:F4}V, T: {2:F4}K, P: {3:F4}Torr]", 
                                     peak.Peak.PeakApex.DriftTimeCenterInMs,
                                     peak.VoltageGroup.MeanVoltageInVolts,
                                     peak.VoltageGroup.MeanTemperatureInKelvin,

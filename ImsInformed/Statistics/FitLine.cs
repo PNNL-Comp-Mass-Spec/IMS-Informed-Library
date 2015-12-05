@@ -305,7 +305,7 @@ namespace ImsInformed.Statistics
             if (this.state >= FitlineState.ModelComplete)
             {
                 double mse = this.CalculateMSE();
-                double r2 =  this.CalculateRSquared();
+                double r2 =  weightFunc == null? this.CalculatedRSquaredVanilla() : this.CalculateRSquared();
                 this.Mse = mse;
                 this.RSquared = r2;
                 if (weightFunc != null)
@@ -494,6 +494,11 @@ namespace ImsInformed.Statistics
         /// The <see cref="double"/>.
         /// </returns>
         protected virtual double CalculateRSquared()
+        {
+            return this.CalculatedRSquaredVanilla();
+        }
+
+        private double CalculatedRSquaredVanilla()
         {
             if (this.state >= FitlineState.ModelComplete)
             {

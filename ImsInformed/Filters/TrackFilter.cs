@@ -13,6 +13,8 @@
 // RIGHTS.
 namespace ImsInformed.Filters
 {
+    using System.Linq;
+
     using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
@@ -35,7 +37,8 @@ namespace ImsInformed.Filters
         /// </returns>
         public bool IsTrackPossible(IsomerTrack track, IImsTarget target, CrossSectionSearchParameters crossSectionSearchParameters)
         {
-            if (this.FilterLowFitPointNumber(track.RealPeakCount, crossSectionSearchParameters.MinFitPoints))
+            int minFitPoints = track.TotalNumberOfVoltageGroups - crossSectionSearchParameters.MaxOutliers;
+            if (this.FilterLowFitPointNumber(track.RealPeakCount, minFitPoints))
             {
                 return false;
             }

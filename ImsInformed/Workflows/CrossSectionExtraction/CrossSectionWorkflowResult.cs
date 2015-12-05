@@ -248,7 +248,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             // Find the conformer with the closest m/z
             IsomerTrack trackWithBestMz = tracks.OrderBy(x => Math.Abs(Metrics.DaltonToPpm(x.AverageMzInDalton - target.MassWithAdduct, target.MassWithAdduct))).First();
             double bestMzInPpm = Metrics.DaltonToPpm(trackWithBestMz.AverageMzInDalton - target.MassWithAdduct, target.MassWithAdduct);
-            IList<IdentifiedIsomerInfo> isomersInfo = tracks.Select(x => x.ExportIdentifiedIsomerInfo(viperCompatibleMass, parameters.MinFitPoints, parameters.MinR2,  target, bestMzInPpm)).ToList();
+            IList<IdentifiedIsomerInfo> isomersInfo = tracks.Select(x => x.ExportIdentifiedIsomerInfo(viperCompatibleMass, allVoltageGroups.Count() - parameters.MaxOutliers, parameters.MinR2,  target, bestMzInPpm)).ToList();
             
             AnalysisStatus finalStatus = TrackToHypothesisConclusionLogic(isomersInfo.Select(info => info.AnalysisStatus));
 

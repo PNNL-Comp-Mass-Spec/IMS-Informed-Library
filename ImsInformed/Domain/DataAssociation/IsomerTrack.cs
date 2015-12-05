@@ -72,6 +72,14 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         private readonly HashSet<VoltageGroup> definedVoltageGroups;
 
+        public IEnumerable<VoltageGroup> DefinedVoltageGruops
+        {
+            get 
+            {
+                return this.definedVoltageGroups;
+            }
+        }
+
         /// <summary>
         /// The FitLine.
         /// </summary>
@@ -85,6 +93,17 @@ namespace ImsInformed.Domain.DataAssociation
                 }
 
                 return this.fitLine;
+            }
+        }
+
+        /// <summary>
+        /// The FitLine.
+        /// </summary>
+        public int TotalNumberOfVoltageGroups
+        {
+            get
+            {
+                return this.numberOfVoltageGroups;
             }
         }
 

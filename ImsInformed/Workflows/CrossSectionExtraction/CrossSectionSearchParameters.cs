@@ -29,10 +29,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const double DefaultRelativeIntensityPercentageThreshold = 10; 
         public const double DefaultPeakShapeThreshold = 0.4;
         public const double DefaultIsotopicThreshold = 0.4;
-        public const int DefaultMinFitPoints = 4;
+        public const int DefaultMaxOutliers = 1;
         public const PeakDetectorEnum DefaultPeakDetectorSelection =  PeakDetectorEnum.WaterShed;
         public const FitlineEnum DefaultRegressionSelection =  FitlineEnum.IterativelyBiSquareReweightedLeastSquares;
-        public const double DefaultMinR2 = 0.99;
+        public const double DefaultMinR2 = 0.96;
         public const string DefaultGraphicsExtension = "svg";
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             DefaultAbsoluteIntensityThreshold, 
             DefaultPeakShapeThreshold, 
             DefaultIsotopicThreshold, 
-            DefaultMinFitPoints, 
+            DefaultMaxOutliers, 
             DefaultPeakDetectorSelection, 
             DefaultRegressionSelection,
             DefaultMinR2,
@@ -78,7 +78,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="isotopicThreshold">
         /// The isotopic threshold.
         /// </param>
-        /// <param name="minFitPoints">
+        /// <param name="maxOutliers">
         /// The min fit points.
         /// </param>
         /// <param name="peakDetectorSelection">
@@ -97,7 +97,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             double absoluteIntensityThreshold, 
             double peakShapeThreshold, 
             double isotopicThreshold, 
-            int minFitPoints, 
+            int maxOutliers, 
             PeakDetectorEnum peakDetectorSelection, 
             FitlineEnum regressionSelection,
             double minR2, 
@@ -111,7 +111,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.AbsoluteIntensityThreshold = absoluteIntensityThreshold;
             this.PeakShapeThreshold = peakShapeThreshold;
             this.IsotopicThreshold = isotopicThreshold;
-            this.MinFitPoints = minFitPoints;
+            this.MaxOutliers = maxOutliers;
             this.PeakDetectorSelection = peakDetectorSelection;
             this.RegressionSelection = regressionSelection;
             this.MinR2 = minR2;
@@ -152,7 +152,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Gets or sets the confidence threshold.
         /// </summary>
-        public int MinFitPoints { get; private set; }
+        public int MaxOutliers { get; private set; }
 
         /// <summary>
         /// Gets or sets the number point for smoothing.

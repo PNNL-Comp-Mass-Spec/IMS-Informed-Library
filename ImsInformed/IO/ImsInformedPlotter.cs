@@ -209,7 +209,7 @@ namespace ImsInformed.IO
             model.Axes.Add(
                 new LinearAxis
                     {
-                        Title = "λ (Volts^-1))",
+                        Title = "P/(T*V) with P and T nondimensionalized (1/V)",
                         Position = AxisPosition.Bottom,
                         MajorGridlineStyle = LineStyle.Solid,
                     });

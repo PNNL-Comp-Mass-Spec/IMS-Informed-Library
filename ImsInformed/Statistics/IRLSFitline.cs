@@ -110,6 +110,19 @@ namespace ImsInformed.Statistics
                 slopeOld = this.Slope;
             }
             while (i < this.iterations && percentDiff > 0.0000000001);
+
+            // Fit did not converge, use vanilla fit
+            if (i >= this.iterations)
+            {
+                // Init weight
+                foreach (var point in fitlinePoints)
+                {
+                    point.Weight = 1;
+                }
+
+                base.PerformRegression();
+                this.DiagnoseRegression();
+            }
         }
         
         /// <summary>

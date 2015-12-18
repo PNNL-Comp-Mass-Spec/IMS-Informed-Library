@@ -237,10 +237,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     if (target.HasCompositionInfo) 
                     {
                         int chargeStateAbs = Math.Abs(target.ChargeState);
+
+                        // Again this isotopic profile generator auto adds hydrogen for you depending on charge states. So here take it out.
                         Composition compensatedComposition = target.CompositionWithAdduct - new Composition(0, chargeStateAbs, 0, 0, 0);
                         string empiricalFormula = compensatedComposition.ToPlainString();
                         
-                        // Again this isotopic profile generator auto adds hydrogen for you depending on charge states. So here take it out.
                         IsotopicProfile theoreticalIsotopicProfile = this.theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeStateAbs);
 
                         theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();

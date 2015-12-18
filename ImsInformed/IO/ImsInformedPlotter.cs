@@ -201,7 +201,7 @@ namespace ImsInformed.IO
             model.Axes.Add(
                 new LinearAxis
                     {
-                        Title = "IMS arrival time (seconds)",
+                        Title = "IMS arrival time (milliseconds)",
                         MajorGridlineStyle = LineStyle.Solid,
                         Position = AxisPosition.Left,
                     });

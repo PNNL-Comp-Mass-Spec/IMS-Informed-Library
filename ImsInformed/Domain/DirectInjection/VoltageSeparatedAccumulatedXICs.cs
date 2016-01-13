@@ -48,9 +48,10 @@ namespace ImsInformed.Domain.DirectInjection
         /// <param name="driftTimeToleranceInMs">
         /// The drift time tolerance in milliseconds.
         /// </param>
+        /// <param name="driftTubeLengthInCm"></param>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm, double normalizedTargetDriftTimeInMs, double driftTimeToleranceInMs)
+        public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm, double normalizedTargetDriftTimeInMs, double driftTimeToleranceInMs, double driftTubeLengthInCm)
         {
             bool noVoltageGroupsYet = true;
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
@@ -59,7 +60,7 @@ namespace ImsInformed.Domain.DirectInjection
             for (int i = 1; i <= frameNum; i++)
             {
                 FrameParams param = uimfReader.GetFrameParams(i);
-                double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage) / 100 * FakeUIMFReader.DriftTubeLengthInCentimeters;
+                double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage) / 100 * driftTubeLengthInCm;
                 double driftTubeTemperatureNondimensionalized = Metrics.DegreeCelsius2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.AmbientTemperature));
                 double driftTubePressureNondimensionalized = Metrics.Torr2Nondimensionalized(param.GetValueDouble(FrameParamKeyType.PressureBack));
                 double tofWidthInSeconds = param.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000000;
@@ -135,9 +136,10 @@ namespace ImsInformed.Domain.DirectInjection
         /// <param name="massToleranceInPpm">
         /// The mass tolerance in ppm.
         /// </param>
+        /// <param name="driftTubeLengthInCm"></param>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm) : this(uimfReader, targetMz, massToleranceInPpm, -1, -1)
+        public VoltageSeparatedAccumulatedXiCs(DataReader uimfReader, double targetMz, double massToleranceInPpm, double driftTubeLengthInCm) : this(uimfReader, targetMz, massToleranceInPpm, -1, -1, driftTubeLengthInCm)
         {
         }
     }

@@ -21,7 +21,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMatchParameters"/> class.
         /// </summary>
-        public LibraryMatchParameters() : this(1, 250, 9, 0.4, 0.4, 0.25, 25)
+        public LibraryMatchParameters() : this(1, 250, 9, 0.4, 0.4, 0.25, 25, 88)
         {
         }
 
@@ -49,7 +49,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
         /// <param name="matchingMassToleranceInPpm">
         /// The matching Mass Tolerance In Ppm.
         /// </param>
-        public LibraryMatchParameters(double driftTimeToleranceInMs, double initialSearchMassToleranceInPpm, int numPointForSmoothing, double peakShapeThreshold, double isotopicThreshold, double featureFilterLevel, double matchingMassToleranceInPpm)
+        public LibraryMatchParameters(double driftTimeToleranceInMs, double initialSearchMassToleranceInPpm, int numPointForSmoothing, double peakShapeThreshold, double isotopicThreshold, double featureFilterLevel, double matchingMassToleranceInPpm, double driftTubeLengthInCm)
         {
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.InitialSearchMassToleranceInPpm = initialSearchMassToleranceInPpm;
@@ -58,7 +58,13 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             this.IsotopicThreshold = isotopicThreshold;
             this.FeatureFilterLevel = featureFilterLevel;
             this.MatchingMassToleranceInPpm = matchingMassToleranceInPpm;
+            this.DriftTubeLengthInCm = driftTubeLengthInCm;
         }
+
+        /// <summary>
+        /// Gets or sets the drift time tolerance in milliseconds.
+        /// </summary>
+        public double DriftTubeLengthInCm { get; private set;  }
 
         /// <summary>
         /// Gets or sets the drift time tolerance in milliseconds.

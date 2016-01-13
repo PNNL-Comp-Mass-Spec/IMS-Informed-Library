@@ -255,7 +255,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     // Voltage grouping. Note that we only accumulate frames as needed. Accumulate frames globally is too costly. 
                     // Here we accumulate the XICs around target MZ.
-                    VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MzWindowHalfWidthInPpm);
+                    VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MzWindowHalfWidthInPpm, this.Parameters.DriftTubeLengthInCm);
 
                     // Perform feature detection and scoring and the given MzInDalton range on the accumulated XICs to get the base peaks.
                     if (detailedVerbose)
@@ -389,8 +389,16 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         voltageGroup.VoltageGroupScore = VoltageGroupScoring.ComputeVoltageGroupStabilityScore(voltageGroup);
                     }
                     
-                    // Remove voltage groups that were rejected
+                    // Remove voltage groups that were rejected 
                     foreach (VoltageGroup voltageGroup in rejectedVoltageGroups)
+                    {
+                        accumulatedXiCs.Remove(voltageGroup);
+                    }
+
+                    // Remove voltage groups that don't have sufficient frame accumulations
+                    IEnumerable<VoltageGroup> remainingVGs = accumulatedXiCs.Keys;
+                    IEnumerable<VoltageGroup> toBeRemoved = VoltageGroupFilters.RemoveVoltageGroupsWithInsufficentFrames(remainingVGs, this.Parameters.InsufficientFramesFraction);
+                    foreach (VoltageGroup voltageGroup in toBeRemoved)
                     {
                         accumulatedXiCs.Remove(voltageGroup);
                     }
@@ -410,7 +418,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IIonTracker tracker = new CombinatorialIonTracker(3000);
 
                     // Because for somereason we are not keeping track of drift tube length in UIMF...so we kind of have to go ask the instrument operator..
-                    double driftTubeLength = FakeUIMFReader.DriftTubeLengthInCentimeters;
+                    double driftTubeLength = this.Parameters.DriftTubeLengthInCm;
                     AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters, accumulatedXiCs.Keys.Count);
 
                     if (optimalAssociationHypothesis == null)

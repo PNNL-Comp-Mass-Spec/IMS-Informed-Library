@@ -208,7 +208,7 @@ namespace ImsInformed.Workflows.DriftTimeLibraryMatch
             theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
 
             // Voltage grouping
-            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.InitialSearchMassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs);
+            VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, target.MassWithAdduct, this.Parameters.InitialSearchMassToleranceInPpm, target.NormalizedDriftTimeInMs, this.Parameters.DriftTimeToleranceInMs, this.Parameters.DriftTubeLengthInCm);
 
             foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
             {

@@ -41,6 +41,11 @@ namespace ImsInformedTests
         /// <summary>
         /// The nicotine UIMF file.
         /// </summary>
+        private const double testDriftTubeLength = 88;
+
+        /// <summary>
+        /// The nicotine UIMF file.
+        /// </summary>
         public const string NicoFile = @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-NIC_neg2_28Aug14_Columbia_DI.uimf";
 
         /// <summary>
@@ -161,7 +166,7 @@ namespace ImsInformedTests
             MolecularTarget sample = new MolecularTarget(formula, IonizationMethod.Protonated, "BPS");
             string fileLocation = BPSPostive;
 
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(testDriftTubeLength);
 
             CrossSectionWorkfow workfow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             CrossSectionWorkflowResult result = workfow.RunCrossSectionWorkFlow(sample, true);
@@ -191,7 +196,7 @@ namespace ImsInformedTests
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);
             
-            CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters();
+            CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters(testDriftTubeLength);
 
             CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation, "output", parameters1);
             CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);
@@ -211,7 +216,7 @@ namespace ImsInformedTests
             MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.Protonated, "BHC");
             string fileLocation3 = BHC;
             
-            CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters();
+            CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters(testDriftTubeLength);
             
             CrossSectionWorkfow workfow3 = new CrossSectionWorkfow(fileLocation3, "output", parameters3);
             CrossSectionWorkflowResult results3 = workfow3.RunCrossSectionWorkFlow(sample3, true);
@@ -243,7 +248,7 @@ namespace ImsInformedTests
 
             MolecularTarget target = new MolecularTarget(mz, IonizationMethod.Protonated, "Nicotine");
 
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(testDriftTubeLength);
 
             CrossSectionWorkfow workflow = new CrossSectionWorkfow(uimfFile, "output",  parameters);
             workflow.RunCrossSectionWorkFlow(target);
@@ -274,7 +279,7 @@ namespace ImsInformedTests
 
             MolecularTarget target = new MolecularTarget(mz, IonizationMethod.Deprotonated, "BPS");
 
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(testDriftTubeLength);
 
             Assert.Throws<FileNotFoundException>(() => new CrossSectionWorkfow(uimfFile, "output", parameters));
         }
@@ -330,7 +335,7 @@ namespace ImsInformedTests
             
             Console.WriteLine("TargetList: ");
 
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(); 
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(testDriftTubeLength); 
 
             CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             IEnumerable<CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);

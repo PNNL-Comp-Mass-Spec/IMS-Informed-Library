@@ -144,12 +144,12 @@
     <Compile Include="Domain\DirectInjection\ExtractedIonChromatogram.cs" />
     <Compile Include="Domain\DirectInjection\VoltageGroup.cs" />
     <Compile Include="Domain\DirectInjection\VoltageSeparatedAccumulatedXICs.cs" />
-    <Compile Include="Domain\FakeUIMFReader.cs" />
     <Compile Include="Domain\LiquidChromatography\FeatureBlobNet.cs" />
     <Compile Include="Domain\StandardImsPeak.cs" />
     <Compile Include="Filters\ConformerFilter.cs" />
     <Compile Include="Filters\TrackFilter.cs" />
     <Compile Include="Filters\FeatureFilters.cs" />
+    <Compile Include="Filters\VoltageGroupFilters.cs" />
     <Compile Include="IO\DriftTimeLibraryImporter.cs" />
     <Compile Include="IO\FileFormatEnum.cs" />
     <Compile Include="IO\ImsInformedPlotter.cs" />

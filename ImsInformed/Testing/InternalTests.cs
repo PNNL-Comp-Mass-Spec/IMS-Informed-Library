@@ -42,6 +42,8 @@ namespace ImsInformed.Testing
     // Test for internal mechanisms like scroing methods or isotopic profile extractors
     internal class InternalTests
     {
+        private const double driftTubeLength = 88;
+
         /// <summary>
         /// The test molecule util.
         /// </summary>
@@ -271,7 +273,7 @@ namespace ImsInformed.Testing
              Console.WriteLine("CompositionWithoutAdduct: " + target.CompositionWithoutAdduct);
              Console.WriteLine("Monoisotopic ViperCompatibleMass: " + target.MonoisotopicMass);
          
-             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(driftTubeLength);
          
              var smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
          
@@ -293,7 +295,7 @@ namespace ImsInformed.Testing
              // Generate VoltageSeparatedAccumulatedXICs
              var uimfReader = new DataReader(fileLocation);
              Console.WriteLine("Input file: {0}", fileLocation);
-             VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm);
+             VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm, driftTubeLength);
          
              Console.WriteLine();
          
@@ -414,7 +416,7 @@ namespace ImsInformed.Testing
              Console.WriteLine("[Intensity], [Distance1], [Distance2], [Angle], [Pearson], [Bucha]");
          
              string fileLocation = BPSNegative;
-             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters();
+             CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(driftTubeLength);
              CrossSectionWorkfow workflow = new CrossSectionWorkfow(fileLocation, "output", parameters);
          
              foreach (var form in formulas)
@@ -437,7 +439,7 @@ namespace ImsInformed.Testing
                  
                  // Generate VoltageSeparatedAccumulatedXICs
                  var uimfReader = new DataReader(fileLocation);
-                 VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm);
+                 VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(uimfReader, target.MassWithAdduct, parameters.MzWindowHalfWidthInPpm, parameters.DriftTubeLengthInCm);
          
                  var voltageGroup = accumulatedXiCs.Keys.First();
          

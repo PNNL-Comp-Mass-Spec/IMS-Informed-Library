@@ -24,6 +24,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const double DefaultDriftTimeToleranceInMs = 0.5;
         public const double DefaultMzWindowHalfWidthInPpm = 250;
         public const int DefaultNumPointForSmoothing = 11;
+        public const double DefaultInsufficientFramesFraction = 0.0;
         public const double DefaultFeatureFilterLevel = 0.25;
         public const double DefaultAbsoluteIntensityThreshold = 0.00; 
         public const double DefaultRelativeIntensityPercentageThreshold = 10; 
@@ -38,7 +39,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        public CrossSectionSearchParameters() : this(DefaultDriftTimeToleranceInMs, 
+        public CrossSectionSearchParameters(double driftTubeLengthInCm) : this(DefaultDriftTimeToleranceInMs, 
             DefaultMzWindowHalfWidthInPpm, 
             DefaultNumPointForSmoothing, 
             DefaultFeatureFilterLevel, 
@@ -50,7 +51,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             DefaultRegressionSelection,
             DefaultMinR2,
             DefaultRelativeIntensityPercentageThreshold, 
-            DefaultGraphicsExtension)
+            DefaultGraphicsExtension,
+            DefaultInsufficientFramesFraction,
+            driftTubeLengthInCm)
         { 
         }
 
@@ -90,6 +93,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </param>
         /// <param name="relativeIntensityPercentageThreshold"></param>
         /// <param name="graphicsExtension"></param>
+        /// <param name="insufficientFramesFraction"></param>
+        /// <param name="driftTubeLengthInCm"></param>
         public CrossSectionSearchParameters(double driftTimeToleranceInMs, 
             double mzWindowHalfWidthInPpm, 
             int numPointForSmoothing, 
@@ -102,7 +107,9 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             FitlineEnum regressionSelection,
             double minR2, 
             double relativeIntensityPercentageThreshold, 
-            string graphicsExtension)
+            string graphicsExtension,
+            double insufficientFramesFraction,
+            double driftTubeLengthInCm)
         {
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
@@ -117,7 +124,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.MinR2 = minR2;
             this.RelativeIntensityPercentageThreshold = relativeIntensityPercentageThreshold;
             this.GraphicsExtension = graphicsExtension;
+            this.InsufficientFramesFraction = insufficientFramesFraction;
+            this.DriftTubeLengthInCm = driftTubeLengthInCm;
         }
+
+        /// <summary>
+        /// Gets or sets the length of the drift tube.
+        /// </summary>
+        public double DriftTubeLengthInCm { get; private set; }
 
         /// <summary>
         /// Gets or sets the mass tolerance in ppm.
@@ -138,6 +152,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// Gets or sets the confidence threshold.
         /// </summary>
         public double RelativeIntensityPercentageThreshold { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the fraction threshold below which the voltage group is discarded.
+        /// InsufficientFramesFraction * Max # of Frames in Voltage groups = threshold.
+        /// Any voltage groups with frames count below the threshold is discarded automatically.
+        /// </summary>
+        public double InsufficientFramesFraction { get; private set; }
 
         /// <summary>
         /// Gets or sets the confidence threshold.

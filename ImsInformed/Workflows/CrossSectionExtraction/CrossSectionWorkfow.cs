@@ -257,6 +257,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     // Here we accumulate the XICs around target MZ.
                     VoltageSeparatedAccumulatedXiCs accumulatedXiCs = new VoltageSeparatedAccumulatedXiCs(this.uimfReader, targetMz, this.Parameters.MzWindowHalfWidthInPpm, this.Parameters.DriftTubeLengthInCm);
 
+                    // Remove voltage groups that don't have sufficient frame accumulations
+                    IEnumerable<VoltageGroup> remainingVGs = accumulatedXiCs.Keys;
+                    IEnumerable<VoltageGroup> toBeRemoved = VoltageGroupFilters.RemoveVoltageGroupsWithInsufficentFrames(remainingVGs, this.Parameters.InsufficientFramesFraction);
+                    foreach (VoltageGroup voltageGroup in toBeRemoved)
+                    {
+                        accumulatedXiCs.Remove(voltageGroup);
+                    }
+
                     // Perform feature detection and scoring and the given MzInDalton range on the accumulated XICs to get the base peaks.
                     if (detailedVerbose)
                     {
@@ -391,14 +399,6 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     
                     // Remove voltage groups that were rejected 
                     foreach (VoltageGroup voltageGroup in rejectedVoltageGroups)
-                    {
-                        accumulatedXiCs.Remove(voltageGroup);
-                    }
-
-                    // Remove voltage groups that don't have sufficient frame accumulations
-                    IEnumerable<VoltageGroup> remainingVGs = accumulatedXiCs.Keys;
-                    IEnumerable<VoltageGroup> toBeRemoved = VoltageGroupFilters.RemoveVoltageGroupsWithInsufficentFrames(remainingVGs, this.Parameters.InsufficientFramesFraction);
-                    foreach (VoltageGroup voltageGroup in toBeRemoved)
                     {
                         accumulatedXiCs.Remove(voltageGroup);
                     }

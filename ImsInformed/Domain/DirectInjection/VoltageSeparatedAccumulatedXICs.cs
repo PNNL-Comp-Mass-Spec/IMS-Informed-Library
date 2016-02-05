@@ -57,7 +57,8 @@ namespace ImsInformed.Domain.DirectInjection
             int frameNum = uimfReader.GetGlobalParams().NumFrames;
             ExtractedIonChromatogram currentXIC = new ExtractedIonChromatogram();
             VoltageGroup currentVoltageGroup = new VoltageGroup(1, frameNum);
-            for (int i = 1; i <= frameNum; i++)
+
+            foreach (int i in uimfReader.GetMasterFrameList().Keys)
             {
                 FrameParams param = uimfReader.GetFrameParams(i);
                 double driftTubeVoltageInVolts = param.GetValueDouble(FrameParamKeyType.FloatVoltage) / 100 * driftTubeLengthInCm;

@@ -41,7 +41,7 @@ namespace ImsInformedTests
         /// <summary>
         /// The nicotine UIMF file.
         /// </summary>
-        private const double testDriftTubeLength = 88;
+        private const double testDriftTubeLength = 89;
 
         /// <summary>
         /// The nicotine UIMF file.
@@ -179,19 +179,8 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
-        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\replicates\20151113_choline0001.uimf", Result=1)]
-        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\replicates\20151113_choline0002.uimf", Result=1)]
-        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\replicates\20151113_choline0003.uimf", Result=1)]
-        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\replicates\20151113_choline0004.uimf", Result=1)]
-        [TestCase("C5H14NO", IonizationMethod.APCI, "choline", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\replicates\20151113_choline0005.uimf", Result=1)]
-        [TestCase("C10H12N3O3PS2", IonizationMethod.Sodiumated, "AZY+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-AZY_pos2_9Oct14_Columbia_DI.uimf", Result=2)]
-        [TestCase("C12H6F2N2O2",IonizationMethod.Sodiumated, "FIL+Na",  @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-FIL_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
-        [TestCase("C18H12Cl2N2O", IonizationMethod.Deprotonated, "BAD-H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_neg_13Oct14_Columbia_DI.uimf", Result = 1)]
-        [TestCase("C18H12Cl2N2O", IonizationMethod.Sodiumated, "BAD+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 2)]
-        [TestCase("C18H12Cl2N2O", IonizationMethod.Protonated, "BAD+H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-BAD_pos_10Oct14_Columbia_DI.uimf", Result = 1)]
-        [TestCase("C12H18N4O6S", IonizationMethod.Protonated, "OYZ+H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-OYZ_pos_12Sep14_Columbia_DI.uimf", Result = 1)]
-        [TestCase("C12H18N4O6S", IonizationMethod.Sodiumated, "OYZ+Na", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-OYZ_pos_12Sep14_Columbia_DI.uimf", Result = 1)]
-        [TestCase("C12H18N4O6S", IonizationMethod.Deprotonated, "OYZ-H", @"\\proto-2\UnitTest_Files\IMSInformedTestFiles\datasets\smallMolecule\EXP-OYZ_neg_26Aug14_Columbia_DI.uimf", Result = 1)]
+        [TestCase("C10H13N5O4", IonizationMethod.Protonated, "Adenosine+H", @"C:\Users\maji301\Desktop\temp\out\20151110_Adenosine0001_labrat.uimf", Result = 2)]
+        [TestCase("C10H13N5O4", IonizationMethod.Sodiumated, "Adenosine+Na", @"C:\Users\maji301\Desktop\temp\out\20151110_Adenosine0001_labrat.uimf", Result = 1)]
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);

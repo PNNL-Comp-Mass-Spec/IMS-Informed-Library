@@ -276,6 +276,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     IList<ObservedPeak> allObservations = new List<ObservedPeak>();
                     IDictionary<string, IList<ObservedPeak>> rejectedObservations = new Dictionary<string, IList<ObservedPeak>>();
 
+                    var numberOfParticipatingVGs = accumulatedXiCs.Keys.Count;
+
                     // Iterate through the features and perform filtering on isotopic affinity, intensity, drift time and peak shape.
                     foreach (VoltageGroup voltageGroup in accumulatedXiCs.Keys)
                     {    
@@ -419,7 +421,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
 
                     // Because for somereason we are not keeping track of drift tube length in UIMF...so we kind of have to go ask the instrument operator..
                     double driftTubeLength = this.Parameters.DriftTubeLengthInCm;
-                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters, accumulatedXiCs.Keys.Count);
+                    AssociationHypothesis optimalAssociationHypothesis = tracker.FindOptimumHypothesis(filteredObservations, driftTubeLength, target, this.Parameters, numberOfParticipatingVGs);
 
                     if (optimalAssociationHypothesis == null)
                     {

@@ -201,7 +201,7 @@ namespace ImsInformed.IO
 
             model.TitlePadding = 0;
             model.Title = "Association Hypotheses Plot";
-            model.Subtitle = string.Format("target {0} in dataset: {1}", targetDescriptor, datasetName) ;
+            model.Subtitle = string.Format("Target: {0}, dataset: {1}", targetDescriptor, datasetName) ;
 
             model.Axes.Add(
                 new LinearAxis

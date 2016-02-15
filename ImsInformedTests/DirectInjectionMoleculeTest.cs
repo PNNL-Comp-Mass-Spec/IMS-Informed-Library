@@ -182,6 +182,7 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
+        [TestCase("C12H22O11", IonizationMethod.Protonated, "sucrose", @"Z:\Adjusted\15-metabolites\20151110_Sucrose0001.uimf", Result = 1)]
         [TestCase("C5H14NO", IonizationMethod.APCI, "Choline", @"Z:\Adjusted\choline-adjusted\20151113_choline0002.uimf", Result = 1)]
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {

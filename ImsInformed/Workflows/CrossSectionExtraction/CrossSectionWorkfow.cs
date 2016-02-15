@@ -440,7 +440,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                         this.Parameters.GraphicsExtension : "." + this.Parameters.GraphicsExtension;
                     string outputPath = string.Format("{0}target_{1}_in_{2}_QA{3}", this.OutputPath, target.TargetDescriptor, this.DatasetName, extension);
                     ImsInformedPlotter plotter = new ImsInformedPlotter();
-                    plotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor, rejectedObservations);
+                    plotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target, rejectedObservations);
 
                     // Printout results
                     if (detailedVerbose)

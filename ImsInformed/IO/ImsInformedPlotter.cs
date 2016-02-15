@@ -25,6 +25,7 @@ namespace ImsInformed.IO
     using ImsInformed.Domain.DataAssociation;
     using ImsInformed.Domain.DirectInjection;
     using ImsInformed.Statistics;
+    using ImsInformed.Targets;
 
     using OxyPlot;
     using OxyPlot.Axes;
@@ -59,14 +60,14 @@ namespace ImsInformed.IO
         /// The plot location.
         /// </param>
         [STAThread]
-        public void PlotAssociationHypothesis(AssociationHypothesis hypothesis, string plotLocation, string datasetName, string targetDescriptor, IDictionary<string, IList<ObservedPeak>> preFilteredPeaks)
+        public void PlotAssociationHypothesis(AssociationHypothesis hypothesis, string plotLocation, string datasetName, IImsTarget target, IDictionary<string, IList<ObservedPeak>> preFilteredPeaks)
         {
             //int width = 450;
             //int height = 256;
 
             int width = 675;
             int height = 384;
-            PlotModel associationHypothsisPlot = this.AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor);
+            PlotModel associationHypothsisPlot = this.AssociationHypothesisPlot(hypothesis, datasetName, target);
             associationHypothsisPlot = this.AnnotateRemovedPeaks(associationHypothsisPlot, preFilteredPeaks);
             this.PlotDiagram(plotLocation, associationHypothsisPlot, width, height);
         }
@@ -190,7 +191,7 @@ namespace ImsInformed.IO
         /// <returns>
         /// The <see cref="PlotModel"/>.
         /// </returns>
-        private PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, string targetDescriptor, bool plotXAxisFromZero = false)
+        private PlotModel AssociationHypothesisPlot(AssociationHypothesis hypothesis, string datasetName, IImsTarget target, bool plotXAxisFromZero = false)
         {
             PlotModel model = new PlotModel();
 
@@ -201,7 +202,7 @@ namespace ImsInformed.IO
 
             model.TitlePadding = 0;
             model.Title = "Association Hypotheses Plot";
-            model.Subtitle = string.Format("Target: {0}, dataset: {1}", targetDescriptor, datasetName) ;
+            model.Subtitle = string.Format("Target: {0}, dataset: {1}", target.TargetDescriptor, datasetName) ;
 
             model.Axes.Add(
                 new LinearAxis
@@ -267,8 +268,8 @@ namespace ImsInformed.IO
                 annotation.Intercept = fitline.Intercept;
                 annotation.TextPadding = 3;
                 annotation.TextMargin = 2;
-                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; Isotopic Score: {2:F2}; Track Probability: {3:F2}; R2: {4:F2};", 
-                    count, track.AverageMzInDalton, track.TrackStatistics.IsotopicScore, track.TrackProbability, track.FitLine.RSquared);
+                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; ccs: {2:F2}, Isotopic Score: {3:F3}; Track Probability: {4:F2}; R2: {5:F5};", 
+                    count, track.AverageMzInDalton, track.GetMobilityInfoForTarget(target).CollisionCrossSectionArea, track.TrackStatistics.IsotopicScore, track.TrackProbability, track.FitLine.RSquared);
                 count++;
                 model.Annotations.Add(annotation);
                 //Func<object, DataPoint> lineMap = obj =>

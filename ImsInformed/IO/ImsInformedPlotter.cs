@@ -64,8 +64,8 @@ namespace ImsInformed.IO
             //int width = 450;
             //int height = 256;
 
-            int width = 900 / 4 * 3;
-            int height = 512 / 4 * 3;
+            int width = 675;
+            int height = 384;
             PlotModel associationHypothsisPlot = this.AssociationHypothesisPlot(hypothesis, datasetName, targetDescriptor);
             associationHypothsisPlot = this.AnnotateRemovedPeaks(associationHypothsisPlot, preFilteredPeaks);
             this.PlotDiagram(plotLocation, associationHypothsisPlot, width, height);
@@ -135,27 +135,6 @@ namespace ImsInformed.IO
             {
                 throw new FileFormatException("Please specify file extension of the result picture file.");
             }
-            else if (extension.ToLower() == ".png")
-            {
-                int resolution = 300;
-                RenderTargetBitmap image = new RenderTargetBitmap(width, height, resolution, resolution, PixelFormats.Pbgra32);
-                DrawingVisual drawVisual = new DrawingVisual();
-                DrawingContext drawContext = drawVisual.RenderOpen();
-                
-                // Output the graph models to a context
-                var oe = PngExporter.ExportToBitmap(model, width, height, OxyColors.White);
-                drawContext.DrawImage(oe, new Rect(0, 0, width, height));
-
-                drawContext.Close();
-                image.Render(drawVisual);
-
-                PngBitmapEncoder png = new PngBitmapEncoder();
-                png.Frames.Add(BitmapFrame.Create(image));
-                using (Stream stream = File.Create(fileLocation))
-                {
-                    png.Save(stream);
-                }
-            }
             else if (extension.ToLower() == ".svg")
             {
                 using (var stream = File.Create(fileLocation))
@@ -163,6 +142,32 @@ namespace ImsInformed.IO
                     var exporter = new SvgExporter() { Width = width, Height = height};
                     exporter.Export(model, stream);
                 }
+            }
+            else if (extension.ToLower() == ".png")
+            {
+                using (Stream stream = File.Create(fileLocation))
+                {
+                    PngExporter.Export(model, stream, width * 4, height * 4 , OxyColors.Transparent, 300);
+                }
+
+                // int resolution = 300;
+                // RenderTargetBitmap image = new RenderTargetBitmap(width, height, resolution, resolution, PixelFormats.Pbgra32);
+                // DrawingVisual drawVisual = new DrawingVisual();
+                // DrawingContext drawContext = drawVisual.RenderOpen();
+                // 
+                // // Output the graph models to a context
+                // var oe = PngExporter.ExportToBitmap(model, width, height, OxyColors.White);
+                // drawContext.DrawImage(oe, new Rect(0, 0, width, height));
+                // 
+                // drawContext.Close();
+                // image.Render(drawVisual);
+                // 
+                // PngBitmapEncoder png = new PngBitmapEncoder();
+                // png.Frames.Add(BitmapFrame.Create(image));
+                // using (Stream stream = File.Create(fileLocation))
+                // {
+                //     png.Save(stream);
+                // }
             }
             else
             {

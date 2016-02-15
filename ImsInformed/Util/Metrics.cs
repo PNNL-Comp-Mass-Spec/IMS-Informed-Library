@@ -35,12 +35,12 @@ namespace ImsInformed.Util
         /// </summary>
         public const double LoschmidtConstant = 2.6867805e25;
 
-        public const double ElectronVolt = 1.60217646e-19;
+        public const double ElectronVolt = 1.602176565e-19;
 
         /// <summary>
         /// The N0.
         /// </summary>
-        public const double BoltzmannConstant = 1.3806488e-23;
+        public const double BoltzmannConstant = 1.38064852e-23;
 
         /// <summary>
         /// The standard ims pressure in TORR.
@@ -48,9 +48,9 @@ namespace ImsInformed.Util
         public const double StandardImsPressureInTorr = 4;
 
         /// <summary>
-        /// The pascal unit TORR.
+        /// Atmospheric pressure as Torrs
         /// </summary>
-        public const double PascalPerTorr = 133.322368;
+        public const double AtmosphericPressureInTorrs = 760;
 
         /// <summary>
         /// The pascal unit TORR.
@@ -73,7 +73,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static double Torr2Pascal(double pressureInTorr)
         {
-            return PascalPerTorr * pressureInTorr;
+            return AtmosphericPressureInPascal / AtmosphericPressureInTorrs * pressureInTorr;
         }
 
         public static double Dalton2Gram(double massInDalton)
@@ -92,7 +92,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static double Torr2Nondimensionalized(double pressureInTorr)
         {
-            return (PascalPerTorr * pressureInTorr) / AtmosphericPressureInPascal;
+            return pressureInTorr / AtmosphericPressureInTorrs;
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace ImsInformed.Util
         /// </returns>
         public static double Nondimensionalized2Torr(double pressureNondimensionalized)
         {
-            return pressureNondimensionalized * AtmosphericPressureInPascal / PascalPerTorr;
+            return pressureNondimensionalized * AtmosphericPressureInTorrs;
         }
 
         /// <summary>

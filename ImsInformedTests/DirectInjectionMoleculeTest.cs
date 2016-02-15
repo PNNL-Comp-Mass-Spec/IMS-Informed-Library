@@ -22,12 +22,15 @@ namespace ImsInformedTests
 
     using ImsInformed;
     using ImsInformed.IO;
+    using ImsInformed.Statistics;
     using ImsInformed.Targets;
     using ImsInformed.Workflows.CrossSectionExtraction;
     using ImsInformed.Workflows.DriftTimeLibraryMatch;
     using ImsInformed.Workflows.VoltageAccumulation;
 
     using InformedProteomics.Backend.Data.Composition;
+
+    using MathNet.Numerics.LinearRegression;
 
     using NUnit.Framework;
 
@@ -179,13 +182,13 @@ namespace ImsInformedTests
         /// The test target detection with isomers.
         /// </summary>
         [Test][STAThread]
-        [TestCase("C10H13N5O4", IonizationMethod.Protonated, "Adenosine+H", @"C:\Users\maji301\Desktop\temp\out\20151110_Adenosine0001_labrat.uimf", Result = 2)]
-        [TestCase("C10H13N5O4", IonizationMethod.Sodiumated, "Adenosine+Na", @"C:\Users\maji301\Desktop\temp\out\20151110_Adenosine0001_labrat.uimf", Result = 1)]
+        [TestCase("C5H14NO", IonizationMethod.APCI, "Choline", @"Z:\Adjusted\choline-adjusted\20151113_choline0002.uimf", Result = 1)]
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);
             
-            CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters(testDriftTubeLength);
+            CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters(CrossSectionSearchParameters.DefaultDriftTimeToleranceInMs, CrossSectionSearchParameters.DefaultMzWindowHalfWidthInPpm,
+                CrossSectionSearchParameters.DefaultNumPointForSmoothing, CrossSectionSearchParameters.DefaultFeatureFilterLevel, CrossSectionSearchParameters.DefaultAbsoluteIntensityThreshold, CrossSectionSearchParameters.DefaultPeakShapeThreshold, CrossSectionSearchParameters.DefaultIsotopicThreshold, CrossSectionSearchParameters.DefaultMaxOutliers, CrossSectionSearchParameters.DefaultPeakDetectorSelection, FitlineEnum.OrdinaryLeastSquares, CrossSectionSearchParameters.DefaultMinR2, CrossSectionSearchParameters.DefaultRelativeIntensityPercentageThreshold, "png", CrossSectionSearchParameters.DefaultInsufficientFramesFraction, testDriftTubeLength);
 
             CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation, "output", parameters1);
             CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);

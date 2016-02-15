@@ -200,8 +200,8 @@ namespace ImsInformed.IO
             model.LegendPosition = LegendPosition.LeftTop;
 
             model.TitlePadding = 0;
-            // model.Title = "Association Hypothesis Plot";
-            // model.Subtitle = datasetName + "_" + targetDescriptor;
+            model.Title = "Association Hypotheses Plot";
+            model.Subtitle = string.Format("target {0} in dataset: {1}", targetDescriptor, datasetName) ;
 
             model.Axes.Add(
                 new LinearAxis

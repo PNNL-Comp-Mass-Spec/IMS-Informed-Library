@@ -217,7 +217,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public CrossSectionWorkflowResult RunCrossSectionWorkFlow(IImsTarget target, bool detailedVerbose = true)
         {
             // Reassign trace listener to print to console as well as the target directory.
-            using (this.ResetTraceListenerToTarget(target))
+            using (this.ResetTraceListenerToTarget(target, this.DatasetName))
             {
                 try
                 {
@@ -436,7 +436,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
                     
                     string extension = (this.Parameters.GraphicsExtension.StartsWith(".")) ?
                         this.Parameters.GraphicsExtension : "." + this.Parameters.GraphicsExtension;
-                    string outputPath = this.OutputPath + this.DatasetName + "_" + target.TargetDescriptor + "_QA" + extension;
+                    string outputPath = string.Format("{0}target_{1}_in_{2}_QA{3}", this.OutputPath, target.TargetDescriptor, this.DatasetName, extension);
                     ImsInformedPlotter plotter = new ImsInformedPlotter();
                     plotter.PlotAssociationHypothesis(optimalAssociationHypothesis, outputPath, this.DatasetName, target.TargetDescriptor, rejectedObservations);
 
@@ -519,10 +519,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <returns>
         /// The <see cref="FileStream"/>.
         /// </returns>
-        private FileStream ResetTraceListenerToTarget(IImsTarget target)
+        private FileStream ResetTraceListenerToTarget(IImsTarget target, string datasetName)
         {
             Trace.Listeners.Clear();
-            string targetResultFileName = Path.Combine(this.OutputPath, "TargetSearchResult" + target.TargetDescriptor + ".txt");
+            string targetResultFileName = Path.Combine(this.OutputPath, "target_" + target.TargetDescriptor + "_in_" + datasetName + ".txt");
             FileStream resultFile = new FileStream(targetResultFileName, FileMode.Create, FileAccess.Write, FileShare.None);
             ConsoleTraceListener consoleTraceListener = new ConsoleTraceListener(false);
             consoleTraceListener.TraceOutputOptions = TraceOptions.DateTime;

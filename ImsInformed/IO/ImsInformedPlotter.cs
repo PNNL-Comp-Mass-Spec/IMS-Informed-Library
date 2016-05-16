@@ -201,7 +201,7 @@ namespace ImsInformed.IO
             model.LegendPosition = LegendPosition.LeftTop;
 
             model.TitlePadding = 0;
-            model.Title = "Association Hypotheses Plot";
+            model.Title = "Optimal Association Hypothesis Plot";
             model.Subtitle = string.Format("Target: {0}, dataset: {1}", target.TargetDescriptor, datasetName) ;
 
             model.Axes.Add(

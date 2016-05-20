@@ -77,7 +77,7 @@ namespace ImsInformed.IO
             Func<ObservedPeak, ScatterPoint> fitPointMap = obj =>
             {
                 ObservedPeak observation = obj;
-                ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
+                ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint(false, 0);
                 double size = MapToPointSize(observation);
                 ScatterPoint sp = new ScatterPoint(xyPoint.X, xyPoint.Y, size);
                 return sp;
@@ -227,7 +227,7 @@ namespace ImsInformed.IO
             Func<ObservedPeak, ScatterPoint> fitPointMap = obj =>
             {
                 ObservedPeak observation = obj;
-                ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint();
+                ContinuousXYPoint xyPoint = observation.ToContinuousXyPoint(false, 0);
                 double size = MapToPointSize(observation);
                 ScatterPoint sp = new ScatterPoint(xyPoint.X, xyPoint.Y, size);
                 return sp;

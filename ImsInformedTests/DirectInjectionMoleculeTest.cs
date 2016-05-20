@@ -184,12 +184,13 @@ namespace ImsInformedTests
         [Test][STAThread]
         [TestCase("C12H22O11", IonizationMethod.Protonated, "sucrose", @"Z:\Adjusted\15-metabolites\20151110_Sucrose0001.uimf", Result = 1)]
         [TestCase("C5H14NO", IonizationMethod.APCI, "Choline", @"Z:\Adjusted\choline-adjusted\20151113_choline0002.uimf", Result = 1)]
+        [TestCase("C6H14NO8P", IonizationMethod.Deprotonated, "Glocosamine-6-phosphate", @"Z:\Adjusted\15-metabolites\20151110_Glucosamine_6_P_neg0001.uimf", Result = 1)]
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);
             
             CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters(CrossSectionSearchParameters.DefaultDriftTimeToleranceInMs, CrossSectionSearchParameters.DefaultMzWindowHalfWidthInPpm,
-                CrossSectionSearchParameters.DefaultNumPointForSmoothing, CrossSectionSearchParameters.DefaultFeatureFilterLevel, CrossSectionSearchParameters.DefaultAbsoluteIntensityThreshold, CrossSectionSearchParameters.DefaultPeakShapeThreshold, CrossSectionSearchParameters.DefaultIsotopicThreshold, CrossSectionSearchParameters.DefaultMaxOutliers, CrossSectionSearchParameters.DefaultPeakDetectorSelection, FitlineEnum.OrdinaryLeastSquares, CrossSectionSearchParameters.DefaultMinR2, CrossSectionSearchParameters.DefaultRelativeIntensityPercentageThreshold, "png", CrossSectionSearchParameters.DefaultInsufficientFramesFraction, testDriftTubeLength);
+                CrossSectionSearchParameters.DefaultNumPointForSmoothing, CrossSectionSearchParameters.DefaultFeatureFilterLevel, CrossSectionSearchParameters.DefaultAbsoluteIntensityThreshold, CrossSectionSearchParameters.DefaultPeakShapeThreshold, CrossSectionSearchParameters.DefaultIsotopicThreshold, CrossSectionSearchParameters.DefaultMaxOutliers, CrossSectionSearchParameters.DefaultPeakDetectorSelection, FitlineEnum.OrdinaryLeastSquares, CrossSectionSearchParameters.DefaultMinR2, CrossSectionSearchParameters.DefaultRelativeIntensityPercentageThreshold, "png", CrossSectionSearchParameters.DefaultInsufficientFramesFraction, testDriftTubeLength, true);
 
             CrossSectionWorkfow workfow1 = new CrossSectionWorkfow(fileLocation, "output", parameters1);
             CrossSectionWorkflowResult results1 = workfow1.RunCrossSectionWorkFlow(sample1, true);

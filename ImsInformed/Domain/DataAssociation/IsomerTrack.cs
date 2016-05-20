@@ -67,7 +67,74 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         private readonly double driftTubeLengthInMeters;
 
+        private double globalMeanTemperature = 0;
+        private bool globalMeanTemperatureSet = false;
+        private bool useMeanTemperature;
+
         /// <summary>
+        /// The observations has changed.
+        /// </summary>
+        private bool fitLineNotComputed;
+
+        private int numberOfVoltageGroups;
+
+        /// <summary>
+        /// The ion signature matching probability.
+        /// </summary>
+        private double ionSignatureMatchingProbability;
+
+        /// <summary>
+        /// The mobility info.
+        /// </summary>
+        private MobilityInfo mobilityInfo;
+
+        /// <summary>
+        /// The fit line.
+        /// </summary>
+        private FitLine fitLine;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
+        /// </summary>
+        /// <param name="peaks">
+        /// The peaks.
+        /// </param>
+        /// <param name="driftTubeLengthInMeters">
+        /// The drift tube length in meters.
+        /// </param>
+        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters, int numberOfVoltageGroups, FitLine fitline, bool useAverageTemperature) : this(driftTubeLengthInMeters, numberOfVoltageGroups, fitline, useAverageTemperature)
+        {
+            foreach (var peak in peaks)
+            {
+                this.AddObservation(peak);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
+        /// </summary>
+        /// <param name="driftTubeLengthInMeters">
+        /// The drift Tube Length In Meters.
+        /// </param>
+        /// <param name="target">
+        /// The inferedTarget.
+        /// </param>
+        public IsomerTrack(double driftTubeLengthInMeters, int numberOfVoltageGroups, FitLine fitline, bool useAverageTemperature)
+        {
+            this.driftTubeLengthInMeters = driftTubeLengthInMeters;
+            this.fitLineNotComputed = true;
+            this.observedPeaks = new HashSet<ObservedPeak>();
+            this.definedVoltageGroups = new HashSet<VoltageGroup>();
+            this.mobilityInfo.CollisionCrossSectionArea = 0;
+            this.mobilityInfo.Mobility = 0;
+            this.mobilityInfo.RSquared = 0;
+            this.ionSignatureMatchingProbability = 0;
+            this.numberOfVoltageGroups = numberOfVoltageGroups;
+            this.fitLine = fitline;
+            this.useMeanTemperature = useAverageTemperature;
+        }
+
+                /// <summary>
         /// The inferedTarget.
         /// </summary>
         private readonly HashSet<VoltageGroup> definedVoltageGroups;
@@ -105,68 +172,6 @@ namespace ImsInformed.Domain.DataAssociation
             {
                 return this.numberOfVoltageGroups;
             }
-        }
-
-        /// <summary>
-        /// The observations has changed.
-        /// </summary>
-        private bool fitLineNotComputed;
-
-        private int numberOfVoltageGroups;
-
-        /// <summary>
-        /// The ion signature matching probability.
-        /// </summary>
-        private double ionSignatureMatchingProbability;
-
-        /// <summary>
-        /// The mobility info.
-        /// </summary>
-        private MobilityInfo mobilityInfo;
-
-        /// <summary>
-        /// The fit line.
-        /// </summary>
-        private FitLine fitLine;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
-        /// </summary>
-        /// <param name="peaks">
-        /// The peaks.
-        /// </param>
-        /// <param name="driftTubeLengthInMeters">
-        /// The drift tube length in meters.
-        /// </param>
-        public IsomerTrack(IEnumerable<ObservedPeak> peaks, double driftTubeLengthInMeters, int numberOfVoltageGroups, FitLine fitline) : this(driftTubeLengthInMeters, numberOfVoltageGroups, fitline)
-        {
-            foreach (var peak in peaks)
-            {
-                this.AddObservation(peak);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IsomerTrack"/> class.
-        /// </summary>
-        /// <param name="driftTubeLengthInMeters">
-        /// The drift Tube Length In Meters.
-        /// </param>
-        /// <param name="target">
-        /// The inferedTarget.
-        /// </param>
-        public IsomerTrack(double driftTubeLengthInMeters, int numberOfVoltageGroups, FitLine fitline)
-        {
-            this.driftTubeLengthInMeters = driftTubeLengthInMeters;
-            this.fitLineNotComputed = true;
-            this.observedPeaks = new HashSet<ObservedPeak>();
-            this.definedVoltageGroups = new HashSet<VoltageGroup>();
-            this.mobilityInfo.CollisionCrossSectionArea = 0;
-            this.mobilityInfo.Mobility = 0;
-            this.mobilityInfo.RSquared = 0;
-            this.ionSignatureMatchingProbability = 0;
-            this.numberOfVoltageGroups = numberOfVoltageGroups;
-            this.fitLine = fitline;
         }
 
         /// <summary>
@@ -336,7 +341,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// </returns>
         public double GetDriftTimeErrorInSecondsForObsevation(ObservedPeak peak)
         {
-            ContinuousXYPoint observationPoint = peak.ToContinuousXyPoint();
+            ContinuousXYPoint observationPoint = peak.ToContinuousXyPoint(this.useMeanTemperature, this.GetGlobalMeanTemperature());
             double actualDriftTimeInSeconds = observationPoint.Y / 1000;
             double predictedDriftTimeInSeconds = this.fitLine.ModelPredictX2Y(observationPoint.X) / 1000;
             double error = Math.Abs(actualDriftTimeInSeconds - predictedDriftTimeInSeconds);
@@ -439,7 +444,7 @@ namespace ImsInformed.Domain.DataAssociation
             
             Composition bufferGas = new Composition(0, 0, 2, 0, 0);
             double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);
-            double meanTemperatureInKelvin = this.ComputeGlobalMeanTemperature();
+            double meanTemperatureInKelvin = this.GetGlobalMeanTemperature();
             this.mobilityInfo.CollisionCrossSectionArea = MoleculeUtil.ComputeCrossSectionalArea(
                 meanTemperatureInKelvin,
                 this.mobilityInfo.Mobility,
@@ -474,21 +479,29 @@ namespace ImsInformed.Domain.DataAssociation
         /// <returns>
         /// The <see cref="double"/>.
         /// </returns>
-        private double ComputeGlobalMeanTemperature()
+        private double GetGlobalMeanTemperature()
         {
-            // Find the average temperature across various non outlier voltage groups.
-            double globalMeanTemperature = 0;
-            int frameCount = 0;
-            foreach (VoltageGroup group in this.observedPeaks.Select(peak => peak.VoltageGroup))
+            if (this.globalMeanTemperatureSet)
             {
-                double voltageGroupTemperature = Metrics.AbsoluteZeroInKelvin * group.MeanTemperatureNondimensionalized;
-                globalMeanTemperature += voltageGroupTemperature * group.FrameAccumulationCount;
-                frameCount += group.FrameAccumulationCount;
+                return this.globalMeanTemperature;
             }
-            
-            globalMeanTemperature /= frameCount;
-            
-            return globalMeanTemperature;
+            else
+            {
+                // Find the average temperature across various non outlier voltage groups.
+                this.globalMeanTemperature = 0;
+                int frameCount = 0;
+                foreach (VoltageGroup group in this.observedPeaks.Select(peak => peak.VoltageGroup))
+                {
+                    double voltageGroupTemperature = Metrics.AbsoluteZeroInKelvin
+                                                     * group.MeanTemperatureNondimensionalized;
+                    this.globalMeanTemperature += voltageGroupTemperature * group.FrameAccumulationCount;
+                    frameCount += group.FrameAccumulationCount;
+                }
+
+                this.globalMeanTemperature /= frameCount;
+                this.globalMeanTemperatureSet = true;
+                return this.globalMeanTemperature;
+            }
         }
 
         /// <summary>
@@ -501,7 +514,7 @@ namespace ImsInformed.Domain.DataAssociation
         {
             foreach (ObservedPeak observation in this.observedPeaks)
             {
-                ContinuousXYPoint point = observation.ToContinuousXyPoint();
+                ContinuousXYPoint point = observation.ToContinuousXyPoint(this.useMeanTemperature, this.GetGlobalMeanTemperature());
                 yield return point;
             }
         }

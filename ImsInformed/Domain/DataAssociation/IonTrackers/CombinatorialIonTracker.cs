@@ -82,7 +82,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             // Find the top N tracks using K shorestest path algorithm
             IEnumerable<IEnumerable<IonTransition>> kShorestPaths = transitionGraph.PeakGraph.RankedShortestPathHoffmanPavley(t => 0 - Math.Log(t.TransitionProbability), transitionGraph.SourceVertex, transitionGraph.SinkVertex, this.maxTracks);
 
-            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, driftTubeLength, numberOfVoltageGroups, parameters.RegressionSelection);
+            IEnumerable<IsomerTrack> candidateTracks = MinCostFlowIonTracker.ToTracks(kShorestPaths, parameters, numberOfVoltageGroups, parameters.RegressionSelection);
 
             // filter paths
             TrackFilter filter = new TrackFilter();

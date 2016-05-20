@@ -38,9 +38,9 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             throw new NotImplementedException();
         }
 
-        public static IsomerTrack ToTrack(IEnumerable<IonTransition> edges, double driftTubeLength, int totalNumberOfVoltageGroups, FitLine fitline)
+        public static IsomerTrack ToTrack(IEnumerable<IonTransition> edges, CrossSectionSearchParameters parameters, int totalNumberOfVoltageGroups, FitLine fitline)
         {
-            IsomerTrack track = new IsomerTrack(driftTubeLength, totalNumberOfVoltageGroups, fitline);
+            IsomerTrack track = new IsomerTrack(parameters.DriftTubeLengthInCm, totalNumberOfVoltageGroups, fitline, parameters.UseAverageTemperature);
             foreach (IonTransition edge in edges)
             {
                 track.AddIonTransition(edge);
@@ -60,18 +60,16 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         /// <param name="edges">
         /// The edges.
         /// </param>
-        /// <param name="driftTubeLength">
-        /// The drift tube length.
-        /// </param>
+        /// <param name="parameters"></param>
         /// <returns>
         /// The <see cref="IEnumerable"/>.
         /// </returns>
-        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, double driftTubeLength, int numberOfVoltageGroups, FitlineEnum fitlineType)
+        public static IEnumerable<IsomerTrack> ToTracks(IEnumerable<IEnumerable<IonTransition>> edges, CrossSectionSearchParameters parameters, int numberOfVoltageGroups, FitlineEnum fitlineType)
         {
             foreach (IEnumerable<IonTransition> rawTrack in edges)
             {
                 FitLine newFitline = (fitlineType == FitlineEnum.OrdinaryLeastSquares) ? (FitLine)new LeastSquaresFitLine() : new IRLSFitline(10000);
-                IsomerTrack track = ToTrack(rawTrack, driftTubeLength, numberOfVoltageGroups, newFitline);
+                IsomerTrack track = ToTrack(rawTrack, parameters, numberOfVoltageGroups, newFitline);
 
                 yield return track;
             }

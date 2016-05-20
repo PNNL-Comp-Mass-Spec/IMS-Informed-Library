@@ -15,6 +15,7 @@ namespace ImsInformed.Domain.DirectInjection
 {
     using ImsInformed.Scoring;
     using ImsInformed.Statistics;
+    using ImsInformed.Util;
 
     internal enum ObservationType
     {
@@ -110,17 +111,17 @@ namespace ImsInformed.Domain.DirectInjection
         /// <returns>
         /// The <see cref="ContinuousXYPoint"/>.
         /// </returns>
-        public ContinuousXYPoint ToContinuousXyPoint()
+        public ContinuousXYPoint ToContinuousXyPoint(bool useAverageTemperature, double globalMeanTemperatureInKelvin)
         {
             if (this.mobilityPoint == null)
             {
                 // convert drift time to SI unit seconds
                 double y = this.Peak.PeakApex.DriftTimeCenterInMs;
+                double temperature = useAverageTemperature ? Metrics.KelvinToNondimensionalized(globalMeanTemperatureInKelvin) : this.VoltageGroup.MeanTemperatureNondimensionalized;
                 
                 // P/(T*V) value in pascal per (volts * kelvin)
                 double x = this.VoltageGroup.MeanPressureNondimensionalized / 
-                    this.VoltageGroup.MeanVoltageInVolts / 
-                    this.VoltageGroup.MeanTemperatureNondimensionalized;
+                    this.VoltageGroup.MeanVoltageInVolts / temperature;
                  
                 this.mobilityPoint = new ContinuousXYPoint(x, y);
             }

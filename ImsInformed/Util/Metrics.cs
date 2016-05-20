@@ -123,6 +123,11 @@ namespace ImsInformed.Util
             return AbsoluteZeroInKelvin + temperature;
         }
 
+        public static double KelvinToNondimensionalized(double temperatureInKelvin)
+        {
+            return temperatureInKelvin / AbsoluteZeroInKelvin;
+        }
+
         /// <summary>
         /// The degree celsius 2 nondimensionalized.
         /// </summary>

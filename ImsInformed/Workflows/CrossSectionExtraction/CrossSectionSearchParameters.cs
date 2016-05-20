@@ -35,6 +35,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const FitlineEnum DefaultRegressionSelection =  FitlineEnum.IterativelyBiSquareReweightedLeastSquares;
         public const double DefaultMinR2 = 0.96;
         public const string DefaultGraphicsExtension = "svg";
+        public const bool DefaultUseAverageTemperature = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
@@ -53,7 +54,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             DefaultRelativeIntensityPercentageThreshold, 
             DefaultGraphicsExtension,
             DefaultInsufficientFramesFraction,
-            driftTubeLengthInCm)
+            driftTubeLengthInCm,
+            DefaultUseAverageTemperature)
         { 
         }
 
@@ -109,7 +111,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             double relativeIntensityPercentageThreshold, 
             string graphicsExtension,
             double insufficientFramesFraction,
-            double driftTubeLengthInCm)
+            double driftTubeLengthInCm,
+            bool useAverageTemperature)
         {
             this.DriftTimeToleranceInMs = driftTimeToleranceInMs;
             this.NumPointForSmoothing = numPointForSmoothing;
@@ -126,6 +129,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             this.GraphicsExtension = graphicsExtension;
             this.InsufficientFramesFraction = insufficientFramesFraction;
             this.DriftTubeLengthInCm = driftTubeLengthInCm;
+            this.UseAverageTemperature = useAverageTemperature;
         }
 
         /// <summary>
@@ -201,5 +205,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// The min r 2.
         /// </summary>
         public double MinR2 { get; private set; }
+
+        /// <summary>
+        /// If use average temperature is set, PIXiE use individual temperature to 
+        /// calculate mobility K0, instead of the average mobility. Otherwise, PIXiE
+        /// uses average temperature to calculate mobility K0. Both cases use average
+        /// temperature to calculate CCS.
+        /// </summary>
+        public bool UseAverageTemperature { get; private set; }
     }
 }

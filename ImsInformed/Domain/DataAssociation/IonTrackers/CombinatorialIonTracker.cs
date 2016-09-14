@@ -11,6 +11,10 @@
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
 // DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
 // RIGHTS.
+
+using System.IO;
+using MathNet.Numerics.Statistics;
+
 namespace ImsInformed.Domain.DataAssociation.IonTrackers
 {
     using System;
@@ -74,7 +78,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             ObservationTransitionGraph<IonTransition> transitionGraph = new ObservationTransitionGraph<IonTransition>(observations, (a, b) => new IonTransition(a, b));
             
             // Visualize the graph.
-            // transitionGraph.PlotGraph();
+            //transitionGraph.PlotGraph();
             
             // Find all the possible combinotorial tracks
             // IList<IsomerTrack> candidateTracks = this.FindAllReasonableTracks(transitionGraph, driftTubeLength, massTarget, parameters).ToList();
@@ -88,9 +92,10 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             TrackFilter filter = new TrackFilter();
             Predicate<IsomerTrack> trackPredicate = track => filter.IsTrackPossible(track, massTarget, parameters);
             List<IsomerTrack> filteredTracks = candidateTracks.ToList().FindAll(trackPredicate);
+            var sortedFilteredTracks = filteredTracks.OrderByDescending(t => t.FitLine.RSquared);
 
             // Select the top N tracks to proceed to next step.
-            var hypotheses = this.FindAllHypothesis(filteredTracks, observations).ToArray();
+            var hypotheses = this.FindAllHypothesis(sortedFilteredTracks, observations).ToArray();
 
             // Find the combination of tracks that produces the highest posterior probablity.
           IOrderedEnumerable<AssociationHypothesis> sortedAssociationHypotheses = hypotheses.OrderByDescending(h => h.ProbabilityOfHypothesisGivenData);

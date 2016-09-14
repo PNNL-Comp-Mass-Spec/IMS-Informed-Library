@@ -36,7 +36,7 @@ namespace ImsInformed.Domain.DataAssociation
         /// </summary>
         public const double MzMatchWeight = 3;
 
-        public const double R2Weight = 1;
+        public const double R2Weight = 5;
 
         public const double PeakCountWeight = 1;
 

@@ -11,6 +11,9 @@
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
 // DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
 // RIGHTS.
+
+using ImsInformed.IO;
+
 namespace ImsInformed.Testing
 {
     using System;
@@ -396,8 +399,8 @@ namespace ImsInformed.Testing
         /// <summary>
         /// The test scoring.
         /// </summary>
-         [Test][STAThread]
-         public void TestFormulaPerturbance()
+        [Test][STAThread]
+        public void TestFormulaPerturbance()
          {
              List<Tuple<string, string>> formulas = new List<Tuple<string, string>>();
              
@@ -563,5 +566,6 @@ namespace ImsInformed.Testing
              // Manually dispose so it doesn't interfere with other tests.
              workflow.Dispose();
          }
+
     }
 }

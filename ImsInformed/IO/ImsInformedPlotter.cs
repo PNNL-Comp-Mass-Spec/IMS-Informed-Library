@@ -141,14 +141,16 @@ namespace ImsInformed.IO
                 using (var stream = File.Create(fileLocation))
                 {
                     var exporter = new SvgExporter() { Width = width, Height = height};
-                    exporter.Export(model, stream);
+                    var action = new Action(() => exporter.Export(model, stream));
+                    this.InvokeAction(action);
                 }
             }
             else if (extension.ToLower() == ".png")
             {
                 using (Stream stream = File.Create(fileLocation))
                 {
-                    PngExporter.Export(model, stream, width * 4, height * 4 , OxyColors.Transparent, 300);
+                    var action = new Action(() => PngExporter.Export(model, stream, width * 4, height * 4, OxyColors.Transparent, 300));
+                    this.InvokeAction(action);
                 }
 
                 // int resolution = 300;
@@ -173,6 +175,18 @@ namespace ImsInformed.IO
             else
             {
                 throw new FormatException(string.Format("Does not support plotting for picture format {0}.", extension));
+            }
+        }
+
+        private void InvokeAction(Action action)
+        {
+            if (Application.Current != null && Application.Current.Dispatcher != null)
+            {
+                Application.Current.Dispatcher.Invoke(action);
+            }
+            else
+            {
+                action.Invoke();
             }
         }
 

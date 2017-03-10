@@ -138,20 +138,29 @@ namespace ImsInformed.IO
             }
             else if (extension.ToLower() == ".svg")
             {
-                using (var stream = File.Create(fileLocation))
-                {
-                    var exporter = new SvgExporter() { Width = width, Height = height};
-                    var action = new Action(() => exporter.Export(model, stream));
-                    this.InvokeAction(action);
-                }
+                var action = new Action(
+                    () =>
+                        {
+                            using (var stream = File.Create(fileLocation))
+                            {
+                                var exporter = new SvgExporter { Width = width, Height = height };
+                                exporter.Export(model, stream);
+                            }
+                        });
+                this.InvokeAction(action);
             }
             else if (extension.ToLower() == ".png")
             {
-                using (Stream stream = File.Create(fileLocation))
-                {
-                    var action = new Action(() => PngExporter.Export(model, stream, width * 4, height * 4, OxyColors.Transparent, 300));
-                    this.InvokeAction(action);
-                }
+                var action = new Action(
+                    () =>
+                        {
+                            using (Stream stream = File.Create(fileLocation))
+                            {
+                                PngExporter.Export(model, stream, width * 4, height * 4, OxyColors.Transparent, 300);
+                            }
+                        });
+
+                this.InvokeAction(action);
 
                 // int resolution = 300;
                 // RenderTargetBitmap image = new RenderTargetBitmap(width, height, resolution, resolution, PixelFormats.Pbgra32);

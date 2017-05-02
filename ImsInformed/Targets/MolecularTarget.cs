@@ -145,7 +145,7 @@ namespace ImsInformed.Targets
         {
             get
             {
-                string targetInfo = this.CompositionWithoutAdduct == null ? "mz=>" + this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) + "da" :
+                string targetInfo = this.CompositionWithoutAdduct == null ? "mz=" + this.MassWithAdduct.ToString(CultureInfo.InvariantCulture) + "da" :
                     (string.IsNullOrEmpty(this.CorrespondingChemical)) ? this.EmpiricalFormula + this.Adduct :
                     this.CorrespondingChemical + this.Adduct;
                 return targetInfo;

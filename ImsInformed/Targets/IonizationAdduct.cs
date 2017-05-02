@@ -53,12 +53,12 @@ namespace ImsInformed.Targets
         /// <param name="compositionDebt">
         /// The composition debt.
         /// </param>
-        public IonizationAdduct(Composition compsition, int chargeState)
+        public IonizationAdduct(Composition composition, int chargeState)
         {
-            this.compositionSurplus = compsition;
+            this.compositionSurplus = composition;
             this.ChargeState = chargeState;
             this.compositionDebt = new Composition(0, 0, 0, 0, 0);
-            this.description += string.Format("[M+{0}]", compsition.ToPlainString());
+            this.description += string.Format("[M+{0}]", composition.ToPlainString());
         }
 
         /// <summary>

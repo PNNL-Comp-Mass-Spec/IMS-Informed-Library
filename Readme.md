@@ -9,7 +9,7 @@ This library is used by PIXiE ([GitHub Repo](https://github.com/PNNL-Comp-Mass-S
 
 Written by Jian Ma and Kevin Crowell for the Department of Energy (PNNL, Richland, WA) \
 E-mail: proteomics@pnnl.gov \
-Website: https://panomics.pnl.gov/ or https://omics.pnl.gov
+Website: https://github.com/PNNL-Comp-Mass-Spec/ or https://www.pnnl.gov/integrative-omics
 
 ## License
 

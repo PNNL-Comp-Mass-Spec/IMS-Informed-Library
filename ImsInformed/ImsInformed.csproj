@@ -60,15 +60,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\InformedProteomics\InformedProteomics.Backend.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=3.4.0.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.3.4.0\lib\net462\log4net.dll</HintPath>
     </Reference>
     <Reference Include="MagnitudeConcavityPeakFinder">
       <HintPath>..\lib\MASIC\MagnitudeConcavityPeakFinder.dll</HintPath>
     </Reference>
-    <Reference Include="MathNet.Numerics, Version=3.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MathNet.Numerics.3.7.0\lib\net40\MathNet.Numerics.dll</HintPath>
+    <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.5.0.0\lib\net48\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="MSDataFileReader">
       <HintPath>..\lib\MSDataFileReader\MSDataFileReader.dll</HintPath>
@@ -237,7 +236,7 @@
 xcopy /Y /S /C  "$(SolutionDir)lib\UIMFLibrary" "$(TargetDir)"
 </PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

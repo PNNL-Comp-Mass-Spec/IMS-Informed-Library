@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Util
 {
@@ -45,7 +45,7 @@ namespace ImsInformed.Util
 
             // Convert intensity points to key value pair
             List<KeyValuePair<int, double>> cartesianData = paddedIntensityPoints.Select(point => new KeyValuePair<int, double>(point.ScanIms, point.Intensity)).ToList();
-            
+
             PeakDetector detector = new PeakDetector();
             List<double> smoothedYData;
 
@@ -72,13 +72,13 @@ namespace ImsInformed.Util
         public static List<FeatureBlob> FindPeakUsingWatershed(List<IntensityPoint> intensityPoints, SavitzkyGolaySmoother smoother, double featureFilterLevel)
         {
             IEnumerable<Point> pointList = WaterShedMapUtil.BuildWatershedMap(intensityPoints);
-            
-            // Ignore the smoother for now as it distort peak apexs arbitrarily. 
+
+            // Ignore the smoother for now as it distort peak apexs arbitrarily.
             smoother.Smooth(ref pointList);
-            
+
             // Peak Find Chromatogram
             List<FeatureBlob> featureBlobs = FeatureDetection.DoWatershedAlgorithm(pointList).ToList();
-            
+
             // Preliminary filtering: reject small feature peaks.
             featureBlobs = FeatureDetection.FilterFeatureList(featureBlobs, featureFilterLevel).ToList();
 
@@ -145,9 +145,9 @@ namespace ImsInformed.Util
             // Write it.
             // FeatureBlob watershedFeature = new FeatureBlob(0);
             // watershedFeature.PointList = new List<Point>();
-            // 
+            //
             // Talor MASIC's sometimes asymetirc peak into watershed flavored peak.
-            // 
+            //
             // watershedFeature.PointList blablabla
             throw new NotImplementedException();
         }

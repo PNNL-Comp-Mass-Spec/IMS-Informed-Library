@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Workflows.LcImsPeptideExtraction
 {
@@ -175,7 +175,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                 DataWriter dataWriter = new DataWriter(uimfFileLocation);
                 dataWriter.CreateBinCentricTables();
             }
-            
+
             this._parameters = parameters;
             this._smoother = new SavitzkyGolaySmoother(parameters.NumPointForSmoothing, 2);
             this._theoreticalFeatureGenerator = new JoshTheorFeatureGenerator();
@@ -232,15 +232,15 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
             int iteration = (targetComposition == null) ? 1 : this._parameters.ChargeStateMax;
             for (int chargeState = 1; chargeState <= iteration; chargeState++)
             {
-                if (targetComposition != null) 
+                if (targetComposition != null)
                 {
                     Ion targetIon = new Ion(targetComposition, chargeState);
                     target.MassWithAdduct = targetIon.GetMonoIsotopicMz();
-                } 
+                }
 
                 double minMzForSpectrum = target.MassWithAdduct - (1.6 / chargeState);
                 double maxMzForSpectrum = target.MassWithAdduct + (4.6 / chargeState);
-                
+
                 // Generate Theoretical Isotopic Profile
                 IsotopicProfile theoreticalIsotopicProfile = this._theoreticalFeatureGenerator.GenerateTheorProfile(empiricalFormula, chargeState);
                 List<Peak> theoreticalIsotopicProfilePeakList = theoreticalIsotopicProfile.Peaklist.Cast<Peak>().ToList();
@@ -290,7 +290,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
                     {
                         if (!statistics.IsSaturated) break;
 
-                        // Target isotope m/z 
+                        // Target isotope m/z
                         double isotopeTargetMz = (target.CompositionWithoutAdduct != null) ? new Ion(targetComposition, chargeState).GetIsotopeMz(i) : target.MassWithAdduct;
 
                         // Find XIC Features
@@ -392,7 +392,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
 
                     // Add data to result
                     result.MassSpectrum = massSpectrum;
-                    
+
                     // No need to move on if the isotopic profile is not found
                     if (observedIsotopicProfile == null || observedIsotopicProfile.MonoIsotopicMass < 1)
                     {
@@ -620,8 +620,8 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
             {
                 return new List<FeatureBlob>();
             }
-        
-            //WritePointsToFile(intensityPointList, targetMz);	
+
+            //WritePointsToFile(intensityPointList, targetMz);
 
             // Smooth Chromatogram
             this._buildWatershedStopWatch.Start();
@@ -659,7 +659,7 @@ namespace ImsInformed.Workflows.LcImsPeptideExtraction
         protected void WritePointsToFile(IEnumerable<IntensityPoint> intensityPointList, double targetMz)
         {
             intensityPointList = intensityPointList.OrderBy(x => x.ScanLc).ThenBy(x => x.ScanIms);
-            
+
             int minScanLc = intensityPointList.First().ScanLc;
 
             StringBuilder stringBuilder = new StringBuilder();

@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.IO
 {
@@ -47,7 +47,7 @@ namespace ImsInformed.IO
     {
         public ImsInformedPlotter()
         {
-        
+
         }
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace ImsInformed.IO
                     Title = rejectionReason,
                     MarkerType = MarkerType.Circle
                 };
-                
+
                 associationHypothsisPlot.Series.Add(series);
-                series.Points.AddRange(peaks.Select(x => fitPointMap(x))); 
+                series.Points.AddRange(peaks.Select(x => fitPointMap(x)));
             }
 
             return associationHypothsisPlot;
@@ -166,14 +166,14 @@ namespace ImsInformed.IO
                 // RenderTargetBitmap image = new RenderTargetBitmap(width, height, resolution, resolution, PixelFormats.Pbgra32);
                 // DrawingVisual drawVisual = new DrawingVisual();
                 // DrawingContext drawContext = drawVisual.RenderOpen();
-                // 
+                //
                 // // Output the graph models to a context
                 // var oe = PngExporter.ExportToBitmap(model, width, height, OxyColors.White);
                 // drawContext.DrawImage(oe, new Rect(0, 0, width, height));
-                // 
+                //
                 // drawContext.Close();
                 // image.Render(drawVisual);
-                // 
+                //
                 // PngBitmapEncoder png = new PngBitmapEncoder();
                 // png.Frames.Add(BitmapFrame.Create(image));
                 // using (Stream stream = File.Create(fileLocation))
@@ -271,9 +271,9 @@ namespace ImsInformed.IO
                 MarkerType = MarkerType.Circle
             };
 
-            ontrackSeries.Points.AddRange(onTrackPeaks.Select(x => fitPointMap(x))); 
+            ontrackSeries.Points.AddRange(onTrackPeaks.Select(x => fitPointMap(x)));
 
-            offtrackSeries.Points.AddRange(offTrackPeaks.Select(x => fitPointMap(x))); 
+            offtrackSeries.Points.AddRange(offTrackPeaks.Select(x => fitPointMap(x)));
 
             model.Series.Add(ontrackSeries);
 
@@ -291,7 +291,7 @@ namespace ImsInformed.IO
                 annotation.Intercept = fitline.Intercept;
                 annotation.TextPadding = 3;
                 annotation.TextMargin = 2;
-                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; ccs: {2:F2}, Isotopic Score: {3:F3}; Track Probability: {4:F2}; R2: {5:F5};", 
+                annotation.Text = string.Format("Conformer {0} - mz: {1:F2}; ccs: {2:F2}, Isotopic Score: {3:F3}; Track Probability: {4:F2}; R2: {5:F5};",
                     count, track.AverageMzInDalton, track.GetMobilityInfoForTarget(target).CollisionCrossSectionArea, track.TrackStatistics.IsotopicScore, track.TrackProbability, track.FitLine.RSquared);
                 count++;
                 model.Annotations.Add(annotation);
@@ -336,7 +336,7 @@ namespace ImsInformed.IO
 
             IEnumerable<ContinuousXYPoint> fitPointList = fitline.FitPointCollection.Select(x => x.Point);
             IEnumerable<ContinuousXYPoint> outlierList = fitline.OutlierCollection.Select(x => x.Point);
-            Func<object, ScatterPoint> fitPointMap = obj => 
+            Func<object, ScatterPoint> fitPointMap = obj =>
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double size = 5;
@@ -345,7 +345,7 @@ namespace ImsInformed.IO
                 return sp;
             };
 
-            Func<object, ScatterPoint> OutlierPointMap = obj => 
+            Func<object, ScatterPoint> OutlierPointMap = obj =>
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double size = 5;
@@ -370,7 +370,7 @@ namespace ImsInformed.IO
                 ItemsSource = outlierList,
             };
 
-            Func<object, DataPoint> lineMap = obj => 
+            Func<object, DataPoint> lineMap = obj =>
             {
                 ContinuousXYPoint point = (ContinuousXYPoint)obj;
                 double x = point.X;
@@ -391,7 +391,7 @@ namespace ImsInformed.IO
                 Title = "IMS scan time (milliseconds)",
                 MajorGridlineStyle = LineStyle.Solid,
                 Position = AxisPosition.Left,
-                
+
                 //MajorStep = 100.0,
                 //MinorStep = 50.0,
                 //Minimum = 0,

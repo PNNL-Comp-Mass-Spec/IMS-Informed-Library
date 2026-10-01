@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Scoring
 {
@@ -81,9 +81,9 @@ namespace ImsInformed.Scoring
                 massToleranceInPpm,
                 driftTimeToleranceInMs,
                 voltageGroup,
-                globalMaxIntensity, 
+                globalMaxIntensity,
                 voltageGroupScans);
-            
+
             double isotopicScore = 0;
             if (target.HasCompositionInfo)
             {
@@ -117,7 +117,7 @@ namespace ImsInformed.Scoring
         {
             // Sort features by relative intensity
             double summedIntensities = featurePeak.SummedIntensities;
-            
+
             // Divide intensities by accumulation (If summing instead of averaging is used)
             // summedIntensities /= voltageGroup.FrameAccumulationCount;
 
@@ -172,11 +172,11 @@ namespace ImsInformed.Scoring
             {
                 return 0;
             }
-                                  
+
             int[][] intensityWindow = reader.GetFramesAndScanIntensitiesForAGivenMz(
                 voltageGroup.FirstFrameNumber,
                 voltageGroup.LastFrameNumber,
-                DataReader.FrameType.MS1, 
+                DataReader.FrameType.MS1,
                 scanNumberMin,
                 scanNumberMax,
                 imsPeak.PeakApex.MzCenterInDalton,
@@ -202,7 +202,7 @@ namespace ImsInformed.Scoring
             // TODO get the intensity threshold here from the noise level instead.
             if (scanWindowSize >= 3)
             {
-                if (averagedPeak[scanRep - scanNumberMin] < globalMaxIntensities * 0.0001 
+                if (averagedPeak[scanRep - scanNumberMin] < globalMaxIntensities * 0.0001
                     || averagedPeak[scanRep - scanNumberMin - 1] < globalMaxIntensities * 0.0001
                     || averagedPeak[scanRep - scanNumberMin + 1] < globalMaxIntensities * 0.0001)
                 {
@@ -287,14 +287,14 @@ namespace ImsInformed.Scoring
             {
                 // Isotopic centerMz
                 double Mz = isotopicPeakList[i].XValue;
-                
-                var peakList = reader.GetXic(Mz + mzOffset, 
+
+                var peakList = reader.GetXic(Mz + mzOffset,
                     imsPeak.PeakApex.MzWindowToleranceInPpm,
                     voltageGroup.FirstFrameNumber,
                     voltageGroup.LastFrameNumber,
                     scanNumberMin,
                     scanNumberMax,
-                    DataReader.FrameType.MS1, 
+                    DataReader.FrameType.MS1,
                     DataReader.ToleranceType.PPM);
 
                 // Sum the intensities
@@ -344,7 +344,7 @@ namespace ImsInformed.Scoring
             {
                 return EuclideanAlternative(observedIsotopicPeakList, isotopicPeakList);
             }
-            else 
+            else
             {
                 throw new NotImplementedException();
             }
@@ -449,7 +449,7 @@ namespace ImsInformed.Scoring
             IEnumerable<double> actualIsotopicPeakListArray = expectedIsotopicPeakList.Select(x => (double)x.Height);
             return Correlation.Pearson(actualIsotopicPeakListArray, observedIsotopicPeakList);
         }
-        
+
         /// <summary>
         /// The bhattacharyya distance.
         /// </summary>
@@ -504,8 +504,8 @@ namespace ImsInformed.Scoring
             A = A.Normalize(2);
             B = B.Normalize(2);
             Vector<double> C = A.PointwiseMultiply(B);
-            
-            // Pointwise sqrt. Implements here because Math.Net.2.5 doesn't supports Pointwise exp getting Math.Net 3.5 introducces 
+
+            // Pointwise sqrt. Implements here because Math.Net.2.5 doesn't supports Pointwise exp getting Math.Net 3.5 introducces
             // package compatibility issues with Informed Proteomics / Multidimensional peak finding, etc.
             // TODO: Use PointwiseExponent after getting Math.net 3.5
             double[] cArray = C.ToArray();

@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Domain
 {
@@ -33,11 +33,11 @@ namespace ImsInformed.Domain
         public double DriftTimeWindowToleranceInMs;
 
         public double DriftTimeFullWidthHalfMaxLowerBondInMs;
-        
+
         public double DriftTimeFullWidthHalfMaxHigherBondInMs;
 
         public int DriftTimeFullWidthHalfMaxLowerBondInScanNumber;
-        
+
         public int DriftTimeFullWidthHalfMaxHigherBondInScanNumber;
 
         public int MzCenterInBinNumber;
@@ -45,9 +45,9 @@ namespace ImsInformed.Domain
         public double MzCenterInDalton;
 
         public double MzWindowToleranceInPpm;
-                      
+
         public double MzFullWidthHalfMaxLow;
-                      
+
         public double MzFullWidthHalfMaxHigh;
 
         public int RetentionTimeCenterInMinutes;
@@ -74,7 +74,7 @@ namespace ImsInformed.Domain
         public StandardImsPeak(FeatureBlob watershedFeature, DataReader uimfReader, VoltageGroup voltageGroup, double targetMz, double massToleranceInPpm)
         {
             // I know this is a really convoluted way for peak detection and characterization. But unless the multidimensional peak finder can perform true
-            // 2D peak detections on the m/z and drift time axes instead of only rentention time and m/z time, we are stuck with this 1D peak detectors 
+            // 2D peak detections on the m/z and drift time axes instead of only rentention time and m/z time, we are stuck with this 1D peak detectors
             // for 2D operations. Wish there is funding so we can continue developing on multidimensional peak finder.
             double tofWidthInSeconds = voltageGroup.AverageTofWidthInSeconds;
 
@@ -95,14 +95,14 @@ namespace ImsInformed.Domain
             ImsApex peakApex;
             int driftTimeScan = watershedFeature.Statistics.ScanImsRep;
             this.SummedIntensities = watershedFeature.Statistics.SumIntensities;
-            
+
             peakApex.DriftTimeCenterInScanNumber = driftTimeScan;
             peakApex.DriftTimeCenterInMs = tofWidthInSeconds * driftTimeScan * 1000;
 
             // Note this works for direct injection. But in fact you see this method requires voltageGroup, which is only used in direct injection. You got the idea
             peakApex.RetentionTimeCenterInFrameNumber = 0;
             peakApex.RetentionTimeCenterInMinutes = 0;
-            
+
             peakApex.MzCenterInBinNumber = 0;
             peakApex.MzCenterInDalton = 0;
 
@@ -114,7 +114,7 @@ namespace ImsInformed.Domain
 
             // Somehow frame is zero indexed instead
             uimfReader.GetSpectrum(voltageGroup.FirstFrameNumber, voltageGroup.LastFrameNumber - 1, DataReader.FrameType.MS1, this.MinDriftTimeInScanNumber, this.MaxDriftTimeInScanNumber, targetMzMin, targetMzMax, out mzArray, out intensitiesArray);
-            
+
             if (mzArray.Count() != 0)
             {
                 int indexOfMax = intensitiesArray.ToList().IndexOf(intensitiesArray.Max());
@@ -122,7 +122,7 @@ namespace ImsInformed.Domain
 
                 // Get the full width half max window intensity in centerMz
                 double halfMax = intensitiesArray[indexOfMax] / 2;
-            
+
 
                 peakApex.MzFullWidthHalfMaxLow = mzArray[0];
                 for (int i = indexOfMax; i > 0; i--)
@@ -143,7 +143,7 @@ namespace ImsInformed.Domain
                     }
                 }
 
-                
+
                 double deltaLowInPpm = (peakApex.MzCenterInDalton - peakApex.MzFullWidthHalfMaxLow) / peakApex.MzCenterInDalton * 1000000;
                 double deltaHighInPpm = (peakApex.MzFullWidthHalfMaxHigh - peakApex.MzCenterInDalton) / peakApex.MzCenterInDalton * 1000000;
                 peakApex.MzWindowToleranceInPpm = Math.Min(deltaLowInPpm, deltaHighInPpm);
@@ -158,15 +158,15 @@ namespace ImsInformed.Domain
                 peakApex.DriftTimeWindowToleranceInMs = Math.Min(Math.Abs(peakApex.DriftTimeCenterInMs - this.MinDriftTimeInMs), Math.Abs(this.MaxDriftTimeInMs   - peakApex.DriftTimeCenterInMs));
 
                 this.PeakApex = peakApex;
-                
+
                 this.MinMzInDalton = peakApex.MzCenterInDalton - ( peakApex.MzCenterInDalton - peakApex.MzFullWidthHalfMaxLow) * 2;
                 this.MaxMzInDalton = peakApex.MzCenterInDalton + (peakApex.MzFullWidthHalfMaxHigh - peakApex.MzCenterInDalton) * 2;
 
                 // quick and dirty fix: reacquire the peak drift time apex.
-                // TODO: The rest of the code here is responsible for the recent slow down of the algorithm performance 
+                // TODO: The rest of the code here is responsible for the recent slow down of the algorithm performance
                 // TODO: Need to offload the feature detection to multidimensional peak finder.
-                ExtractedIonChromatogram xic = ExtractedIonChromatogram.AverageXICFromFrames(uimfReader, 
-                    voltageGroup.FirstFrameNumber, 
+                ExtractedIonChromatogram xic = ExtractedIonChromatogram.AverageXICFromFrames(uimfReader,
+                    voltageGroup.FirstFrameNumber,
                     voltageGroup.LastFrameNumber,
                     (this.MinMzInDalton + this.MaxMzInDalton) / 2,
                     (this.MaxMzInDalton - this.MinMzInDalton) / 2 / this.PeakApex.MzCenterInDalton * 1000000,
@@ -175,7 +175,7 @@ namespace ImsInformed.Domain
                 double imsScanAccurate = xic.IntensityPoints.OrderByDescending(x => x.Intensity).First().ScanIms * tofWidthInSeconds * 1000;
                 peakApex.DriftTimeCenterInMs = imsScanAccurate;
 
-                
+
             }
         }
 
@@ -231,7 +231,7 @@ namespace ImsInformed.Domain
                 this.MinRetentionTimeInFrameNumber == other.MinRetentionTimeInFrameNumber && this.MaxRetentionTimeInFrameNumber == other.MaxDriftTimeInScanNumber;
         }
 
-        public override bool Equals(object other) 
+        public override bool Equals(object other)
         {
             return this.Equals(other as StandardImsPeak);
         }
@@ -242,7 +242,7 @@ namespace ImsInformed.Domain
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
             int result = 29;
             result = result * 13 + this.MinDriftTimeInScanNumber;

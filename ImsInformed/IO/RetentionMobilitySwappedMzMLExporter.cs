@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.IO
 {
@@ -55,7 +55,7 @@ namespace ImsInformed.IO
             {
                 File.Delete(outputPath);
             }
-            
+
             this.dateTime = globalParams.GetValue(GlobalParamKeyType.DateStarted);
             string datasetName = Path.GetFileNameWithoutExtension(outputPath);
 
@@ -128,7 +128,7 @@ namespace ImsInformed.IO
             writer.WriteAttributeString("id", fileName);
             writer.WriteAttributeString("name", fileName);
             writer.WriteAttributeString("location", UIMFPath);
-            
+
             // writer.WriteStartElement("cvParam");
             // writer.WriteAttributeString("cvRef", "MS");
             // writer.WriteAttributeString("accession", "MS:1002532");
@@ -233,7 +233,7 @@ namespace ImsInformed.IO
                 writer.WriteAttributeString("name", "ms level");
                 writer.WriteAttributeString("value", "1");
                 writer.WriteEndElement();
-                
+
                 writer.WriteStartElement("cvParam");
                 writer.WriteAttributeString("cvRef", "MS");
                 writer.WriteAttributeString("accession", "MS:1000579");
@@ -259,7 +259,7 @@ namespace ImsInformed.IO
                 writer.WriteEndElement();
 
                 writer.WriteStartElement("scan");
-                
+
                 writer.WriteStartElement("cvParam");
                 writer.WriteAttributeString("cvRef", "MS");
                 writer.WriteAttributeString("accession", "MS:1000016");
@@ -302,15 +302,15 @@ namespace ImsInformed.IO
                 // scan window list
                 writer.WriteEndElement();
 
-                // scan 
+                // scan
                 writer.WriteEndElement();
 
                 // scan list
                 writer.WriteEndElement();
 
                 this.WriteBinaryDataArrays(mzArray, intensityArray, writer);
-                
-                // spectrum 
+
+                // spectrum
                 writer.WriteEndElement();
             }
 
@@ -341,7 +341,7 @@ namespace ImsInformed.IO
             List<float> mzList = new List<float>();
             List<float> intensityList = new List<float>();
             float mz = 0;
-            for (int bin = 1; bin <= this.bins; bin++) 
+            for (int bin = 1; bin <= this.bins; bin++)
             {
                 if (intensities[scan - 1, bin - 1] > 0.000001)
                 {

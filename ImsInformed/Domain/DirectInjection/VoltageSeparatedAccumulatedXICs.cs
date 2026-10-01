@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Domain.DirectInjection
 {
@@ -26,12 +26,12 @@ namespace ImsInformed.Domain.DirectInjection
     internal class VoltageSeparatedAccumulatedXiCs : Dictionary<VoltageGroup, ExtractedIonChromatogram>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="VoltageSeparatedAccumulatedXiCs"/> class. 
+        /// Initializes a new instance of the <see cref="VoltageSeparatedAccumulatedXiCs"/> class.
         /// The input UIMF file needs to be a UIMF file created by direct-injection
         /// IMS, with different drift tube voltages at different frames.
         /// This constructor intelligently group voltages together by observing
         /// sharp changes in running voltage standard deviation. Only the XIC around
-        /// targeted MZ would be accumulated. 
+        /// targeted MZ would be accumulated.
         /// </summary>
         /// <param name="uimfReader">
         /// The UIMF reader.
@@ -86,10 +86,10 @@ namespace ImsInformed.Domain.DirectInjection
                 {
                     extractedIonChromatogram = new ExtractedIonChromatogram(uimfReader, i, targetMz, massToleranceInPpm);
                 }
-                
+
                 bool similarVoltage = currentVoltageGroup.AddSimilarVoltage(driftTubeVoltageInVolts, driftTubePressureNondimensionalized, driftTubeTemperatureNondimensionalized, tofWidthInSeconds);
-                
-                // And when a new but unsimilar voltage appears 
+
+                // And when a new but unsimilar voltage appears
                 if (!similarVoltage)
                 {
                     if (!noVoltageGroupsYet)
@@ -113,7 +113,7 @@ namespace ImsInformed.Domain.DirectInjection
             // Average all the XICs to have the intensity range of a single frame.
             foreach (var voltageGroup in this.Keys)
             {
-                foreach (var item in this[voltageGroup].IntensityPoints)   
+                foreach (var item in this[voltageGroup].IntensityPoints)
                 {
                     item.Intensity /= voltageGroup.FrameAccumulationCount;
                 }
@@ -121,12 +121,12 @@ namespace ImsInformed.Domain.DirectInjection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VoltageSeparatedAccumulatedXiCs"/> class. 
+        /// Initializes a new instance of the <see cref="VoltageSeparatedAccumulatedXiCs"/> class.
         /// The input UIMF file needs to be a UIMF file created by direct-injection
         /// IMS, with different drift tube voltages at different frames.
         /// This constructor intelligently group voltages together by observing
         /// sharp changes in running voltage standard deviation. Only the XIC around
-        /// targeted MZ would be accumulated. 
+        /// targeted MZ would be accumulated.
         /// </summary>
         /// <param name="uimfReader">
         /// The UIMF reader.

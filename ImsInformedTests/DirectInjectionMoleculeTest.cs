@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformedTests
 {
@@ -113,7 +113,7 @@ namespace ImsInformedTests
                 {
                     Composition compo = Composition.ParseFromPlainString(testCase);
                     Console.WriteLine(@"InformedProteomicsParse: [{0}]", compo.ToPlainString());
-                } 
+                }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
@@ -132,7 +132,7 @@ namespace ImsInformedTests
                 {
                     Console.WriteLine(e.Message);
                 }
-                
+
                 Console.WriteLine("\r\n");
             }
         }
@@ -188,7 +188,7 @@ namespace ImsInformedTests
         public int TestTargetDetectionWithIsomersClean(string formula, IonizationMethod method, string descriptor, string fileLocation)
         {
             MolecularTarget sample1 = new MolecularTarget(formula, method, descriptor);
-            
+
             CrossSectionSearchParameters parameters1 = new CrossSectionSearchParameters(CrossSectionSearchParameters.DefaultDriftTimeToleranceInMs, CrossSectionSearchParameters.DefaultMzWindowHalfWidthInPpm,
                 CrossSectionSearchParameters.DefaultNumPointForSmoothing, CrossSectionSearchParameters.DefaultFeatureFilterLevel, CrossSectionSearchParameters.DefaultAbsoluteIntensityThreshold, CrossSectionSearchParameters.DefaultPeakShapeThreshold, CrossSectionSearchParameters.DefaultIsotopicThreshold, CrossSectionSearchParameters.DefaultMaxOutliers, CrossSectionSearchParameters.DefaultPeakDetectorSelection, FitlineEnum.OrdinaryLeastSquares, CrossSectionSearchParameters.DefaultMinR2, CrossSectionSearchParameters.DefaultRelativeIntensityPercentageThreshold, "png", CrossSectionSearchParameters.DefaultInsufficientFramesFraction, testDriftTubeLength, true);
 
@@ -209,9 +209,9 @@ namespace ImsInformedTests
             string formula3 = "C13H18ClNO";
             MolecularTarget sample3 = new MolecularTarget(formula3, IonizationMethod.Protonated, "BHC");
             string fileLocation3 = BHC;
-            
+
             CrossSectionSearchParameters parameters3 = new CrossSectionSearchParameters(testDriftTubeLength);
-            
+
             CrossSectionWorkfow workfow3 = new CrossSectionWorkfow(fileLocation3, "output", parameters3);
             CrossSectionWorkflowResult results3 = workfow3.RunCrossSectionWorkFlow(sample3, true);
             Assert.AreEqual(2, results3.IdentifiedIsomers.Count());
@@ -290,7 +290,7 @@ namespace ImsInformedTests
             DriftTimeTarget t2 = new DriftTimeTarget("BPS sodiated", 31.8506, "C12H10O4S", IonizationMethod.Sodiumated);
             DriftTimeTarget t3 = new DriftTimeTarget("I made it up", 15, "C14H14O4S", IonizationMethod.Sodiumated);
             DriftTimeTarget t4 = new DriftTimeTarget("I made it up again", 15, "C12H11O4S", IonizationMethod.Sodiumated);
-            
+
             imsTargets.Add(t3);
             imsTargets.Add(t1);
             imsTargets.Add(t2);
@@ -326,16 +326,16 @@ namespace ImsInformedTests
             targetList.Add(new MolecularTarget("C3H5O6P", method, "chemical I"));
             targetList.Add(new MolecularTarget("C7H15O10P", method, "chemical J"));
             targetList.Add(new MolecularTarget(120.5, method, "MzInDalton specified chemical L"));
-            
+
             Console.WriteLine("TargetList: ");
 
-            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(testDriftTubeLength); 
+            CrossSectionSearchParameters parameters = new CrossSectionSearchParameters(testDriftTubeLength);
 
             CrossSectionWorkfow informedWorkflow = new CrossSectionWorkfow(fileLocation, "output", parameters);
             IEnumerable<CrossSectionWorkflowResult> resultMap = informedWorkflow.RunCrossSectionWorkFlow(targetList, false);
             informedWorkflow.Dispose();
         }
-        
+
         /// <summary>
         /// The test scoring.
         /// </summary>

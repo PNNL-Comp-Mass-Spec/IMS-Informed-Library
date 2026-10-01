@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 
 using System.IO;
@@ -76,13 +76,13 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             observations = observations.ToList();
 
             ObservationTransitionGraph<IonTransition> transitionGraph = new ObservationTransitionGraph<IonTransition>(observations, (a, b) => new IonTransition(a, b));
-            
+
             // Visualize the graph.
             //transitionGraph.PlotGraph();
-            
+
             // Find all the possible combinotorial tracks
             // IList<IsomerTrack> candidateTracks = this.FindAllReasonableTracks(transitionGraph, driftTubeLength, massTarget, parameters).ToList();
-            
+
             // Find the top N tracks using K shorestest path algorithm
             IEnumerable<IEnumerable<IonTransition>> kShorestPaths = transitionGraph.PeakGraph.RankedShortestPathHoffmanPavley(t => 0 - Math.Log(t.TransitionProbability), transitionGraph.SourceVertex, transitionGraph.SinkVertex, this.maxTracks);
 
@@ -128,7 +128,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             }
 
             int totalCombinations = (int)Math.Pow(2, size) - 1;
-            
+
             AssociationHypothesis association = new AssociationHypothesis(allPeaks);
 
             bool hasConflicted = false;
@@ -165,7 +165,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                     var index = Combinatorics.NextChangeOnGrey(i, out addOrNotRemove);
 
                     if (addOrNotRemove)
-                    {   
+                    {
                         IsomerTrack candiateTrack = tracks[index];
                         if (association.IsConflict(candiateTrack))
                         {
@@ -220,7 +220,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
         }
 
         /// <summary>
-        /// Binary increment the selected peaks 
+        /// Binary increment the selected peaks
         /// </summary>
         /// <param name="groups">
         /// The groups.
@@ -259,7 +259,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
             {
                 return true;
             }
-            
+
             ObservedPeak incrementPeak = selectedPeaks[onIndex];
             VoltageGroup group = groups[onIndex];
 
@@ -278,7 +278,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                     throw new Exception("The combination to be incremented is not in the base peak map space.");
                 }
             }
-            
+
             if (peakIndex + 1 >= candidates.Count)
             {
                 if (selectedPeaks[onIndex] != null)
@@ -286,7 +286,7 @@ namespace ImsInformed.Domain.DataAssociation.IonTrackers
                     this.trackPointsCounter--;
                 }
                 selectedPeaks[onIndex] = null;
-                
+
 
                 return this.IncrementCombination(groups, ref selectedPeaks, onIndex + 1, graph);
             }

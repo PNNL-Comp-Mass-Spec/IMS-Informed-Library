@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Targets
 {
@@ -120,21 +120,21 @@ namespace ImsInformed.Targets
                     this.compositionSurplus += new Composition(0, 1, 0, 0, 0);
                     this.ChargeState++;
                 }
-                else if (ionizationMethod == IonizationMethod.Deprotonated) 
+                else if (ionizationMethod == IonizationMethod.Deprotonated)
                 {
                     this.compositionDebt += new Composition(0, 1, 0, 0, 0);
                     this.ChargeState--;
                 }
-                else if (ionizationMethod == IonizationMethod.Sodiumated) 
+                else if (ionizationMethod == IonizationMethod.Sodiumated)
                 {
                     this.compositionSurplus += MoleculeUtil.ReadEmpiricalFormula("Na");
                     this.ChargeState++;
                 }
-                else if (ionizationMethod == IonizationMethod.APCI) 
+                else if (ionizationMethod == IonizationMethod.APCI)
                 {
                     this.ChargeState--;
                 }
-                else if (ionizationMethod == IonizationMethod.HCOOMinus) 
+                else if (ionizationMethod == IonizationMethod.HCOOMinus)
                 {
                     this.compositionSurplus += new Composition(1, 1, 0, 2, 0);
                     this.ChargeState--;
@@ -183,7 +183,7 @@ namespace ImsInformed.Targets
             return MoleculeUtil.AreCompositionsEqual(this.compositionDebt, other.compositionDebt) && MoleculeUtil.AreCompositionsEqual(this.compositionDebt, other.compositionDebt) && this.ChargeState == other.ChargeState;
         }
 
-        public override bool Equals(object other) 
+        public override bool Equals(object other)
         {
             return this.Equals(other as IonizationAdduct);
         }
@@ -194,7 +194,7 @@ namespace ImsInformed.Targets
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
             int result = 29;
             result = result * 13 + this.compositionDebt.ToPlainString().GetHashCode();

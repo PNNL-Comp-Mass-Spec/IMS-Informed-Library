@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Workflows.CrossSectionExtraction
 {
@@ -81,31 +81,31 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </summary>
         private readonly IList<IdentifiedIsomerInfo> isomerResults;
 
-        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class. 
-        /// Constructor for no isomer result. 
+        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class.
+        /// Constructor for no isomer result.
         public CrossSectionWorkflowResult(
             string datasetPath,
             IImsTarget target,
             AnalysisStatus analysisStatus,
-            AssociationHypothesisInfo associationHypothesisInfo, 
-            PeakScores averageObservedPeakStatistics, 
-            double averageVoltageGroupStability, 
+            AssociationHypothesisInfo associationHypothesisInfo,
+            PeakScores averageObservedPeakStatistics,
+            double averageVoltageGroupStability,
             string analysisDirectory, string dateTime)
             : this(
             datasetPath,
             target,
             analysisStatus,
             associationHypothesisInfo,
-            new List<IdentifiedIsomerInfo>(), 
-            averageObservedPeakStatistics, 
-            averageVoltageGroupStability, 
-            analysisDirectory, 
+            new List<IdentifiedIsomerInfo>(),
+            averageObservedPeakStatistics,
+            averageVoltageGroupStability,
+            analysisDirectory,
             dateTime)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class. 
+        /// Initializes a new instance of the <see cref="CrossSectionWorkflowResult"/> class.
         /// Multiple isomer result constructor
         /// </summary>
         /// <param name="datasetName">
@@ -130,13 +130,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="dateTime"></param>
         public CrossSectionWorkflowResult(
             string datasetPath,
-            IImsTarget target, 
-            AnalysisStatus analysisStatus, 
-            AssociationHypothesisInfo associationHypothesisInfo, 
-            IList<IdentifiedIsomerInfo> isomerResults, 
-            PeakScores averageObservedPeakStatistics, 
-            double averageVoltageGroupStability, 
-            string analysisDirectory, 
+            IImsTarget target,
+            AnalysisStatus analysisStatus,
+            AssociationHypothesisInfo associationHypothesisInfo,
+            IList<IdentifiedIsomerInfo> isomerResults,
+            PeakScores averageObservedPeakStatistics,
+            double averageVoltageGroupStability,
+            string analysisDirectory,
             string dateTime)
         {
             this.Target = target;
@@ -160,7 +160,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// </returns>
         public IEnumerable<IdentifiedIsomerInfo> IdentifiedIsomers
         {
-            get 
+            get
             {
                 return this.isomerResults;
             }
@@ -184,11 +184,11 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             // No hypothesis can be made.
             return new CrossSectionWorkflowResult(
                 datasetPath,
-                target, 
+                target,
                 AnalysisStatus.UknownError,
-                null, 
                 null,
-                null, 
+                null,
+                null,
                 0,
                 analysisPath,
                 SampleCollectionTime
@@ -217,14 +217,14 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         {
             // No valid feature peaks were identified. No hypothesis.
             double voltageGroupScore = VoltageGroupScoring.ComputeAverageVoltageGroupStabilityScore(rejectedVoltageGroups);
-            
+
             // quantize the VG score from VGs in the removal list.
             IEnumerable<PeakScores> featureStats = rejectedPeaks.Select(x => x.Statistics);
             PeakScores averagePeakScores = FeatureScoreUtilities.AverageFeatureStatistics(featureStats);
             CrossSectionWorkflowResult informedResult = new CrossSectionWorkflowResult(
                 datasetPath,
-                target, 
-                AnalysisStatus.Negative, 
+                target,
+                AnalysisStatus.Negative,
                 null,
                 averagePeakScores,
                 voltageGroupScore,
@@ -249,13 +249,13 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             IsomerTrack trackWithBestMz = tracks.OrderBy(x => Math.Abs(Metrics.DaltonToPpm(x.AverageMzInDalton - target.MassWithAdduct, target.MassWithAdduct))).First();
             double bestMzInPpm = Metrics.DaltonToPpm(trackWithBestMz.AverageMzInDalton - target.MassWithAdduct, target.MassWithAdduct);
             IList<IdentifiedIsomerInfo> isomersInfo = tracks.Select(x => x.ExportIdentifiedIsomerInfo(viperCompatibleMass, allVoltageGroups.Count() - parameters.MaxOutliers, parameters.MinR2,  target, bestMzInPpm)).ToList();
-            
+
             AnalysisStatus finalStatus = TrackToHypothesisConclusionLogic(isomersInfo.Select(info => info.AnalysisStatus));
 
             CrossSectionWorkflowResult informedResult = new CrossSectionWorkflowResult(
             datasetPath,
             target,
-            finalStatus, 
+            finalStatus,
             associationHypothesisInfo,
             isomersInfo,
             averageObservedPeakStatistics,
@@ -263,10 +263,10 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
             analysisPath,
             sampleCollectionDate
             );
-            
+
             return informedResult;
         }
-        
+
         private static AnalysisStatus TrackToHypothesisConclusionLogic(IEnumerable<AnalysisStatus> trackConclusions)
         {
             AnalysisStatus result = AnalysisStatus.Rejected;

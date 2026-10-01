@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.IO
 {
@@ -102,7 +102,7 @@ namespace ImsInformed.IO
                     int totalAccumulation = newGlobalParams.GetValueInt32(GlobalParamKeyType.PrescanAccumulations) * postProcessingAccumulation;
                     newGlobalParams.AddUpdateValue(GlobalParamKeyType.PrescanAccumulations, totalAccumulation);
                 }
-                
+
                 uimfWriter.InsertGlobal(newGlobalParams);
 
                 // Insert the single frame.
@@ -114,17 +114,17 @@ namespace ImsInformed.IO
                     newFrameParams.AddUpdateValue(FrameParamKeyType.Accumulations, totalAccumulation);
                 }
 
-                newFrameParams.AddUpdateValue(FrameParamKeyType.AmbientTemperature, Metrics.Nondimensionalized2Kelvin(voltageGroup.MeanTemperatureNondimensionalized)); 
-                newFrameParams.AddUpdateValue(FrameParamKeyType.FloatVoltage, voltageGroup.MeanVoltageInVolts); 
-                newFrameParams.AddUpdateValue(FrameParamKeyType.PressureBack, Metrics.Nondimensionalized2Torr(voltageGroup.MeanPressureNondimensionalized)); 
+                newFrameParams.AddUpdateValue(FrameParamKeyType.AmbientTemperature, Metrics.Nondimensionalized2Kelvin(voltageGroup.MeanTemperatureNondimensionalized));
+                newFrameParams.AddUpdateValue(FrameParamKeyType.FloatVoltage, voltageGroup.MeanVoltageInVolts);
+                newFrameParams.AddUpdateValue(FrameParamKeyType.PressureBack, Metrics.Nondimensionalized2Torr(voltageGroup.MeanPressureNondimensionalized));
 
                 uimfWriter.InsertFrame(1, newFrameParams);
-                
+
                 // Insert the scans
                 for (int scan = 1; scan <= scans; scan++)
                 {
                     var scanData = this.GetScan(summedIntensities, scan);
-                
+
                     uimfWriter.InsertScan(
                         1,
                         newFrameParams,

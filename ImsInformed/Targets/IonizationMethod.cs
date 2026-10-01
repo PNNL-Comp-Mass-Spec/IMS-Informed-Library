@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Targets
 {
@@ -44,10 +44,10 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Ionization by addving sodium ion and removing two protons
         /// </summary>
-        Proton2MinusSodiumPlus, // Add Na+ and 2H-, net H- 
+        Proton2MinusSodiumPlus, // Add Na+ and 2H-, net H-
 
         /// <summary>
-        /// Ionization with formic acid 
+        /// Ionization with formic acid
         /// </summary>
         HCOOMinus, // HCOO+
 
@@ -55,7 +55,7 @@ namespace ImsInformed.Targets
         /// Atmospheric pressure chemical ionization (APCI) is an ionization method used in mass spectrometry
         /// (commonly LC-MS) which utilizes gas-phase ion-molecule reactions at atmospheric pressure.
         /// </summary>
-        APCI, 
+        APCI,
     }
 
     /// <summary>
@@ -75,8 +75,8 @@ namespace ImsInformed.Targets
         public static int GetChargeState(this IonizationMethod ionizationMethod)
         {
             if (ionizationMethod == IonizationMethod.APCI ||
-                ionizationMethod == IonizationMethod.HCOOMinus || 
-                ionizationMethod == IonizationMethod.Deprotonated || 
+                ionizationMethod == IonizationMethod.HCOOMinus ||
+                ionizationMethod == IonizationMethod.Deprotonated ||
                 ionizationMethod == IonizationMethod.Proton2MinusSodiumPlus)
             {
                 return -1;
@@ -120,7 +120,7 @@ namespace ImsInformed.Targets
         }
 
         /// <summary>
-        /// Get the 
+        /// Get the
         /// </summary>
         /// <param name="method">
         /// The method.
@@ -135,19 +135,19 @@ namespace ImsInformed.Targets
             {
                 return new Composition(0, 1, 0, 0, 0);
             }
-            else if (method == IonizationMethod.Deprotonated) 
+            else if (method == IonizationMethod.Deprotonated)
             {
                 return new Composition(0, 1, 0, 0, 0);
             }
-            else if (method == IonizationMethod.Sodiumated) 
+            else if (method == IonizationMethod.Sodiumated)
             {
                 return MoleculeUtil.ReadEmpiricalFormula("Na");
             }
-            else if (method == IonizationMethod.APCI) 
+            else if (method == IonizationMethod.APCI)
             {
                 return new Composition(0, 0, 0, 0, 0);
             }
-            else if (method == IonizationMethod.HCOOMinus) 
+            else if (method == IonizationMethod.HCOOMinus)
             {
                 return new Composition(1, 1, 0, 2, 0);
             }
@@ -199,7 +199,7 @@ namespace ImsInformed.Targets
             {
                 method = "[M-2H+Na]";
             }
-            else 
+            else
             {
                 throw new ArgumentException("Ionization method [" + ionizationMethod + "] is not supported");
             }
@@ -228,7 +228,7 @@ namespace ImsInformed.Targets
         /// The parse ionization method.
         /// </summary>
         /// <param name="ionizationMethod">
-        /// user input for ionization method 
+        /// user input for ionization method
         /// </param>
         /// <returns>
         /// The <see cref="IonizationMethod"/>.
@@ -264,7 +264,7 @@ namespace ImsInformed.Targets
             {
                 method = IonizationMethod.Proton2MinusSodiumPlus;
             }
-            else 
+            else
             {
                 throw new ArgumentException("Ionization method [" + ionizationMethod + "] is not recognized");
             }

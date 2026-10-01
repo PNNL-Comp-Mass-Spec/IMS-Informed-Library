@@ -9,8 +9,8 @@ namespace ImsInformed.Statistics
     using DeconTools.Backend.Utilities;
 
     // Interatively Reweighted Least Square Fit Line
-    // The difference between this and the plain least squares is points are weighted using 
-    // the inverse of the cook's distance. The hope is that in the end the cook's distance are 
+    // The difference between this and the plain least squares is points are weighted using
+    // the inverse of the cook's distance. The hope is that in the end the cook's distance are
     // equal
     internal class IRLSFitline : FitLine
     {
@@ -57,7 +57,7 @@ namespace ImsInformed.Statistics
             {
                 avgY += point.Point.Y * point.Weight;
             }
-            
+
             var points = this.FitPointCollection.ToList();
             avgY /= points.Count;
 
@@ -77,12 +77,12 @@ namespace ImsInformed.Statistics
 
             return rSquared;
         }
-        
+
         /// <summary>
-        ///     Replace the normal least square fit, using iteratively weighted least square fit.
+        /// Replace the normal least square fit, using iteratively weighted least square fit.
         /// </summary>
         /// <param name="xyPoints"></param>
-        /// /// <exception cref="Exception">A delegate callback throws an exception.</exception>
+        /// <exception cref="Exception">A delegate callback throws an exception.</exception>
         public override void PerformRegression(IEnumerable<FitlinePoint> xyPoints)
         {
             double slopeOld = 0;
@@ -105,7 +105,7 @@ namespace ImsInformed.Statistics
                 IEnumerable<double> residuals = fitlinePoints.Select(x => this.ComputeResidual(x.Point));
                 this.meanAbsoluteDeviation = this.CalculateMAD(residuals);
                 this.DiagnoseRegression(this.BiSquareWeight);
-                
+
                 percentDiff = slopeOld == 0 ? 1 : Math.Abs((this.Slope - slopeOld) / slopeOld * 100);
                 slopeOld = this.Slope;
             }
@@ -124,9 +124,9 @@ namespace ImsInformed.Statistics
                 this.DiagnoseRegression();
             }
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="xyPoints"></param>
         /// <param name="gain"></param>
@@ -166,9 +166,9 @@ namespace ImsInformed.Statistics
         private double CalculateMedian(IEnumerable<double> inputs)
         {
             var numbers = inputs.ToList();
-            int halfIndex = numbers.Count()/2; 
-            var sortedNumbers = numbers.OrderBy(n=>n).ToList(); 
-            return sortedNumbers[halfIndex]; 
+            int halfIndex = numbers.Count()/2;
+            var sortedNumbers = numbers.OrderBy(n=>n).ToList();
+            return sortedNumbers[halfIndex];
         }
     }
 }

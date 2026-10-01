@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Statistics
 {
@@ -102,9 +102,9 @@ namespace ImsInformed.Statistics
             // P-value           JB
             // 0.10              4.61
             // 0.05              5.99
-            // 0.01              9.21 
+            // 0.01              9.21
             // Lower p value reject the normal distrubution hypothesis. Higher JB means lower p-value. So higher JB rejects
-            // H0, So lower JB means higher score. 
+            // H0, So lower JB means higher score.
             // return JB;
             return ScoreUtil.MapToZeroOneTrignometry(JB, true, 50);
         }
@@ -135,7 +135,7 @@ namespace ImsInformed.Statistics
             for (int i = 0; i < peakDescriptor.Length; i++)
             {
                 double frequency  = (int)Math.Ceiling(peakDescriptor[i] * numberOfSamples / sum);
-                peakDescriptor[i] = frequency; 
+                peakDescriptor[i] = frequency;
             }
 
             // sort the frequency diagram from high to low while maintaining index.
@@ -152,7 +152,7 @@ namespace ImsInformed.Statistics
             for (int i = 0; i < sortedPeakDescriptor.Length; i++)
             {
                 cuminlative += sortedPeakDescriptor[i];
-                sortedPeakDescriptor[i] = cuminlative; 
+                sortedPeakDescriptor[i] = cuminlative;
             }
 
             double[] result = new double[numberOfSamples];

@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Domain.DirectInjection
 {
@@ -24,14 +24,14 @@ namespace ImsInformed.Domain.DirectInjection
     /// <summary>
     /// This is the XIC summed over the centerMz but not drift time axis.
     /// </summary>
-    internal class ExtractedIonChromatogram 
+    internal class ExtractedIonChromatogram
     {
         public ExtractedIonChromatogram()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class.
         /// Get the extracted ion chromatogram from the whole drift time scan range.
         /// </summary>
         /// <param name="uimfReader">
@@ -130,12 +130,12 @@ namespace ImsInformed.Domain.DirectInjection
                     result += xic;
                 }
             }
-            
+
             return result;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class. 
+        /// Initializes a new instance of the <see cref="ExtractedIonChromatogram"/> class.
         /// XIC is a list of intensity points sorted by Mobility Scan number from low to high.
         /// </summary>
         /// <param name="a">
@@ -215,7 +215,7 @@ namespace ImsInformed.Domain.DirectInjection
             List<IntensityPoint> result = new List<IntensityPoint>();
             int AIndex = 0;
             int BIndex = 0;
-            while (AIndex < A.Count || BIndex < B.Count) 
+            while (AIndex < A.Count || BIndex < B.Count)
             {
                 if (BIndex >= B.Count && AIndex < A.Count)
                 {
@@ -224,17 +224,17 @@ namespace ImsInformed.Domain.DirectInjection
                 }
                 else if (BIndex < B.Count && AIndex >= A.Count)
                 {
-                    result.Add(new IntensityPoint(0, B[BIndex].ScanIms, B[BIndex].Intensity)); 
+                    result.Add(new IntensityPoint(0, B[BIndex].ScanIms, B[BIndex].Intensity));
                     BIndex++;
                 }
                 else if (A[AIndex].ScanIms < B[BIndex].ScanIms)
                 {
                     result.Add(new IntensityPoint(0, A[AIndex].ScanIms, A[AIndex].Intensity));
                     AIndex++;
-                } 
+                }
                 else if (A[AIndex].ScanIms > B[BIndex].ScanIms)
                 {
-                    result.Add(new IntensityPoint(0, B[BIndex].ScanIms, B[BIndex].Intensity)); 
+                    result.Add(new IntensityPoint(0, B[BIndex].ScanIms, B[BIndex].Intensity));
                     BIndex++;
                 }
                 else if (A[AIndex].ScanIms == B[BIndex].ScanIms)

@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Domain.DataAssociation
 {
@@ -141,7 +141,7 @@ namespace ImsInformed.Domain.DataAssociation
 
         public IEnumerable<VoltageGroup> DefinedVoltageGruops
         {
-            get 
+            get
             {
                 return this.definedVoltageGroups;
             }
@@ -208,7 +208,7 @@ namespace ImsInformed.Domain.DataAssociation
                 signatureConsistencyWeight = signatureConsistencyWeight / sum;
                 peakCountWeight = peakCountWeight / sum;
 
-                double logResult = r2Weight * Math.Log(pR2) + 
+                double logResult = r2Weight * Math.Log(pR2) +
                 signatureConsistencyWeight * Math.Log(pSig) +
                 peakCountWeight * Math.Log(pcount);
 
@@ -220,7 +220,7 @@ namespace ImsInformed.Domain.DataAssociation
 
         public PeakScores TrackStatistics
         {
-            get 
+            get
             {
                 IEnumerable<PeakScores> allFeatureStatistics = this.ObservedPeaks.Select(x => x.Statistics);
                 PeakScores averageObservedPeakStatistics = FeatureScoreUtilities.AverageFeatureStatistics(allFeatureStatistics);
@@ -247,7 +247,7 @@ namespace ImsInformed.Domain.DataAssociation
                 return count;
             }
         }
-    
+
         /// <summary>
         /// Gets the real peak count.
         /// </summary>
@@ -319,7 +319,7 @@ namespace ImsInformed.Domain.DataAssociation
         {
             this.observedPeaks.Add(peak);
             this.fitLineNotComputed = true;
-            
+
             if (!this.definedVoltageGroups.Contains(peak.VoltageGroup))
             {
                 this.definedVoltageGroups.Add(peak.VoltageGroup);
@@ -410,7 +410,7 @@ namespace ImsInformed.Domain.DataAssociation
             bool lowFitPoints = filter.FilterLowFitPointNumber(this.ObservedPeaks.Count(), minFitPoints);
             bool lowR2 = filter.IsLowR2(this.mobilityInfo.RSquared, minR2);
 
-            return lowFitPoints ? AnalysisStatus.NotSufficientPoints : 
+            return lowFitPoints ? AnalysisStatus.NotSufficientPoints :
                 lowR2 ? AnalysisStatus.Rejected : AnalysisStatus.Positive;
         }
 
@@ -441,16 +441,16 @@ namespace ImsInformed.Domain.DataAssociation
             this.mobilityInfo.Mobility = this.driftTubeLengthInMeters * this.driftTubeLengthInMeters * 1000 / (this.FitLine.Slope);
             this.mobilityInfo.RSquared = this.FitLine.RSquared;
             this.mobilityInfo.T0 = this.FitLine.Intercept;
-            
+
             Composition bufferGas = new Composition(0, 0, 2, 0, 0);
             double reducedMass = MoleculeUtil.ComputeReducedMass(target.MassWithAdduct, bufferGas);
             double meanTemperatureInKelvin = this.GetGlobalMeanTemperature();
             this.mobilityInfo.CollisionCrossSectionArea = MoleculeUtil.ComputeCrossSectionalArea(
                 meanTemperatureInKelvin,
                 this.mobilityInfo.Mobility,
-                target.ChargeState, 
+                target.ChargeState,
                 reducedMass);
-            
+
             return this.mobilityInfo;
         }
 

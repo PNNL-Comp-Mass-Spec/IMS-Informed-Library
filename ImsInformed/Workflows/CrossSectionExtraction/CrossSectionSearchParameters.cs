@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Workflows.CrossSectionExtraction
 {
@@ -26,8 +26,8 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public const int DefaultNumPointForSmoothing = 11;
         public const double DefaultInsufficientFramesFraction = 0.0;
         public const double DefaultFeatureFilterLevel = 0.25;
-        public const double DefaultAbsoluteIntensityThreshold = 0.00; 
-        public const double DefaultRelativeIntensityPercentageThreshold = 10; 
+        public const double DefaultAbsoluteIntensityThreshold = 0.00;
+        public const double DefaultRelativeIntensityPercentageThreshold = 10;
         public const double DefaultPeakShapeThreshold = 0.4;
         public const double DefaultIsotopicThreshold = 0.4;
         public const int DefaultMaxOutliers = 1;
@@ -40,23 +40,23 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossSectionSearchParameters"/> class.
         /// </summary>
-        public CrossSectionSearchParameters(double driftTubeLengthInCm) : this(DefaultDriftTimeToleranceInMs, 
-            DefaultMzWindowHalfWidthInPpm, 
-            DefaultNumPointForSmoothing, 
-            DefaultFeatureFilterLevel, 
-            DefaultAbsoluteIntensityThreshold, 
-            DefaultPeakShapeThreshold, 
-            DefaultIsotopicThreshold, 
-            DefaultMaxOutliers, 
-            DefaultPeakDetectorSelection, 
+        public CrossSectionSearchParameters(double driftTubeLengthInCm) : this(DefaultDriftTimeToleranceInMs,
+            DefaultMzWindowHalfWidthInPpm,
+            DefaultNumPointForSmoothing,
+            DefaultFeatureFilterLevel,
+            DefaultAbsoluteIntensityThreshold,
+            DefaultPeakShapeThreshold,
+            DefaultIsotopicThreshold,
+            DefaultMaxOutliers,
+            DefaultPeakDetectorSelection,
             DefaultRegressionSelection,
             DefaultMinR2,
-            DefaultRelativeIntensityPercentageThreshold, 
+            DefaultRelativeIntensityPercentageThreshold,
             DefaultGraphicsExtension,
             DefaultInsufficientFramesFraction,
             driftTubeLengthInCm,
             DefaultUseAverageTemperature)
-        { 
+        {
         }
 
         /// <summary>
@@ -97,18 +97,18 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         /// <param name="graphicsExtension"></param>
         /// <param name="insufficientFramesFraction"></param>
         /// <param name="driftTubeLengthInCm"></param>
-        public CrossSectionSearchParameters(double driftTimeToleranceInMs, 
-            double mzWindowHalfWidthInPpm, 
-            int numPointForSmoothing, 
-            double featureFilterLevel, 
-            double absoluteIntensityThreshold, 
-            double peakShapeThreshold, 
-            double isotopicThreshold, 
-            int maxOutliers, 
-            PeakDetectorEnum peakDetectorSelection, 
+        public CrossSectionSearchParameters(double driftTimeToleranceInMs,
+            double mzWindowHalfWidthInPpm,
+            int numPointForSmoothing,
+            double featureFilterLevel,
+            double absoluteIntensityThreshold,
+            double peakShapeThreshold,
+            double isotopicThreshold,
+            int maxOutliers,
+            PeakDetectorEnum peakDetectorSelection,
             FitlineEnum regressionSelection,
-            double minR2, 
-            double relativeIntensityPercentageThreshold, 
+            double minR2,
+            double relativeIntensityPercentageThreshold,
             string graphicsExtension,
             double insufficientFramesFraction,
             double driftTubeLengthInCm,
@@ -207,7 +207,7 @@ namespace ImsInformed.Workflows.CrossSectionExtraction
         public double MinR2 { get; private set; }
 
         /// <summary>
-        /// If use average temperature is set, PIXiE use individual temperature to 
+        /// If use average temperature is set, PIXiE use individual temperature to
         /// calculate mobility K0, instead of the average mobility. Otherwise, PIXiE
         /// uses average temperature to calculate mobility K0. Both cases use average
         /// temperature to calculate CCS.

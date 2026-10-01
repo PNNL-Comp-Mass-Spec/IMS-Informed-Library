@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Util
 {
@@ -75,7 +75,7 @@ namespace ImsInformed.Util
         /// The Target MZ.
         /// </param>
         /// <param name="bufferGas">
-        /// The buffer gas composition. 
+        /// The buffer gas composition.
         /// Example: N2
         /// </param>
         /// <returns>
@@ -159,7 +159,7 @@ namespace ImsInformed.Util
         /// </exception>
         private static bool IsBalanced(string input, string stack)
         {
-            return 
+            return
                 String.IsNullOrEmpty(input) ? String.IsNullOrEmpty(stack) :
                 IsOpen(input[0]) ? IsBalanced(input.Substring(1), input[0] + stack) :
                 IsClose(input[0]) ? !String.IsNullOrEmpty(stack) && IsMatching(stack[0], input[0]) && IsBalanced(input.Substring(1), stack.Substring(1)) :
@@ -175,7 +175,7 @@ namespace ImsInformed.Util
         /// <returns>
         /// true if the character is an open parenthesis, false otherwise <see cref="bool"/>.
         /// </returns>
-        private static bool IsOpen(char ch) 
+        private static bool IsOpen(char ch)
         {
             return Open.IndexOf(ch) != -1;
         }
@@ -189,7 +189,7 @@ namespace ImsInformed.Util
         /// <returns>
         /// true if the character is an open parenthesis, false otherwise <see cref="bool"/>.
         /// </returns>
-        private static bool IsClose(char ch) 
+        private static bool IsClose(char ch)
         {
             return Close.IndexOf(ch) != -1;
         }
@@ -219,7 +219,7 @@ namespace ImsInformed.Util
         private static Composition ParseEmpiricalFormula(string empiricalFormula)
         {
             int index = 0; // reset index
-            
+
             string beforeLeftParenthesisFormula = "";
             string afterRightParenthesisFormula = "";
             string afterLeftParenthesisFormula = "";
@@ -237,7 +237,7 @@ namespace ImsInformed.Util
             }
 
             afterLeftParenthesisFormula = empiricalFormula.Substring(index + 1);
-            
+
             Composition beforeParenthesis = ReadEmpiricalFormulaNoParenthesis(beforeLeftParenthesisFormula);
             Composition insideParenthesis = CloseParenthesis(afterLeftParenthesisFormula, out afterRightParenthesisFormula);
             Composition afterParenthesis = ParseEmpiricalFormula(afterRightParenthesisFormula);
@@ -341,7 +341,7 @@ namespace ImsInformed.Util
             int s = 0;
             int p = 0;
             IDictionary<string, int> dict = ParseEmpiricalFormulaString(empiricalFormula);
-            
+
             c = (dict.ContainsKey("C")) ? dict["C"] : 0;
             h = (dict.ContainsKey("H")) ? dict["H"] : 0;
             n = (dict.ContainsKey("N")) ? dict["N"] : 0;
@@ -366,7 +366,7 @@ namespace ImsInformed.Util
 
                 // Convert the rest of the dictionary as an IEnumberable<tuple<string, int>>
                 List<Tuple<Atom, short>> additionalElements = new List<Tuple<Atom, short>>();
-                foreach (var entry in dict) 
+                foreach (var entry in dict)
                 {
                     string symbol = entry.Key;
                     try
@@ -382,7 +382,7 @@ namespace ImsInformed.Util
                             IEnumerable<XElement> els = from el in elemen
                             where (string)(el.Element("Symbol")) == entry.Key select el;
                             string name = (string)els.Elements("Name").First().Value;
-                        
+
                             if (!Double.TryParse(els.Elements("Isotope").First().Element("Mass").Value, out averageMass) ||
                                 !Int32.TryParse(els.Elements("Isotope").First().Element("IsotopeNumber").Value, out norminalMass))
                             {
@@ -473,7 +473,7 @@ namespace ImsInformed.Util
             }
             catch (Exception)
             {
-                remainder = B - A;                
+                remainder = B - A;
             }
 
             return (remainder == null) || (remainder.Mass - 0) < 0.1;

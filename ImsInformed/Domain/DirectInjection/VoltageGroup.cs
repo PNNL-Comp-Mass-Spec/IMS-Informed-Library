@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Domain.DirectInjection
 {
@@ -259,11 +259,11 @@ namespace ImsInformed.Domain.DirectInjection
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            
+
             return this.FirstFrameNumber == other.FirstFrameNumber && this.LastFrameNumber == other.LastFrameNumber;
         }
 
-        public override bool Equals(object other) 
+        public override bool Equals(object other)
         {
             return this.Equals(other as VoltageGroup);
         }
@@ -274,7 +274,7 @@ namespace ImsInformed.Domain.DirectInjection
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
             int result = 29;
             result = result * 13 + this.FirstFrameNumber;
@@ -297,16 +297,16 @@ namespace ImsInformed.Domain.DirectInjection
             bool similarity = false;
 
             const double MinDifferentialVoltage = 4;
-            
+
             // if first voltage, declare it as similar.
             if ((false) ||
 
                 // if the new voltage is within 3 standard deviation, declare it as a similar point.
                 (Math.Abs(newVoltage - this.MeanVoltageInVolts) < 3 * Math.Sqrt(this.VarianceVoltage)) ||
- 
+
                 // if the new voltage is within min differential voltage, declare it as similar point.
-                (Math.Abs(newVoltage - this.MeanVoltageInVolts) < MinDifferentialVoltage) || 
-            
+                (Math.Abs(newVoltage - this.MeanVoltageInVolts) < MinDifferentialVoltage) ||
+
             // if the new voltage is not going to signaficantly alter the standard deviation, declare it as similar point
                 (this.AddVoltageDryRun(newVoltage).VarianceVoltage < this.VarianceVoltage * 2))
             {

@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Targets
 {
@@ -53,7 +53,7 @@ namespace ImsInformed.Targets
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MolecularTarget"/> class. 
+        /// Initializes a new instance of the <see cref="MolecularTarget"/> class.
         /// Constructor for non peptides with composition
         /// </summary>
         /// <param name="empiricalFormula">
@@ -189,7 +189,7 @@ namespace ImsInformed.Targets
 
             // parse the small molecule empirical formula
             this.CompositionWithoutAdduct = MoleculeUtil.ReadEmpiricalFormula(empiricalFormula);
-            
+
             // Compensate for mass changes due to ionization
             this.CompositionWithAdduct = ionization.ModifyComposition(this.CompositionWithoutAdduct);
             this.MonoisotopicMass = this.CompositionWithoutAdduct.Mass;
@@ -217,12 +217,12 @@ namespace ImsInformed.Targets
 
         public bool Equals(MolecularTarget other)
         {
-            return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) && 
+            return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) &&
                 this.ChargeState == other.ChargeState &&
                 this.correspondingChemical == other.correspondingChemical;
         }
 
-        public override bool Equals(object other) 
+        public override bool Equals(object other)
         {
             return this.Equals(other as IImsTarget);
         }
@@ -233,7 +233,7 @@ namespace ImsInformed.Targets
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
             int result = 29;
             result = result * 13 + this.CompositionWithAdduct.ToPlainString().GetHashCode();

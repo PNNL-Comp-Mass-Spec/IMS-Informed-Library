@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ImsInformed.Statistics
 {
-    // Adapter/Decorator class for continuous XY point 
-    // Extra diagnostic stuff like leverage, cook's distance weight 
+    // Adapter/Decorator class for continuous XY point
+    // Extra diagnostic stuff like leverage, cook's distance weight
     // would be stored here for later manipulation
     internal class FitlinePoint : IEquatable<FitlinePoint>
     {
@@ -41,12 +41,12 @@ namespace ImsInformed.Statistics
             return this.Point.Equals(other.Point);
         }
 
-        public override bool Equals(object other) 
+        public override bool Equals(object other)
         {
             return this.Equals(other as FitlinePoint);
         }
 
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
             return this.Point.GetHashCode();
         }

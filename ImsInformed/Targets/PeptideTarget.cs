@@ -1,15 +1,15 @@
 ﻿// The Software was produced by Battelle under Contract No. DE-AC05-76RL01830
-// with the Department of Energy.  The U.S. Government is granted for itself and others 
-// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data 
-// to reproduce, prepare derivative works, distribute copies to the public, perform 
-// publicly and display publicly, and to permit others to do so.  The specific term of the 
-// license can be identified by inquiry made to Battelle or DOE.  
-// 
-// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY, 
+// with the Department of Energy.  The U.S. Government is granted for itself and others
+// acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this data
+// to reproduce, prepare derivative works, distribute copies to the public, perform
+// publicly and display publicly, and to permit others to do so.  The specific term of the
+// license can be identified by inquiry made to Battelle or DOE.
+//
+// NEITHER THE UNITED STATES NOR THE UNITED STATES DEPARTMENT OF ENERGY,
 // NOR ANY OF THEIR EMPLOYEES, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
-// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, 
+// OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
 // COMPLETENESS OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT OR PROCESS
-// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED 
+// DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY OWNED
 // RIGHTS.
 namespace ImsInformed.Targets
 {
@@ -35,7 +35,7 @@ namespace ImsInformed.Targets
     public class PeptideTarget : IImsTarget
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PeptideTarget"/> class. 
+        /// Initializes a new instance of the <see cref="PeptideTarget"/> class.
         /// Initializes a new instance of the <see cref="ImsTarget"/> class.
         /// </summary>
         /// <param name="id">
@@ -113,7 +113,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the composition with adduct.
         /// </summary>
-        public Composition CompositionWithAdduct 
+        public Composition CompositionWithAdduct
         {
             get
             {
@@ -129,7 +129,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the drift time Target list.
         /// </summary>
-        public IList<DriftTimeTarget> DriftTimeTargetList { get; set; } 
+        public IList<DriftTimeTarget> DriftTimeTargetList { get; set; }
 
         /// <summary>
         /// Gets the Target descriptor.
@@ -161,7 +161,7 @@ namespace ImsInformed.Targets
         /// <summary>
         /// Gets the result list.
         /// </summary>
-        public IList<LcImsTargetResult> ResultList { get; private set; } 
+        public IList<LcImsTargetResult> ResultList { get; private set; }
 
         /// <summary>
         /// Gets or sets the Target MZ.
@@ -328,13 +328,13 @@ namespace ImsInformed.Targets
 
         public bool Equals(PeptideTarget other)
         {
-            return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) && 
+            return MoleculeUtil.AreCompositionsEqual(this.CompositionWithAdduct, other.CompositionWithAdduct) &&
                 this.NormalizedElutionTime == other.NormalizedElutionTime &&
-                this.TargetDescriptor == other.TargetDescriptor && 
+                this.TargetDescriptor == other.TargetDescriptor &&
                 this.PeptideSequence == other.PeptideSequence;
         }
 
-        public override bool Equals(object other) 
+        public override bool Equals(object other)
         {
             return this.Equals(other as IImsTarget);
         }
@@ -345,7 +345,7 @@ namespace ImsInformed.Targets
         /// <returns>
         /// The <see cref="int"/>.
         /// </returns>
-        public override int GetHashCode() 
+        public override int GetHashCode()
         {
             int result = 29;
             result = result * 13 + this.CompositionWithAdduct.ToPlainString().GetHashCode();
